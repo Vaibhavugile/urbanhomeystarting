@@ -5,18 +5,48 @@ import 'package:mytennat/screens/flat_with_flatmate_profile_screen.dart';
 import 'package:mytennat/screens/flatmate_profile_screen.dart';
 import 'package:lottie/lottie.dart'; // Import Lottie
 
-// --- Color Palettes for Vibrant Icons ---
+// --- Premium UrbanHomey Color Palettes ---
 final List<MapEntry<Color, Color>> _vibrantColorPalettes = [
-  MapEntry(Colors.purple.shade100, Colors.purple.shade700),
-  MapEntry(Colors.green.shade100, Colors.green.shade700),
-  MapEntry(Colors.blue.shade100, Colors.blue.shade700),
-  MapEntry(Colors.orange.shade100, Colors.orange.shade700),
-  MapEntry(Colors.pink.shade100, Colors.pink.shade700),
-  MapEntry(Colors.teal.shade100, Colors.teal.shade700),
-  MapEntry(Colors.indigo.shade100, Colors.indigo.shade700),
-  MapEntry(Colors.amber.shade100, Colors.amber.shade700),
-];
+  MapEntry(
+    const Color(0xFFF3E8FF),
+    const Color(0xFF6A1B9A),
+  ), // Purple
 
+  MapEntry(
+    const Color(0xFFFCE7F3),
+    const Color(0xFFAD1457),
+  ), // Pink
+
+  MapEntry(
+    const Color(0xFFE0E7FF),
+    const Color(0xFF4338CA),
+  ), // Indigo
+
+  MapEntry(
+    const Color(0xFFDBEAFE),
+    const Color(0xFF2563EB),
+  ), // Blue
+
+  MapEntry(
+    const Color(0xFFD1FAE5),
+    const Color(0xFF059669),
+  ), // Emerald
+
+  MapEntry(
+    const Color(0xFFFEF3C7),
+    const Color(0xFFD97706),
+  ), // Amber
+
+  MapEntry(
+    const Color(0xFFFFEDD5),
+    const Color(0xFFEA580C),
+  ), // Orange
+
+  MapEntry(
+    const Color(0xFFFEE2E2),
+    const Color(0xFFDC2626),
+  ), // Rose Red
+];
 // Helper widget to build consistent sections (Cards)
 Widget _buildSection({
   required String title,
@@ -24,24 +54,105 @@ Widget _buildSection({
   EdgeInsetsGeometry? margin,
   EdgeInsetsGeometry? padding,
 }) {
-  return Card(
-    margin: margin ?? const EdgeInsets.symmetric(vertical: 6, horizontal: 12),
-    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-    elevation: 3.0,
+  return Container(
+    margin: margin ??
+        const EdgeInsets.symmetric(
+          horizontal: 16,
+          vertical: 10,
+        ),
+    decoration: BoxDecoration(
+      borderRadius: BorderRadius.circular(24),
+
+      gradient: LinearGradient(
+        begin: Alignment.topLeft,
+        end: Alignment.bottomRight,
+        colors: [
+          Colors.white.withOpacity(0.12),
+          Colors.white.withOpacity(0.05),
+        ],
+      ),
+
+      border: Border.all(
+        color: Colors.white.withOpacity(0.12),
+        width: 1,
+      ),
+
+      boxShadow: [
+        BoxShadow(
+          color: Colors.black.withOpacity(0.12),
+          blurRadius: 20,
+          offset: const Offset(0, 10),
+        ),
+      ],
+    ),
     child: Padding(
-      padding: padding ?? const EdgeInsets.all(12.0),
+      padding:
+          padding ??
+              const EdgeInsets.symmetric(
+                horizontal: 18,
+                vertical: 18,
+              ),
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+        crossAxisAlignment:
+            CrossAxisAlignment.start,
         children: [
-          Text(
-            title,
-            style: const TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-              color: Colors.redAccent,
+
+          /// SECTION HEADER
+          Row(
+            children: [
+
+              Container(
+                width: 5,
+                height: 26,
+                decoration: BoxDecoration(
+                  borderRadius:
+                      BorderRadius.circular(
+                    20,
+                  ),
+                  gradient:
+                      const LinearGradient(
+                    colors: [
+                      Color(0xFF6A1B9A),
+                      Color(0xFFAD1457),
+                    ],
+                  ),
+                ),
+              ),
+
+              const SizedBox(width: 12),
+
+              Expanded(
+                child: Text(
+                  title,
+                  style: const TextStyle(
+                    fontSize: 20,
+                    fontWeight:
+                        FontWeight.w700,
+                    color: Colors.white,
+                    letterSpacing: .3,
+                  ),
+                ),
+              ),
+            ],
+          ),
+
+          const SizedBox(height: 14),
+
+          Container(
+            height: 1,
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [
+                  Colors.white
+                      .withOpacity(.20),
+                  Colors.transparent,
+                ],
+              ),
             ),
           ),
-          const Divider(height: 10, thickness: 1.0, color: Colors.grey),
+
+          const SizedBox(height: 18),
+
           ...children,
         ],
       ),
@@ -50,101 +161,222 @@ Widget _buildSection({
 }
 
 // Helper widget to display a single profile field (label: value format) with an optional icon - (kept for non-grid sections)
-Widget _buildProfileField(String label, String? value, {IconData? icon, int iconColorIndex = 0}) {
-  final palette = _vibrantColorPalettes[iconColorIndex % _vibrantColorPalettes.length];
+Widget _buildProfileField(
+  String label,
+  String? value, {
+  IconData? icon,
+  int iconColorIndex = 0,
+}) {
+  if (value == null ||
+      value.trim().isEmpty ||
+      value == 'N/A') {
+    return const SizedBox.shrink();
+  }
 
-  return Padding(
-    padding: const EdgeInsets.symmetric(vertical: 6.0),
+  final palette =
+      _vibrantColorPalettes[
+          iconColorIndex %
+              _vibrantColorPalettes.length];
+
+  return Container(
+    margin: const EdgeInsets.only(
+      bottom: 12,
+    ),
+    padding: const EdgeInsets.all(14),
+    decoration: BoxDecoration(
+      borderRadius:
+          BorderRadius.circular(18),
+      color: Colors.white.withOpacity(.05),
+      border: Border.all(
+        color: Colors.white.withOpacity(.08),
+      ),
+    ),
     child: Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
+      crossAxisAlignment:
+          CrossAxisAlignment.center,
       children: [
-        if (icon != null) ...[
+
+        /// ICON
+        if (icon != null)
           Container(
+            width: 46,
+            height: 46,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
               color: palette.key,
+              boxShadow: [
+                BoxShadow(
+                  color: palette.value
+                      .withOpacity(.15),
+                  blurRadius: 8,
+                  offset: const Offset(0, 3),
+                ),
+              ],
             ),
-            padding: const EdgeInsets.all(6),
-            child: Icon(icon, color: palette.value, size: 18),
-          ),
-          const SizedBox(width: 10),
-        ],
-        SizedBox(
-          width: 100,
-          child: Text(
-            '$label:',
-            style: const TextStyle(
-              fontSize: 14,
-              fontWeight: FontWeight.w600,
-              color: Colors.black87,
+            child: Icon(
+              icon,
+              color: palette.value,
+              size: 22,
             ),
           ),
-        ),
-        const SizedBox(width: 12),
+
+        if (icon != null)
+          const SizedBox(width: 14),
+
+        /// CONTENT
         Expanded(
-          child: Text(
-            value ?? 'N/A',
-            style: TextStyle(
-              fontSize: 14,
-              color: value != null && value.isNotEmpty ? Colors.black : Colors.grey,
-            ),
+          child: Column(
+            crossAxisAlignment:
+                CrossAxisAlignment.start,
+            children: [
+
+              /// LABEL
+              Text(
+                label.toUpperCase(),
+                style: TextStyle(
+                  fontSize: 11,
+                  fontWeight:
+                      FontWeight.w600,
+                  letterSpacing: 1,
+                  color: Colors.white
+                      .withOpacity(.60),
+                ),
+              ),
+
+              const SizedBox(height: 4),
+
+              /// VALUE
+              Text(
+                value,
+                style: const TextStyle(
+                  fontSize: 15,
+                  fontWeight:
+                      FontWeight.w600,
+                  color: Colors.white,
+                  height: 1.3,
+                ),
+              ),
+            ],
           ),
         ),
       ],
     ),
   );
 }
-
 // Helper for displaying list fields (used for sections that remain as text chips, if any)
-Widget _buildProfileListField(String label, List<String>? values) {
+Widget _buildProfileListField(
+  String label,
+  List<String>? values,
+) {
   if (values == null || values.isEmpty) {
     return _buildSection(
       title: label,
-      children: const [
-        Text(
-          'N/A',
-          style: TextStyle(fontSize: 14, color: Colors.grey),
+      children: [
+        Container(
+          padding: const EdgeInsets.all(14),
+          decoration: BoxDecoration(
+            borderRadius:
+                BorderRadius.circular(16),
+            color: Colors.white.withOpacity(.05),
+            border: Border.all(
+              color:
+                  Colors.white.withOpacity(.08),
+            ),
+          ),
+          child: Text(
+            'No preferences added yet',
+            style: TextStyle(
+              color:
+                  Colors.white.withOpacity(.65),
+              fontSize: 14,
+            ),
+          ),
         ),
       ],
     );
   }
 
-  return Padding(
-    padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 12),
-    child: Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          label,
-          style: const TextStyle(
-            fontSize: 18,
-            fontWeight: FontWeight.bold,
-            color: Colors.redAccent,
-          ),
-        ),
-        const SizedBox(height: 10),
-        Wrap(
-          spacing: 8.0,
-          runSpacing: 8.0,
-          children: values
-              .map(
-                (item) => Container(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+  return _buildSection(
+    title: label,
+    children: [
+      Wrap(
+        spacing: 10,
+        runSpacing: 10,
+        children: values.asMap().entries.map(
+          (entry) {
+            final index = entry.key;
+            final item = entry.value;
+
+            final palette =
+                _vibrantColorPalettes[
+                    index %
+                        _vibrantColorPalettes
+                            .length];
+
+            return Container(
+              padding:
+                  const EdgeInsets.symmetric(
+                horizontal: 14,
+                vertical: 10,
+              ),
               decoration: BoxDecoration(
-                color: Colors.grey.shade100,
-                borderRadius: BorderRadius.circular(18),
-                border: Border.all(color: Colors.grey.shade200),
+                borderRadius:
+                    BorderRadius.circular(
+                  20,
+                ),
+
+                gradient: LinearGradient(
+                  begin: Alignment.topLeft,
+                  end:
+                      Alignment.bottomRight,
+                  colors: [
+                    palette.key,
+                    palette.key.withOpacity(
+                      .75,
+                    ),
+                  ],
+                ),
+
+                boxShadow: [
+                  BoxShadow(
+                    color: palette.value
+                        .withOpacity(.15),
+                    blurRadius: 8,
+                    offset:
+                        const Offset(0, 4),
+                  ),
+                ],
               ),
-              child: Text(
-                item,
-                style: const TextStyle(fontSize: 12),
+              child: Row(
+                mainAxisSize:
+                    MainAxisSize.min,
+                children: [
+                  Icon(
+                    Icons.check_circle,
+                    size: 16,
+                    color: palette.value,
+                  ),
+
+                  const SizedBox(width: 6),
+
+                  Text(
+                    item,
+                    style:
+                        TextStyle(
+                      fontSize: 13,
+                      fontWeight:
+                          FontWeight.w600,
+                      color:
+                          palette.value,
+                    ),
+                  ),
+                ],
               ),
-            ),
-          )
-              .toList(),
-        ),
-      ],
-    ),
+            );
+          },
+        ).toList(),
+      ),
+    ],
   );
 }
 
@@ -303,92 +535,236 @@ final Map<String, dynamic> _characteristicIcons = {
 };
 
 // Helper for displaying a single characteristic with icon and text, formatted as a card-like structure (without a container)
-Widget _buildIconValueCard(String label, String? value, {Color? backgroundColor, Color? iconColor}) {
-  if (value == null || value.isEmpty || value == 'N/A') return const SizedBox.shrink(); // Use SizedBox.shrink for empty items
+Widget _buildIconValueCard(
+  String label,
+  String? value, {
+  Color? backgroundColor,
+  Color? iconColor,
+}) {
+  if (value == null ||
+      value.isEmpty ||
+      value == 'N/A') {
+    return const SizedBox.shrink();
+  }
 
-  dynamic iconData = _characteristicIcons[label] ?? _characteristicIcons[value];
+  final palette =
+      _vibrantColorPalettes[
+          (label.hashCode.abs()) %
+              _vibrantColorPalettes.length];
+
+  final bgColor =
+      backgroundColor ?? palette.key;
+
+  final fgColor =
+      iconColor ?? palette.value;
+
+  dynamic iconData =
+      _characteristicIcons[label] ??
+          _characteristicIcons[value];
+
   Widget iconWidget;
 
-  // Determine the icon widget and its size
   if (iconData is IconData) {
-    iconWidget = Icon(iconData, size: 60, color: Colors.black87); // Increased IconData size
-  } else if (iconData is String && iconData.endsWith('.json')) {
+    iconWidget = Icon(
+      iconData,
+      size: 42,
+      color: fgColor,
+    );
+  } else if (iconData is String &&
+      iconData.endsWith('.json')) {
     iconWidget = Lottie.asset(
       iconData,
-      width: 90, // Increased Lottie width
-      height: 90, // Increased Lottie height
+      width: 65,
+      height: 65,
       fit: BoxFit.contain,
       repeat: true,
     );
   } else {
-    iconWidget = Icon(Icons.category, size: 60, color: Colors.black87); // Default if not found, Increased size
+    iconWidget = Icon(
+      Icons.auto_awesome,
+      size: 42,
+      color: fgColor,
+    );
   }
 
-  return Column( // Directly use Column instead of Container
-    mainAxisSize: MainAxisSize.min,
-    mainAxisAlignment: MainAxisAlignment.center,
-    children: [
-      Text(
-        label,
-        textAlign: TextAlign.center,
-        style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.black87), // Label text black as per image
-        maxLines: 1,
-        overflow: TextOverflow.ellipsis,
+  return Container(
+    padding: const EdgeInsets.all(14),
+
+    decoration: BoxDecoration(
+      borderRadius:
+          BorderRadius.circular(22),
+
+      gradient: LinearGradient(
+        begin: Alignment.topLeft,
+        end: Alignment.bottomRight,
+        colors: [
+          bgColor,
+          bgColor.withOpacity(.75),
+        ],
       ),
-      const SizedBox(height: 8), // Spacing
-      iconWidget, // Directly place the icon widget
-      const SizedBox(height: 8), // Spacing
-      Text(
-        value,
-        textAlign: TextAlign.center,
-        style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: Colors.black87), // Value text black as per image
+
+      border: Border.all(
+        color: Colors.white.withOpacity(.15),
       ),
-    ],
+
+      boxShadow: [
+        BoxShadow(
+          color: fgColor.withOpacity(.15),
+          blurRadius: 12,
+          offset: const Offset(0, 6),
+        ),
+      ],
+    ),
+
+    child: Column(
+      mainAxisAlignment:
+          MainAxisAlignment.center,
+      children: [
+
+        /// LABEL
+        Text(
+          label,
+          textAlign: TextAlign.center,
+          maxLines: 2,
+          overflow:
+              TextOverflow.ellipsis,
+          style: TextStyle(
+            fontSize: 11,
+            fontWeight:
+                FontWeight.w700,
+            letterSpacing: .5,
+            color: fgColor,
+          ),
+        ),
+
+        const SizedBox(height: 12),
+
+        /// ICON
+        Container(
+          width: 72,
+          height: 72,
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            color: Colors.white
+                .withOpacity(.55),
+          ),
+          child: Center(
+            child: iconWidget,
+          ),
+        ),
+
+        const SizedBox(height: 14),
+
+        /// VALUE
+        Text(
+          value,
+          textAlign: TextAlign.center,
+          maxLines: 2,
+          overflow:
+              TextOverflow.ellipsis,
+          style: const TextStyle(
+            fontSize: 14,
+            fontWeight:
+                FontWeight.w600,
+            color: Colors.black87,
+            height: 1.3,
+          ),
+        ),
+      ],
+    ),
   );
 }
 
 // Helper for displaying a grid of characteristics, like "Habits & Lifestyle"
-Widget _buildCharacteristicGrid(String title, List<MapEntry<String, String?>> characteristics) {
-  final validItems = characteristics.where((e) => e.value != null && e.value!.isNotEmpty && e.value != 'N/A').toList();
+Widget _buildCharacteristicGrid(
+  String title,
+  List<MapEntry<String, String?>> characteristics,
+) {
+  final validItems = characteristics
+      .where(
+        (e) =>
+            e.value != null &&
+            e.value!.trim().isNotEmpty &&
+            e.value != 'N/A',
+      )
+      .toList();
 
   if (validItems.isEmpty) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 12),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(title, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.redAccent)),
-          const SizedBox(height: 8),
-          const Text('No details specified.', style: TextStyle(fontSize: 14, color: Colors.grey)),
-        ],
-      ),
+    return _buildSection(
+      title: title,
+      children: [
+        Container(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            borderRadius:
+                BorderRadius.circular(18),
+            color: Colors.white.withOpacity(.05),
+            border: Border.all(
+              color:
+                  Colors.white.withOpacity(.08),
+            ),
+          ),
+          child: Text(
+            'No details available yet',
+            style: TextStyle(
+              color:
+                  Colors.white.withOpacity(.65),
+              fontSize: 14,
+            ),
+          ),
+        ),
+      ],
     );
   }
 
-  return Padding(
-    padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 12),
-    child: Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(title, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.redAccent)),
-        const SizedBox(height: 10),
-        GridView.builder(
-          shrinkWrap: true,
-          physics: const NeverScrollableScrollPhysics(),
-          gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
-            maxCrossAxisExtent: 180.0, // Reverted max width for each item
-            crossAxisSpacing: 10,
-            mainAxisSpacing: 10,
-            childAspectRatio: 1.0, // Reverted aspect ratio
-          ),
-          itemCount: validItems.length,
-          itemBuilder: (context, index) {
-            final entry = validItems[index];
-            return _buildIconValueCard(entry.key, entry.value, backgroundColor: Colors.white, iconColor: Colors.black87);
-          },
+  return _buildSection(
+    title: title,
+    children: [
+      GridView.builder(
+        shrinkWrap: true,
+        physics:
+            const NeverScrollableScrollPhysics(),
+
+        itemCount: validItems.length,
+
+        gridDelegate:
+            const SliverGridDelegateWithFixedCrossAxisCount(
+          crossAxisCount: 2,
+
+          crossAxisSpacing: 12,
+          mainAxisSpacing: 12,
+
+          childAspectRatio: 0.92,
         ),
-      ],
-    ),
+
+        itemBuilder: (context, index) {
+          final entry = validItems[index];
+
+          return TweenAnimationBuilder<double>(
+            duration: Duration(
+              milliseconds:
+                  250 + (index * 60),
+            ),
+            tween:
+                Tween(begin: 0, end: 1),
+            builder:
+                (context, value, child) {
+              return Transform.scale(
+                scale: value,
+                child: Opacity(
+                  opacity: value,
+                  child: child,
+                ),
+              );
+            },
+            child: _buildIconValueCard(
+              entry.key,
+              entry.value,
+            ),
+          );
+        },
+      ),
+    ],
   );
 }
 
@@ -408,90 +784,224 @@ final Map<String, dynamic> _preferenceIcons = { // Changed to dynamic to hold Ic
   'Cook': 'assets/lottie/cook.json', // Reusing
 };
 
-Widget _buildPreferenceGrid(String title, List<String>? preferences) {
-  if (preferences == null || preferences.isEmpty) {
+Widget _buildPreferenceGrid(
+  String title,
+  List<String>? preferences,
+) {
+  if (preferences == null ||
+      preferences.isEmpty) {
     return _buildSection(
       title: title,
-      children: const [
-        Text(
-          'No preferences listed.',
-          style: TextStyle(fontSize: 14, color: Colors.grey),
+      children: [
+        Container(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            borderRadius:
+                BorderRadius.circular(18),
+            color: Colors.white.withOpacity(.05),
+            border: Border.all(
+              color:
+                  Colors.white.withOpacity(.08),
+            ),
+          ),
+          child: Text(
+            'No preferences added yet',
+            style: TextStyle(
+              color:
+                  Colors.white.withOpacity(.65),
+              fontSize: 14,
+            ),
+          ),
         ),
       ],
     );
   }
 
-  return Padding(
-    padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 12),
-    child: Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          title,
-          style: const TextStyle(
-            fontSize: 18,
-            fontWeight: FontWeight.bold,
-            color: Colors.redAccent,
-          ),
+  return _buildSection(
+    title: title,
+    children: [
+      GridView.builder(
+        shrinkWrap: true,
+        physics:
+            const NeverScrollableScrollPhysics(),
+
+        itemCount: preferences.length,
+
+        gridDelegate:
+            const SliverGridDelegateWithFixedCrossAxisCount(
+          crossAxisCount: 2,
+          crossAxisSpacing: 12,
+          mainAxisSpacing: 12,
+          childAspectRatio: 0.95,
         ),
-        const SizedBox(height: 10),
-        GridView.builder(
-          shrinkWrap: true,
-          physics: const NeverScrollableScrollPhysics(),
-          gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
-            maxCrossAxisExtent: 140.0, // Reverted max width for each item
-            crossAxisSpacing: 10,
-            mainAxisSpacing: 10,
-            childAspectRatio: 0.9, // Reverted aspect ratio
-          ),
-          itemCount: preferences.length,
-          itemBuilder: (context, index) {
-            final preference = preferences[index];
-            dynamic iconData = _preferenceIcons[preference]; // Get icon data (IconData or String)
 
-            Widget iconWidget;
-            if (iconData is IconData) {
-              iconWidget = Icon(iconData, color: Colors.black87, size: 50); // Increased IconData size
-            } else if (iconData is String && iconData.endsWith('.json')) {
-              iconWidget = Lottie.asset(
-                iconData,
-                width: 80, // Increased Lottie width
-                height: 80, // Increased Lottie height
-                fit: BoxFit.contain,
-                repeat: true,
-              );
-            } else {
-              iconWidget = Icon(Icons.category, color: Colors.black87, size: 50); // Default, Increased size
-            }
+        itemBuilder: (context, index) {
+          final preference =
+              preferences[index];
 
-            return Column( // Directly use Column instead of Container
-              mainAxisSize: MainAxisSize.min,
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                iconWidget, // Icon widget
-                const SizedBox(height: 8), // Spacing
-                Text(
-                  preference,
-                  textAlign: TextAlign.center,
-                  style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: Colors.black87), // Text color black as per image
-                ),
-              ],
+          final palette =
+              _vibrantColorPalettes[
+                  index %
+                      _vibrantColorPalettes
+                          .length];
+
+          dynamic iconData =
+              _preferenceIcons[
+                  preference];
+
+          Widget iconWidget;
+
+          if (iconData is IconData) {
+            iconWidget = Icon(
+              iconData,
+              size: 38,
+              color: palette.value,
             );
-          },
-        ),
-      ],
-    ),
+          } else if (iconData is String &&
+              iconData.endsWith('.json')) {
+            iconWidget = Lottie.asset(
+              iconData,
+              width: 60,
+              height: 60,
+              fit: BoxFit.contain,
+              repeat: true,
+            );
+          } else {
+            iconWidget = Icon(
+              Icons.auto_awesome,
+              size: 38,
+              color: palette.value,
+            );
+          }
+
+          return TweenAnimationBuilder<double>(
+            duration: Duration(
+              milliseconds:
+                  250 + (index * 60),
+            ),
+            tween:
+                Tween(begin: 0, end: 1),
+            builder:
+                (context, value, child) {
+              return Transform.scale(
+                scale: value,
+                child: Opacity(
+                  opacity: value,
+                  child: child,
+                ),
+              );
+            },
+
+            child: Container(
+              padding:
+                  const EdgeInsets.all(14),
+
+              decoration: BoxDecoration(
+                borderRadius:
+                    BorderRadius.circular(
+                  22,
+                ),
+
+                gradient:
+                    LinearGradient(
+                  begin:
+                      Alignment.topLeft,
+                  end: Alignment
+                      .bottomRight,
+                  colors: [
+                    palette.key,
+                    palette.key
+                        .withOpacity(.75),
+                  ],
+                ),
+
+                border: Border.all(
+                  color: Colors.white
+                      .withOpacity(.15),
+                ),
+
+                boxShadow: [
+                  BoxShadow(
+                    color: palette.value
+                        .withOpacity(.15),
+                    blurRadius: 10,
+                    offset:
+                        const Offset(0, 5),
+                  ),
+                ],
+              ),
+
+              child: Column(
+                mainAxisAlignment:
+                    MainAxisAlignment
+                        .center,
+                children: [
+
+                  Container(
+                    width: 70,
+                    height: 70,
+                    decoration:
+                        BoxDecoration(
+                      shape:
+                          BoxShape.circle,
+                      color: Colors.white
+                          .withOpacity(
+                              .55),
+                    ),
+                    child: Center(
+                      child:
+                          iconWidget,
+                    ),
+                  ),
+
+                  const SizedBox(
+                    height: 12,
+                  ),
+
+                  Text(
+                    preference,
+                    textAlign:
+                        TextAlign.center,
+                    maxLines: 2,
+                    overflow:
+                        TextOverflow
+                            .ellipsis,
+                    style:
+                        TextStyle(
+                      fontSize: 13,
+                      fontWeight:
+                          FontWeight
+                              .w600,
+                      color:
+                          palette.value,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          );
+        },
+      ),
+    ],
   );
 }
-
 // Helper to convert List<String> to List<MapEntry<String, String?>> for grid display
-List<MapEntry<String, String?>> _convertStringListToCharacteristicEntries(List<String>? list) {
-  if (list == null) {
-    return [];
-  }
-  return list.map((item) => MapEntry(item, item)).toList();
+List<MapEntry<String, String?>>
+    _convertStringListToCharacteristicEntries(
+  List<String>? list,
+) {
+  return list
+          ?.where(
+            (item) =>
+                item.trim().isNotEmpty,
+          )
+          .map(
+            (item) =>
+                MapEntry(item, item),
+          )
+          .toList() ??
+      [];
 }
-
 
 // --- Main Display Widgets ---
 
@@ -507,139 +1017,396 @@ class SeekingFlatmateProfileDisplay extends StatelessWidget {
       body: ListView(
         children: [
           // Profile Header (similar to the image)
-          Padding(
-            padding: const EdgeInsets.all(10.0),
-            child: Column(
-              children: [
-                CircleAvatar(
-                  radius: 50,
-                  backgroundColor: Colors.grey[200],
-                  backgroundImage: profile.imageUrls != null && profile.imageUrls!.isNotEmpty
-                      ? NetworkImage(profile.imageUrls![0])
-                      : null,
-                  child: profile.imageUrls == null || profile.imageUrls!.isEmpty
-                      ? Icon(Icons.person, size: 50, color: Colors.grey[600])
-                      : null,
+          Container(
+  margin: const EdgeInsets.fromLTRB(16, 16, 16, 20),
+  height: 420,
+  child: Stack(
+    children: [
+
+      /// COVER IMAGE
+      ClipRRect(
+        borderRadius: BorderRadius.circular(30),
+        child: profile.imageUrls != null &&
+                profile.imageUrls!.isNotEmpty
+            ? PageView.builder(
+                itemCount: profile.imageUrls!.length,
+                itemBuilder: (context, index) {
+                  return Image.network(
+                    profile.imageUrls![index],
+                    fit: BoxFit.cover,
+                    width: double.infinity,
+                    errorBuilder:
+                        (context, error, stackTrace) {
+                      return Container(
+                        color: Colors.grey.shade300,
+                        child: const Center(
+                          child: Icon(
+                            Icons.broken_image,
+                            size: 60,
+                          ),
+                        ),
+                      );
+                    },
+                  );
+                },
+              )
+            : Container(
+                color: Colors.grey.shade300,
+                child: const Center(
+                  child: Icon(
+                    Icons.person,
+                    size: 100,
+                    color: Colors.white,
+                  ),
                 ),
-                const SizedBox(height: 8),
-                Text(
-                  profile.userProfile.name ?? 'N/A',
-                  style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
-                ),
-                Text(
-                  '${profile.userProfile.age?.toString() ?? 'N/A'} years old, ${profile.userProfile.occupation?? 'N/A'}',
-                  style: TextStyle(fontSize: 14, color: Colors.grey[700]),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  'Looking in ${profile.userProfile.city ?? 'N/A'}, ${profile.userProfile.city ?? 'N/A'}',
-                  style: TextStyle(fontSize: 14, color: Colors.grey[700]),
-                ),
-                const SizedBox(height: 8),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    ElevatedButton.icon(
-                      onPressed: () { /* Handle chat */ },
-                      icon: const Icon(Icons.chat, size: 20),
-                      label: const Text('Chat', style: TextStyle(fontSize: 14)),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.green,
-                        foregroundColor: Colors.white,
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    ElevatedButton.icon(
-                      onPressed: () { /* Handle call */ },
-                      icon: const Icon(Icons.call, size: 20),
-                      label: const Text('Call', style: TextStyle(fontSize: 14)),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.blueAccent,
-                        foregroundColor: Colors.white,
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 12),
+              ),
+      ),
+
+      /// DARK OVERLAY
+      Container(
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(30),
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [
+              Colors.transparent,
+              Colors.black.withOpacity(.15),
+              Colors.black.withOpacity(.85),
+            ],
+          ),
+        ),
+      ),
+
+      /// MATCH SCORE
+      Positioned(
+        top: 20,
+        left: 20,
+        child: Container(
+          padding: const EdgeInsets.symmetric(
+            horizontal: 12,
+            vertical: 6,
+          ),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(30),
+            gradient: const LinearGradient(
+              colors: [
+                Color(0xFF6A1B9A),
+                Color(0xFFAD1457),
               ],
             ),
           ),
+          child: const Text(
+            "95% Match",
+            style: TextStyle(
+              color: Colors.white,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+        ),
+      ),
+
+      /// VERIFIED
+      Positioned(
+        top: 20,
+        right: 20,
+        child: Container(
+          padding: const EdgeInsets.all(10),
+          decoration: BoxDecoration(
+            color: Colors.white24,
+            borderRadius:
+                BorderRadius.circular(20),
+          ),
+          child: const Icon(
+            Icons.verified,
+            color: Colors.white,
+          ),
+        ),
+      ),
+
+      /// PROFILE DETAILS
+      Positioned(
+        left: 24,
+        right: 24,
+        bottom: 24,
+        child: Column(
+          crossAxisAlignment:
+              CrossAxisAlignment.start,
+          children: [
+
+            Text(
+              "${profile.userProfile.name ?? 'User'}, ${profile.userProfile.age ?? ''}",
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 30,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+
+            const SizedBox(height: 4),
+
+            Text(
+              profile.userProfile.occupation ??
+                  "Occupation not specified",
+              style: const TextStyle(
+                color: Colors.white70,
+                fontSize: 16,
+              ),
+            ),
+
+            const SizedBox(height: 8),
+
+            Row(
+              children: [
+                const Icon(
+                  Icons.location_on,
+                  color: Colors.white,
+                  size: 18,
+                ),
+                const SizedBox(width: 4),
+                Expanded(
+                  child: Text(
+                    profile.userProfile.city ??
+                        "Location not specified",
+                    style: const TextStyle(
+                      color: Colors.white,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+
+            const SizedBox(height: 18),
+
+            Row(
+              children: [
+
+                Expanded(
+                  child:
+                      ElevatedButton.icon(
+                    onPressed: () {},
+                    icon:
+                        const Icon(Icons.chat),
+                    label:
+                        const Text("Chat"),
+                    style:
+                        ElevatedButton.styleFrom(
+                      backgroundColor:
+                          const Color(
+                              0xFFAD1457),
+                      foregroundColor:
+                          Colors.white,
+                      minimumSize:
+                          const Size(
+                              0, 50),
+                      shape:
+                          RoundedRectangleBorder(
+                        borderRadius:
+                            BorderRadius.circular(
+                                16),
+                      ),
+                    ),
+                  ),
+                ),
+
+                const SizedBox(width: 12),
+
+                Expanded(
+                  child:
+                      OutlinedButton.icon(
+                    onPressed: () {},
+                    icon:
+                        const Icon(Icons.call),
+                    label:
+                        const Text("Call"),
+                    style:
+                        OutlinedButton.styleFrom(
+                      foregroundColor:
+                          Colors.white,
+                      side:
+                          const BorderSide(
+                        color:
+                            Colors.white,
+                      ),
+                      minimumSize:
+                          const Size(
+                              0, 50),
+                      shape:
+                          RoundedRectangleBorder(
+                        borderRadius:
+                            BorderRadius.circular(
+                                16),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    ],
+  ),
+),
 
 
           // Basic Info - NOW AS A GRID
-          _buildCharacteristicGrid(
-            'Basic Information',
-            [
-              MapEntry('Gender', profile.userProfile.gender),
-              MapEntry('Age', profile.userProfile.age?.toString()),
-              MapEntry('Occupation', profile.userProfile.occupation),
-              MapEntry('Religion', profile.userProfile.religion),
-              MapEntry('Current Location', profile.userProfile.city),
-              MapEntry('Desired City', profile.userProfile.city),
-              MapEntry('Area Pref.', profile.userProfile.city),
-              MapEntry('Move-in Date', profile.moveInDate != null
-                  ? DateFormat('dd/MM/yyyy').format(profile.moveInDate!)
-                  : null),
-              MapEntry('Budget Range', '₹${profile.budgetMin ?? 'N/A'} - ₹${profile.budgetMax ?? 'N/A'}'),
-              MapEntry('Bio', profile.userProfile.bio),
-            ],
+/// 👤 ABOUT ME
+_buildSection(
+  title: '👤 About Me',
+  children: [
+    _buildProfileField(
+      'Gender',
+      profile.userProfile.gender,
+      icon: Icons.person_outline,
+    ),
+    _buildProfileField(
+      'Age',
+      profile.userProfile.age?.toString(),
+      icon: Icons.cake_outlined,
+    ),
+    _buildProfileField(
+      'Occupation',
+      profile.userProfile.occupation,
+      icon: Icons.work_outline,
+    ),
+    _buildProfileField(
+      'Religion',
+      profile.userProfile.religion,
+      icon: Icons.temple_hindu_outlined,
+    ),
+    _buildProfileField(
+      'Current Location',
+      profile.userProfile.city,
+      icon: Icons.location_on_outlined,
+    ),
+    _buildProfileField(
+      'Move-in Date',
+      profile.moveInDate != null
+          ? DateFormat('dd/MM/yyyy')
+              .format(profile.moveInDate!)
+          : null,
+      icon: Icons.calendar_month_outlined,
+    ),
+  ],
+),
+
+/// 📝 BIO
+if (profile.userProfile.bio != null &&
+    profile.userProfile.bio!.isNotEmpty)
+  _buildSection(
+    title: '📝 About Me',
+    children: [
+      Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          borderRadius:
+              BorderRadius.circular(18),
+          color: Colors.white.withOpacity(.05),
+        ),
+        child: Text(
+          profile.userProfile.bio!,
+          style: const TextStyle(
+            color: Colors.white,
+            fontSize: 15,
+            height: 1.6,
           ),
+        ),
+      ),
+    ],
+  ),
 
-          // Habits
-          _buildCharacteristicGrid(
-            'Habits & Lifestyle',
-            [
-              MapEntry('Cleanliness', profile.userProfile.cleanlinessLevel),
-              MapEntry('Social Habits', profile.userProfile.socialPreferences),
-              MapEntry('Smoking Habits', profile.userProfile.smokingHabit),
-              MapEntry('Drinking Habits', profile.userProfile.drinkingHabit),
-              MapEntry('Food Preference', profile.userProfile.foodPreference),
-              MapEntry('Pet Ownership', profile.userProfile.petOwnership),
-              MapEntry('Pet Tolerance', profile.userProfile.petTolerance),
-            ],
-          ),
+/// 🏠 HOUSING PREFERENCES
+_buildSection(
+  title: '🏠 Housing Preferences',
+  children: [
+    _buildProfileField(
+      'Budget',
+      '₹${profile.budgetMin ?? 'N/A'} - ₹${profile.budgetMax ?? 'N/A'}',
+      icon: Icons.currency_rupee,
+    ),
+    _buildProfileField(
+      'Desired City',
+      profile.userProfile.city,
+      icon: Icons.location_city,
+    ),
+    _buildProfileField(
+      'Flat Type',
+      profile.preferredFlatType,
+      icon: Icons.apartment,
+    ),
+    _buildProfileField(
+      'Room Type',
+      profile.preferredRoomType,
+      icon: Icons.bed_outlined,
+    ),
+    _buildProfileField(
+      'Furnished',
+      profile.preferredFurnishedStatus,
+      icon: Icons.chair_outlined,
+    ),
+  ],
+),
 
-          // Preferences (using the new grid widget if there's a corresponding field)
-          _buildPreferenceGrid(
-            'Lifestyle Preferences',
-            // Replace with your actual profile field that holds lifestyle preferences
-            // For example: profile.lifestylePreferences ?? []
-            ['Night Owl', 'Early Bird', 'Studious', 'Fitness Freak', 'Sporty', 'Wanderer', 'Party Lover', 'Vegan', 'Music Lover'],
-          ),
+/// ✨ LIFESTYLE
+_buildProfileListField(
+  '✨ Lifestyle',
+  [
+    profile.userProfile.cleanlinessLevel ?? '',
+    profile.userProfile.socialPreferences ?? '',
+    profile.userProfile.smokingHabit ?? '',
+    profile.userProfile.drinkingHabit ?? '',
+    profile.userProfile.foodPreference ?? '',
+    profile.userProfile.petOwnership ?? '',
+    profile.userProfile.petTolerance ?? '',
+  ].where((e) => e.isNotEmpty).toList(),
+),
 
-          // Flat Requirements
-          _buildCharacteristicGrid(
-            'Flat Requirements',
-            [
-              MapEntry('Preferred Flat Type', profile.preferredFlatType),
-              MapEntry('Preferred Room Type', profile.preferredRoomType),
-              MapEntry('Furnished Status', profile.preferredFurnishedStatus),
-            ],
-          ),
-          // Amenities Desired - NOW AS A GRID
-          _buildCharacteristicGrid('Amenities Desired', _convertStringListToCharacteristicEntries(profile.amenitiesDesired)),
+/// 🏡 DESIRED AMENITIES
+_buildProfileListField(
+  '🏡 Desired Amenities',
+  profile.amenitiesDesired,
+),
 
+/// 🤝 IDEAL FLATMATE
+_buildSection(
+  title: '🤝 Ideal Flatmate',
+  children: [
+    _buildProfileField(
+      'Gender',
+      profile.preferredFlatmateGender,
+      icon: Icons.people_outline,
+    ),
+    _buildProfileField(
+      'Age Group',
+      profile.preferredFlatmateAge,
+      icon: Icons.cake_outlined,
+    ),
+    _buildProfileField(
+      'Occupation',
+      profile.preferredOccupation,
+      icon: Icons.work_outline,
+    ),
+  ],
+),
 
-          // Flatmate Preferences
-          _buildCharacteristicGrid(
-            'Flatmate Preferences',
-            [
-              MapEntry('Preferred Gender', profile.preferredFlatmateGender),
-              MapEntry('Preferred Age', profile.preferredFlatmateAge),
-              MapEntry('Preferred Occupation', profile.preferredOccupation),
-            ],
-          ),
-          // Preferred Habits - NOW AS A GRID
-          _buildCharacteristicGrid('Preferred Habits', _convertStringListToCharacteristicEntries(profile.preferredHabits)),
-          // Ideal Qualities - NOW AS A GRID
-          _buildCharacteristicGrid('Ideal Qualities', _convertStringListToCharacteristicEntries(profile.idealQualities)),
-          // Deal Breakers - NOW AS A GRID
-          _buildCharacteristicGrid('Deal Breakers', _convertStringListToCharacteristicEntries(profile.dealBreakers)),
+/// ⭐ PREFERRED HABITS
+_buildProfileListField(
+  '⭐ Preferred Habits',
+  profile.preferredHabits,
+),
 
+/// 💎 IDEAL QUALITIES
+_buildProfileListField(
+  '💎 Ideal Qualities',
+  profile.idealQualities,
+),
+
+/// 🚫 DEAL BREAKERS
+_buildProfileListField(
+  '🚫 Deal Breakers',
+  profile.dealBreakers,
+),
           // Profile Images (using the existing implementation)
           if (profile.imageUrls != null && profile.imageUrls!.isNotEmpty)
             _buildSection(
