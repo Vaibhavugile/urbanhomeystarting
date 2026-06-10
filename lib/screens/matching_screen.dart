@@ -12,6 +12,10 @@ import 'package:mytennat/screens/view_profile_screen.dart'; // Import ViewProfil
 import 'package:mytennat/screens/banner_popup_screen.dart'; // NEW: Import the banner popup screen
 import 'package:mytennat/screens/PlansScreen.dart';
 import 'package:mytennat/screens/ad_page.dart'; // NEW: Import the AdPage
+import 'package:mytennat/screens/matching/widgets/profile_card.dart';
+import 'package:mytennat/screens/matching/widgets/profile_list_item.dart';
+import 'package:mytennat/screens/matching/services/matching_service.dart';
+import 'package:mytennat/screens/matching/widgets/ad_panel.dart';
 
 // NEW: Enum to manage different view types
 enum _ViewType {
@@ -35,8 +39,11 @@ class MatchingScreen extends StatefulWidget {
 }
 
 class _MatchingScreenState extends State<MatchingScreen> {
+  
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final FirebaseAuth _auth = FirebaseAuth.instance;
+  final MatchingService _matchingService =
+    MatchingService(FirebaseFirestore.instance);
   User? _currentUser;
   List<dynamic> _profiles = [];
   int _currentIndex = 0;
@@ -877,87 +884,7 @@ class _MatchingScreenState extends State<MatchingScreen> {
       },
     );
   } // --- NEW: Ad Banner Widget ---
-  Widget _buildAdBanner(String title, String imageUrl) {
-    return Card(
-      elevation: 4.0,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-      child: InkWell(
-        onTap: () {
-          // Handle ad banner tap, e.g., navigate to a promotional page
-          print('Ad Banner Tapped: $title');
-          // In a real app, you'd use url_launcher package:
-          // import 'package:url_launcher/url_launcher.dart';
-          // launchUrl(Uri.parse('your_ad_link_here'));
-        },
-        child: Column(
-          children: [
-            ClipRRect(
-              borderRadius: const BorderRadius.vertical(top: Radius.circular(10)),
-              child: Image.network(
-                imageUrl,
-                fit: BoxFit.cover,
-                width: double.infinity,
-                height: 100, // Adjust height as needed for your ads
-                errorBuilder: (context, error, stackTrace) => const Center(child: Icon(Icons.broken_image, size: 50, color: Colors.grey)),
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: Text(
-                title,
-                textAlign: TextAlign.center,
-                style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  } // --- NEW: Ad Panel Widget ---
-  Widget _buildAdPanel(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.all(16.0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          const Text(
-            'Advertisements',
-            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-            textAlign: TextAlign.center,
-          ),
-          const SizedBox(height: 16),
-          // Ad Banner 1
-          _buildAdBanner(
-              'Ad 1: Exclusive Deals!', 'https://via.placeholder.com/300x150/FF0000/FFFFFF?text=Ad+1'),
-          const SizedBox(height: 16),
-          // Ad Banner 2
-          _buildAdBanner(
-              'Ad 2: Find Your Dream Flat!', 'https://firebasestorage.googleapis.com/v0/b/renting-wala-27d06.appspot.com/o/products%2F4444%2FIMG-20250516-WA0065.jpg?alt=media&token=edb3308a-cd11-4d39-a1a1-5026188fe1d6'),
-          const SizedBox(height: 16),
-          // Ad Banner 3
-          _buildAdBanner(
-              'Ad 3: Premium Features!', 'https://via.placeholder.com/300x150/0000FF/FFFFFF?text=Ad+3'),
-          const SizedBox(height: 24),
-          // Button to navigate to a dedicated Ad Page
-          ElevatedButton(
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => const AdPage()),
-              );
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFFAD1457), // Changed from Colors.blueAccent
-              foregroundColor: Colors.white,
-              padding: const EdgeInsets.symmetric(vertical: 12),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-            ),
-            child: const Text('View All Ads', style: TextStyle(fontSize: 16)),
-          ),
-        ],
-      ),
-    );
-  }
+
   // This function is for creating a match document and a chat room
   Future<void> _createMatchAndChatRoom(
       String user1Uid,
@@ -1139,50 +1066,20 @@ class _MatchingScreenState extends State<MatchingScreen> {
           profileImageUrl = profile.imageUrls!.first;
         }
 
-        return Card(
-          elevation: 4.0,
-          margin: const EdgeInsets.symmetric(horizontal: 10.0, vertical: 6.0),
-          clipBehavior: Clip.antiAlias, // Ensures gradient respects card shape
-          child: Container( // Wrap ListTile in Container for gradient
-            decoration: const BoxDecoration(
-              gradient: LinearGradient(
-                colors: [Color(0xFF6A1B9A), Color(0xFFAD1457)], // Gradient for the card
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-              ),
-            ),
-            child: ListTile(
-              contentPadding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 10.0),
-              leading: CircleAvatar(
-                backgroundColor: Colors.white, // White background for avatar
-                backgroundImage: profileImageUrl != null ? NetworkImage(profileImageUrl) : null,
-                child: profileImageUrl == null ? const Icon(Icons.person, color: Color(0xFFAD1457)) : null, // Icon color
-                radius: 25,
-              ),
-              title: Text(
-                profileName,
-                style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.white), // White text
-              ),
-              subtitle: Text(
-                _getProfileTypeDisplay(profile),
-                style: const TextStyle(color: Colors.white70), // Lighter white for subtitle
-              ),
-              trailing: const Icon(Icons.arrow_forward_ios, size: 16, color: Colors.white), // White icon
-              onTap: () {
-                // Navigate to the full profile view
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => ViewProfileScreen(
-                      userId: profile.uid,
-                      profileDocumentId: profile.documentId!,
-                    ),
-                  ),
-                );
-              },
-            ),
-          ),
-        );
+       return ProfileListItem(
+  profile: profile,
+  onTap: () {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => ViewProfileScreen(
+          userId: profile.uid,
+          profileDocumentId: profile.documentId!,
+        ),
+      ),
+    );
+  },
+);
       },
     );
   }
@@ -1252,10 +1149,19 @@ class _MatchingScreenState extends State<MatchingScreen> {
                     ),
                   );
                 },
-                child: _buildProfileCard( // This method now handles the gradient
-                  profile,
-                  _userProfileType!,
-                ),
+              child: ProfileCard(
+  profile: profile,
+  onLike: () {
+    _handleProfileDismissed(
+      DismissDirection.startToEnd,
+    );
+  },
+  onPass: () {
+    _handleProfileDismissed(
+      DismissDirection.endToStart,
+    );
+  },
+),
               ),
             ),
           ),
@@ -1264,138 +1170,7 @@ class _MatchingScreenState extends State<MatchingScreen> {
     );
   }
 
-// NEW: ProfileCard widget implementation with gradient
-  Widget _buildProfileCard(dynamic profile, String userProfileType) {
-    String profileName = '';
-    String? imageUrl;
-    String profileType = 'Unknown';
-    String description = 'No details available.';
 
-    if (profile is FlatListingProfile) {
-      profileName = profile.userProfile.name ?? 'Flat Owner';
-      profileType = 'Flat Listing';
-      description = '${profile.rentPrice ?? 'N/A'} / month in ${profile.userProfile.city ?? 'N/A'}';
-      if (profile.imageUrls != null && profile.imageUrls!.isNotEmpty) {
-        imageUrl = profile.imageUrls!.first;
-      }
-    } else if (profile is SeekingFlatmateProfile) {
-      profileName = profile.userProfile.name ?? 'Flatmate Seeker';
-      profileType = 'Seeking Flatmate';
-      description = 'Budget up to ${profile.budgetMax ?? 'N/A'}';
-      if (profile.imageUrls != null && profile.imageUrls!.isNotEmpty) {
-        imageUrl = profile.imageUrls!.first;
-      }
-    }
-
-    return Container(
-      height: MediaQuery.of(context).size.height * 0.7, // Set a height relative to the screen size
-      child: Card(
-        elevation: 8,
-        margin: const EdgeInsets.all(16),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(20),
-        ),
-        clipBehavior: Clip.antiAlias, // Important for gradient to follow rounded corners
-        child: Container( // This Container will hold the gradient
-          decoration: const BoxDecoration(
-            gradient: LinearGradient(
-              colors: [Color(0xFF6A1B9A), Color(0xFFAD1457)], // Gradient for the card
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-            ),
-          ),
-          child: Column(
-            children: [
-              if (imageUrl != null)
-                Expanded(
-                  child: Image.network(
-                    imageUrl,
-                    fit: BoxFit.cover,
-                    width: double.infinity,
-                    errorBuilder: (context, error, stackTrace) =>
-                    const Center(child: Icon(Icons.person, size: 150, color: Colors.white)), // Icon on gradient bg
-                  ),
-                )
-              else
-                const Expanded(
-                  child: Center(child: Icon(Icons.person, size: 150, color: Colors.white)), // Icon on gradient bg
-                ),
-              Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      profileName,
-                      style: const TextStyle(
-                        fontSize: 24,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white, // White text on gradient
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      profileType,
-                      style: const TextStyle(
-                        fontSize: 18,
-                        color: Colors.white70, // Lighter white on gradient
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      description,
-                      style: const TextStyle(
-                        fontSize: 16,
-                        color: Colors.white70, // Lighter white on gradient
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                      children: [
-                         // Ensure these buttons also have appropriate colors
-                        _buildPassButton(),
-                        _buildLikeButton(),// for contrast on the gradient background
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  // These are placeholder button widgets for the ProfileCard
-  Widget _buildLikeButton() {
-    return ElevatedButton(
-      onPressed: () {
-        _handleProfileDismissed(DismissDirection.startToEnd);
-      },
-      child: const Icon(Icons.favorite, color: Colors.white),
-      style: ElevatedButton.styleFrom(
-        backgroundColor: Colors.green,
-        shape: const CircleBorder(),
-        padding: const EdgeInsets.all(16),
-      ),
-    );
-  }
-
-  Widget _buildPassButton() {
-    return ElevatedButton(
-      onPressed: () {
-        _handleProfileDismissed(DismissDirection.endToStart);
-      },
-      child: const Icon(Icons.close, color: Colors.white),
-      style: ElevatedButton.styleFrom(
-        backgroundColor: Colors.red,
-        shape: const CircleBorder(),
-        padding: const EdgeInsets.all(16),
-      ),
-    );
-  }
 
   @override
   Widget build(BuildContext context) {
