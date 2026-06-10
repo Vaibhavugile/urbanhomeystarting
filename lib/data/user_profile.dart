@@ -64,14 +64,30 @@ class UserProfile {
       imageUrls: (data['imageUrls'] as List<dynamic>?)?.map((e) => e.toString()).toList(), // Potentially redundant
 
       // Habits
-      smokingHabit: habitsData['smoking'] as String?,
-      drinkingHabit: habitsData['drinking'] as String?,
-      foodPreference: habitsData['food'] as String?,
-      cleanlinessLevel: habitsData['cleanliness'] as String?,
-      socialPreferences: habitsData['socialPreferences'] as String?,
-      petOwnership: habitsData['petOwnership'] as String?,
-      petTolerance: habitsData['petTolerance'] as String?,
-      guestsFrequency: habitsData['guestsFrequency'] as String?,
+      // Habits
+smokingHabit: (data['smokingHabit'] ??
+        habitsData['smoking']) as String?,
+
+drinkingHabit: (data['drinkingHabit'] ??
+        habitsData['drinking']) as String?,
+
+foodPreference: (data['foodPreference'] ??
+        habitsData['food']) as String?,
+
+cleanlinessLevel: (data['cleanlinessLevel'] ??
+        habitsData['cleanliness']) as String?,
+
+socialPreferences: (data['socialPreferences'] ??
+        habitsData['socialPreferences']) as String?,
+
+petOwnership: (data['petOwnership'] ??
+        habitsData['petOwnership']) as String?,
+
+petTolerance: (data['petTolerance'] ??
+        habitsData['petTolerance']) as String?,
+
+guestsFrequency: (data['guestsFrequency'] ??
+        habitsData['guestsFrequency']) as String?,
     );
   }
 

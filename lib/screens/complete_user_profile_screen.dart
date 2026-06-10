@@ -142,18 +142,21 @@ class _CompleteUserProfileScreenState extends State<CompleteUserProfileScreen> {
 
     try {
       final Map<String, dynamic> data = {
-        'occupation': _occupation,
-        'religion': _religion,
-        'bio': _bio,
-        'smokingHabit': _smokingHabit,
-        'drinkingHabit': _drinkingHabit,
-        'foodPreference': _foodPreference,
-        'cleanlinessLevel': _cleanlinessLevel,
-        'socialPreferences': _socialPreferences,
-        'petOwnership': _petOwnership,
-        'petTolerance': _petTolerance,
-        'guestsFrequency': _guestsFrequency,
-      };
+  'occupation': _occupation,
+  'religion': _religion,
+  'bio': _bio,
+
+  'habits': {
+    'smoking': _smokingHabit,
+    'drinking': _drinkingHabit,
+    'food': _foodPreference,
+    'cleanliness': _cleanlinessLevel,
+    'socialPreferences': _socialPreferences,
+    'petOwnership': _petOwnership,
+    'petTolerance': _petTolerance,
+    'guestsFrequency': _guestsFrequency,
+  },
+};
 
       await FirebaseFirestore.instance.collection('users').doc(user.uid).set(data, SetOptions(merge: true));
 

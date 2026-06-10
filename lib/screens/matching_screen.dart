@@ -1179,7 +1179,7 @@ class _MatchingScreenState extends State<MatchingScreen> {
     return Scaffold(
       key: _scaffoldKey, // Assign the key to Scaffold
       appBar: AppBar(
-        title: const Text('MyTennant Matching', style: TextStyle(color: Colors.white)),
+        title: const Text('UrbanHomey Matching', style: TextStyle(color: Colors.white)),
         // Changed to a consistent gradient background
         flexibleSpace: Container(
           decoration: const BoxDecoration(
