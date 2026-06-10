@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 import 'package:mytennat/screens/flatmate_profile_screen.dart';
 import 'package:mytennat/screens/flat_with_flatmate_profile_screen.dart';
@@ -20,6 +19,9 @@ class ProfileListItem extends StatelessWidget {
     String occupation = '';
     String age = '';
     String budgetText = '';
+    String propertyInfo = '';
+    String lifestyle = '';
+    String badgeText = '';
     String? imageUrl;
 
     List<String> tags = [];
@@ -31,6 +33,14 @@ class ProfileListItem extends StatelessWidget {
       age = profile.userProfile.age?.toString() ?? '';
 
       budgetText = '₹${profile.rentPrice ?? 0}/month';
+
+      propertyInfo =
+          '${profile.flatType ?? ''} • ${profile.furnishedStatus ?? ''}';
+
+      lifestyle =
+          profile.userProfile.cleanlinessLevel ?? '';
+
+      badgeText = '🏠 Flat Available';
 
       if (profile.amenities != null) {
         tags = List<String>.from(profile.amenities);
@@ -51,6 +61,14 @@ class ProfileListItem extends StatelessWidget {
       budgetText =
           '₹${profile.budgetMin ?? 0} - ₹${profile.budgetMax ?? 0}';
 
+      propertyInfo =
+          '${profile.preferredFlatType ?? ''} • ${profile.preferredRoomType ?? ''}';
+
+      lifestyle =
+          profile.userProfile.drinkingHabit ?? '';
+
+      badgeText = '🔍 Looking For Flat';
+
       try {
         tags = List<String>.from(
           profile.flatmatePreferences.preferredHabits ?? [],
@@ -63,198 +81,455 @@ class ProfileListItem extends StatelessWidget {
       }
     }
 
-    
-return Container(
-  margin: const EdgeInsets.symmetric(
-    horizontal: 12,
-    vertical: 6,
-  ),
-  child: Material(
-    borderRadius: BorderRadius.circular(18),
-    elevation: 4,
-    child: InkWell(
-      borderRadius: BorderRadius.circular(18),
-      onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.all(12),
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(18),
-          gradient: const LinearGradient(
-            colors: [
-              Color(0xFF6A1B9A),
-              Color(0xFFAD1457),
-            ],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-          ),
-        ),
-        child: Row(
-          children: [
-            Hero(
-              tag: 'profile_${name}_$city',
-              child: CircleAvatar(
-                radius: 35,
-                backgroundColor: Colors.white,
-                backgroundImage: imageUrl != null
-                    ? NetworkImage(imageUrl)
-                    : null,
-                child: imageUrl == null
-                    ? const Icon(
-                        Icons.person,
-                        size: 35,
-                        color: Color(0xFFAD1457),
-                      )
-                    : null,
+    return Container(
+      margin: const EdgeInsets.symmetric(
+        horizontal: 16,
+        vertical: 8,
+      ),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(28),
+        onTap: onTap,
+        child: Container(
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(28),
+            gradient: const LinearGradient(
+  begin: Alignment.topLeft,
+  end: Alignment.bottomRight,
+  colors: [
+    Color(0xFF6A1B9A),
+    Color(0xFF8E24AA),
+    Color(0xFFAD1457),
+  ],
+),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(.25),
+                blurRadius: 18,
+                offset: const Offset(0, 10),
               ),
-            ),
+            ],
+          ),
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Row(
+              crossAxisAlignment:
+                  CrossAxisAlignment.start,
+              children: [
 
-            const SizedBox(width: 12),
-
-            Expanded(
-              child: Column(
-                crossAxisAlignment:
-                    CrossAxisAlignment.start,
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Row(
-                    children: [
-                      Expanded(
-                        child: Text(
-                          age.isNotEmpty
-                              ? '$name, $age'
-                              : name,
-                          maxLines: 1,
-                          overflow:
-                              TextOverflow.ellipsis,
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 18,
-                            fontWeight:
-                                FontWeight.bold,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-
-                  const SizedBox(height: 4),
-
-                  Row(
-                    children: [
-                      const Icon(
-                        Icons.location_on,
-                        color: Colors.white70,
-                        size: 14,
-                      ),
-                      const SizedBox(width: 4),
-                      Expanded(
-                        child: Text(
-                          city,
-                          maxLines: 1,
-                          overflow:
-                              TextOverflow.ellipsis,
-                          style: const TextStyle(
-                            color: Colors.white70,
-                            fontSize: 13,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-
-                  const SizedBox(height: 4),
-
-                  Text(
-                    occupation,
-                    maxLines: 1,
-                    overflow:
-                        TextOverflow.ellipsis,
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 13,
-                    ),
-                  ),
-
-                  const SizedBox(height: 6),
-
-                  Row(
-                    children: [
-                      Container(
-                        padding:
-                            const EdgeInsets.symmetric(
-                          horizontal: 8,
-                          vertical: 4,
-                        ),
+                /// PROFILE IMAGE
+                Stack(
+                  children: [
+                    Hero(
+                      tag: 'profile_$name$city',
+                      child: Container(
+                        width: 88,
+                        height: 88,
                         decoration: BoxDecoration(
-                          color: Colors.white24,
-                          borderRadius:
-                              BorderRadius.circular(
-                                  20),
+                          shape: BoxShape.circle,
+                          border: Border.all(
+                            color: Colors.white24,
+                            width: 2,
+                          ),
                         ),
-                        child: Text(
-                          budgetText,
-                          style: const TextStyle(
+                        child: ClipOval(
+                          child: imageUrl != null
+                              ? Image.network(
+                                  imageUrl,
+                                  fit: BoxFit.cover,
+                                )
+                              : Container(
+                                  color: Colors.white10,
+                                  child: const Icon(
+                                    Icons.person,
+                                    color: Colors.white,
+                                    size: 42,
+                                  ),
+                                ),
+                        ),
+                      ),
+                    ),
+
+                    Positioned(
+                      bottom: 4,
+                      right: 4,
+                      child: Container(
+                        width: 16,
+                        height: 16,
+                        decoration: BoxDecoration(
+                          color: Colors.green,
+                          shape: BoxShape.circle,
+                          border: Border.all(
                             color: Colors.white,
-                            fontSize: 11,
-                            fontWeight:
-                                FontWeight.bold,
+                            width: 2,
                           ),
                         ),
                       ),
+                    ),
+                  ],
+                ),
 
-                      const SizedBox(width: 6),
+                const SizedBox(width: 14),
 
-                      if (tags.isNotEmpty)
-                        Container(
-                          padding:
-                              const EdgeInsets.symmetric(
-                            horizontal: 8,
-                            vertical: 4,
-                          ),
-                          decoration: BoxDecoration(
-                            color: Colors.white12,
-                            borderRadius:
-                                BorderRadius.circular(
-                                    20),
-                          ),
-                          child: Text(
-                            tags.first,
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 11,
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment:
+                        CrossAxisAlignment.start,
+                    children: [
+
+                      /// NAME
+                      Row(
+                        children: [
+                          Expanded(
+                            child: Text(
+                              age.isNotEmpty
+                                  ? '$name, $age'
+                                  : name,
+                              maxLines: 1,
+                              overflow:
+                                  TextOverflow.ellipsis,
+                              style:
+                                  const TextStyle(
+                                color: Colors.white,
+                                fontSize: 20,
+                                fontWeight:
+                                    FontWeight.w700,
+                              ),
                             ),
                           ),
+
+                          Container(
+                            padding:
+                                const EdgeInsets
+                                    .symmetric(
+                              horizontal: 10,
+                              vertical: 5,
+                            ),
+                            decoration:
+                                BoxDecoration(
+                              color:
+                                  Colors.greenAccent
+                                      .withOpacity(
+                                          .15),
+                              borderRadius:
+                                  BorderRadius
+                                      .circular(
+                                          20),
+                            ),
+                            child: const Text(
+                              "92% Match",
+                              style: TextStyle(
+                                color: Colors.greenAccent,
+                                fontSize: 11,
+                                fontWeight:
+                                    FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+
+                      const SizedBox(height: 6),
+
+                      /// VERIFIED + BADGE
+                      Wrap(
+                        spacing: 8,
+                        runSpacing: 8,
+                        children: [
+                          _chip(
+                            Icons.verified,
+                            "Verified",
+                            Colors.blue,
+                          ),
+                          _textChip(
+                            badgeText,
+                          ),
+                        ],
+                      ),
+
+                      const SizedBox(height: 10),
+
+                      /// LOCATION
+                      Row(
+                        children: [
+                          const Icon(
+                            Icons.location_on,
+                            color: Colors.white70,
+                            size: 15,
+                          ),
+                          const SizedBox(width: 4),
+                          Expanded(
+                            child: Text(
+                              city,
+                              style:
+                                  const TextStyle(
+                                color:
+                                    Colors.white70,
+                                fontSize: 13,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+
+                      const SizedBox(height: 6),
+
+                      /// OCCUPATION
+                      Row(
+                        children: [
+                          const Icon(
+                            Icons.work_outline,
+                            size: 15,
+                            color: Colors.white70,
+                          ),
+                          const SizedBox(width: 4),
+                          Expanded(
+                            child: Text(
+                              occupation,
+                              maxLines: 1,
+                              overflow:
+                                  TextOverflow
+                                      .ellipsis,
+                              style:
+                                  const TextStyle(
+                                color: Colors.white,
+                                fontSize: 13,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+
+                      const SizedBox(height: 10),
+
+                      /// PROPERTY
+                      Container(
+                        padding:
+                            const EdgeInsets
+                                .symmetric(
+                          horizontal: 10,
+                          vertical: 6,
+                        ),
+                        decoration:
+                            BoxDecoration(
+                          color:
+                              Colors.white10,
+                          borderRadius:
+                              BorderRadius
+                                  .circular(
+                                      14),
+                        ),
+                        child: Text(
+                          propertyInfo,
+                          style:
+                              const TextStyle(
+                            color:
+                                Colors.white,
+                            fontSize: 12,
+                          ),
+                        ),
+                      ),
+
+                      const SizedBox(height: 10),
+
+                      Row(
+                        children: [
+
+                          /// BUDGET
+                          Container(
+                            padding:
+                                const EdgeInsets
+                                    .symmetric(
+                              horizontal: 10,
+                              vertical: 6,
+                            ),
+                            decoration:
+                                BoxDecoration(
+                              color:
+                                  Colors.deepPurple,
+                              borderRadius:
+                                  BorderRadius
+                                      .circular(
+                                          30),
+                            ),
+                            child: Text(
+                              budgetText,
+                              style:
+                                  const TextStyle(
+                                color:
+                                    Colors.white,
+                                fontSize: 12,
+                                fontWeight:
+                                    FontWeight
+                                        .bold,
+                              ),
+                            ),
+                          ),
+
+                          const SizedBox(width: 8),
+
+                          if (lifestyle
+                              .isNotEmpty)
+                            Container(
+                              padding:
+                                  const EdgeInsets
+                                      .symmetric(
+                                horizontal: 10,
+                                vertical: 6,
+                              ),
+                              decoration:
+                                  BoxDecoration(
+                                color:
+                                    Colors.white12,
+                                borderRadius:
+                                    BorderRadius
+                                        .circular(
+                                            30),
+                              ),
+                              child: Text(
+                                lifestyle,
+                                style:
+                                    const TextStyle(
+                                  color:
+                                      Colors.white,
+                                  fontSize: 12,
+                                ),
+                              ),
+                            ),
+                        ],
+                      ),
+
+                      if (tags.isNotEmpty)
+                        Padding(
+                          padding:
+                              const EdgeInsets
+                                  .only(
+                                      top: 12),
+                          child: Wrap(
+                            spacing: 6,
+                            runSpacing: 6,
+                            children: tags
+                                .take(3)
+                                .map(
+                                  (e) =>
+                                      Container(
+                                    padding:
+                                        const EdgeInsets
+                                            .symmetric(
+                                      horizontal:
+                                          10,
+                                      vertical:
+                                          5,
+                                    ),
+                                    decoration:
+                                        BoxDecoration(
+                                      color: Colors
+                                          .white10,
+                                      borderRadius:
+                                          BorderRadius.circular(
+                                              20),
+                                    ),
+                                    child: Text(
+                                      e,
+                                      style:
+                                          const TextStyle(
+                                        color: Colors
+                                            .white70,
+                                        fontSize:
+                                            11,
+                                      ),
+                                    ),
+                                  ),
+                                )
+                                .toList(),
+                          ),
                         ),
                     ],
                   ),
-                ],
-              ),
-            ),
+                ),
 
-            const SizedBox(width: 8),
+                const SizedBox(width: 10),
 
-            Container(
-              width: 36,
-              height: 36,
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius:
-                    BorderRadius.circular(10),
-              ),
-              child: const Icon(
-                Icons.arrow_forward_ios,
-                size: 16,
-                color: Color(0xFFAD1457),
-              ),
+                /// ARROW
+                Container(
+                  width: 48,
+                  height: 48,
+                  decoration:
+                      const BoxDecoration(
+                    shape: BoxShape.circle,
+                    gradient:
+                        LinearGradient(
+                      colors: [
+                        Color(0xFFFF4081),
+                        Color(0xFFE91E63),
+                      ],
+                    ),
+                  ),
+                  child: const Icon(
+                    Icons.arrow_forward_ios,
+                    color: Colors.white,
+                    size: 18,
+                  ),
+                ),
+              ],
             ),
-          ],
+          ),
         ),
       ),
-    ),
-  ),
-);
+    );
+  }
 
+  static Widget _chip(
+    IconData icon,
+    String text,
+    Color color,
+  ) {
+    return Container(
+      padding: const EdgeInsets.symmetric(
+        horizontal: 8,
+        vertical: 4,
+      ),
+      decoration: BoxDecoration(
+        color: Colors.white10,
+        borderRadius:
+            BorderRadius.circular(20),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon,
+              color: color, size: 14),
+          const SizedBox(width: 4),
+          Text(
+            text,
+            style: const TextStyle(
+              color: Colors.white,
+              fontSize: 11,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 
+  static Widget _textChip(String text) {
+    return Container(
+      padding: const EdgeInsets.symmetric(
+        horizontal: 8,
+        vertical: 4,
+      ),
+      decoration: BoxDecoration(
+        color: Colors.orange.withOpacity(.2),
+        borderRadius:
+            BorderRadius.circular(20),
+      ),
+      child: Text(
+        text,
+        style: const TextStyle(
+          color: Colors.white,
+          fontSize: 11,
+          fontWeight: FontWeight.w600,
+        ),
+      ),
+    );
   }
 }
-

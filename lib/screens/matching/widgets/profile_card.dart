@@ -44,7 +44,11 @@ String preferredOccupation = '';
 String moveInDateText = '';
 String preferredGender = '';
 String preferredAge = '';
+String preferredFlatType = '';
+String preferredRoomType = '';
+String preferredFurnishedStatus = '';
 
+List<String> desiredAmenities = [];
 String bio = '';
 
 List<String> tags = [];
@@ -150,11 +154,23 @@ if (profile is SeekingFlatmateProfile) {
 
   socialPreference =
       profile.userProfile.socialPreferences ?? '';
+      preferredFlatType =
+    profile.preferredFlatType ?? '';
+
+preferredRoomType =
+    profile.preferredRoomType ?? '';
+
+preferredFurnishedStatus =
+    profile.preferredFurnishedStatus ?? '';
+preferredOccupation =
+    profile.preferredOccupation ?? '';
+
+desiredAmenities = List<String>.from(
+  profile.amenitiesDesired ?? [],
+);
 
   try {
-    propertyText =
-        '${profile.flatRequirements.preferredFlatType ?? ''} • '
-        '${profile.flatRequirements.preferredFurnishedStatus ?? ''}';
+   propertyText = preferredFlatType;
 
     preferredGender =
         profile.flatmatePreferences
@@ -182,6 +198,12 @@ if (profile is SeekingFlatmateProfile) {
       profile.imageUrls!.isNotEmpty) {
     imageUrl = profile.imageUrls!.first;
   }
+  print("===== SEEKING PROFILE =====");
+print(profile.preferredFlatType);
+print(profile.preferredRoomType);
+print(profile.preferredFurnishedStatus);
+print(profile.preferredFlatmateGender);
+print(profile.preferredFlatmateAge);
 }
     return Container(
       height: MediaQuery.of(context).size.height * 0.82,
@@ -418,49 +440,64 @@ Text(
 ),
 
 const SizedBox(height: 8),
-
-
-      Wrap(
+Wrap(
   spacing: 8,
   runSpacing: 8,
   children: [
 
-    if (propertyText.isNotEmpty)
-      _buildChip(
-        Icons.home,
-        propertyText,
-      ),
+    if (profile is FlatListingProfile) ...[
 
-    if (bathroomType.isNotEmpty)
-      _buildChip(
-        Icons.bathtub,
-        bathroomType,
-      ),
+      if (propertyText.isNotEmpty)
+        _buildChip(
+          Icons.home,
+          propertyText,
+        ),
 
+      if (bathroomType.isNotEmpty)
+        _buildChip(
+          Icons.bathtub,
+          bathroomType,
+        ),
 
-    // if (preferredGender.isNotEmpty)
-    //   _buildChip(
-    //     Icons.person_outline,
-    //     preferredGender,
-    //   ),
+      if (religion.isNotEmpty)
+        _buildChip(
+          Icons.temple_hindu,
+          religion,
+        ),
+    ],
 
-    // if (preferredAge.isNotEmpty)
-    //   _buildChip(
-    //     Icons.cake,
-    //     preferredAge,
-    //   ),
+    if (profile is SeekingFlatmateProfile) ...[
 
-    if (moveInDateText.isNotEmpty)
-      _buildChip(
-        Icons.calendar_month,
-        moveInDateText,
-      ),
+      if (preferredFlatType.isNotEmpty)
+        _buildChip(
+          Icons.home_work,
+          preferredFlatType,
+        ),
 
-    if (religion.isNotEmpty)
-      _buildChip(
-        Icons.temple_hindu,
-        religion,
-      ),
+      if (preferredRoomType.isNotEmpty)
+        _buildChip(
+          Icons.bed,
+          preferredRoomType,
+        ),
+
+      if (preferredFurnishedStatus.isNotEmpty)
+        _buildChip(
+          Icons.chair,
+          preferredFurnishedStatus,
+        ),
+
+      if (moveInDateText.isNotEmpty)
+        _buildChip(
+          Icons.calendar_month,
+          moveInDateText,
+        ),
+
+      if (religion.isNotEmpty)
+        _buildChip(
+          Icons.temple_hindu,
+          religion,
+        ),
+    ],
   ],
 ),
 const SizedBox(height: 12),
@@ -500,8 +537,31 @@ Wrap(
       _tagChip('🎉 $socialPreference'),
   ],
 ),
+
+if (profile is SeekingFlatmateProfile) ...[
+
 const SizedBox(height: 12),
 
+const Text(
+  'Preferred Amenities',
+  style: TextStyle(
+    color: Colors.white,
+    fontSize: 15,
+    fontWeight: FontWeight.bold,
+  ),
+),
+
+const SizedBox(height: 8),
+
+Wrap(
+  spacing: 8,
+  runSpacing: 8,
+  children: desiredAmenities.map((e) {
+    return _tagChip('🏠 $e');
+  }).toList(),
+),
+],
+const SizedBox(height: 12),
 const Text(
   'Looking For',
   style: TextStyle(
