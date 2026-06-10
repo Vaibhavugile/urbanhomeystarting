@@ -100,8 +100,14 @@ class FlatListingProfile {
     // Add this print statement to see the raw data being processed
     print('Document ID: $documentId, Raw Data: $data');
 
-    Map<String, dynamic> flatDetails = data['flatDetails'] ?? {};
-    Map<String, dynamic> flatmatePreferences = data['flatmatePreferences'] ?? {};
+    Map<String, dynamic> flatmatePreferences = {
+  'preferredFlatmateGender': data['preferredFlatmateGender'],
+  'preferredFlatmateAge': data['preferredFlatmateAge'],
+  'preferredOccupation': data['preferredOccupation'],
+  'preferredHabits': data['preferredHabits'],
+  'idealQualities': data['idealQualities'],
+  'dealBreakers': data['dealBreakers'],
+};
     final Map<String, dynamic>? userProfileData = data['userProfile'] as Map<String, dynamic>?;
 
     // Add this print statement to see the userProfileData specifically
@@ -116,28 +122,32 @@ class FlatListingProfile {
       documentId: documentId,
       uid: data['uid'] as String? ?? '', // Added null-aware operator for safety
       userProfile: profile, // Use the safely created profile object
-      flatType: flatDetails['flatType'] ?? '',
-      roomType: flatDetails['roomType'] ?? '',
-      furnishedStatus: flatDetails['furnishedStatus'] ?? '',
-      availableFor: flatDetails['availableFor'] ?? '',
-      availabilityDate: (flatDetails['availabilityDate'] is Timestamp)
-          ? (flatDetails['availabilityDate'] as Timestamp).toDate()
-          : null,
-      rentPrice: flatDetails['rentPrice'] is int
-          ? flatDetails['rentPrice']
-          : (flatDetails['rentPrice'] is String
-          ? int.tryParse(flatDetails['rentPrice'])
-          : null),
-      depositAmount: flatDetails['depositAmount'] is int
-          ? flatDetails['depositAmount']
-          : (flatDetails['depositAmount'] is String
-          ? int.tryParse(flatDetails['depositAmount'])
-          : null),
-      bathroomType: flatDetails['bathroomType'] ?? '',
-      amenities: List<String>.from(flatDetails['amenities'] ?? []),
-      address: flatDetails['address'] ?? '',
-      landmark: flatDetails['landmark'] ?? '',
-      flatDescription: flatDetails['description'] ?? '',
+     flatType: data['flatType'] ?? '',
+roomType: data['roomType'] ?? '',
+furnishedStatus: data['furnishedStatus'] ?? '',
+availableFor: data['availableFor'] ?? '',
+
+availabilityDate: data['availabilityDate'] is Timestamp
+    ? (data['availabilityDate'] as Timestamp).toDate()
+    : null,
+
+rentPrice: data['rentPrice'] is int
+    ? data['rentPrice']
+    : int.tryParse(data['rentPrice']?.toString() ?? ''),
+
+depositAmount: data['depositAmount'] is int
+    ? data['depositAmount']
+    : int.tryParse(data['depositAmount']?.toString() ?? ''),
+
+bathroomType: data['bathroomType'] ?? '',
+
+amenities: List<String>.from(data['amenities'] ?? []),
+
+address: data['address'] ?? '',
+
+landmark: data['landmark'] ?? '',
+
+flatDescription: data['flatDescription'] ?? '',
       preferredGender: flatmatePreferences['preferredFlatmateGender'] ?? '',
       preferredAgeGroup: flatmatePreferences['preferredFlatmateAge'] ?? '',
       preferredOccupation: flatmatePreferences['preferredOccupation'] ?? '',
@@ -1699,7 +1709,8 @@ class _FlatmateProfileScreenState extends State<FlatmateProfileScreen> {
         landmark: _landmarkController.text,
         flatDescription: _flatDescriptionController.text,
         flatType: _flatListingProfile.flatType,
-        roomType: _flatListingProfile.bathroomType,
+        roomType: _flatListingProfile.roomType,
+        bathroomType: _flatListingProfile.bathroomType,
         furnishedStatus: _flatListingProfile.furnishedStatus,
         availableFor: _flatListingProfile.availableFor,
         preferredGender: _flatListingProfile.preferredGender,

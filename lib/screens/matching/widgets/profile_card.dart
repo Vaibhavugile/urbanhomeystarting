@@ -40,7 +40,7 @@ String socialPreference = '';
 
 String bathroomType = '';
 String availableFor = '';
-
+String preferredOccupation = '';
 String moveInDateText = '';
 String preferredGender = '';
 String preferredAge = '';
@@ -55,7 +55,12 @@ if (profile is FlatListingProfile) {
   age = profile.userProfile.age?.toString() ?? '';
   occupation = profile.userProfile.occupation ?? '';
   bio = profile.userProfile.bio ?? '';
-
+  preferredOccupation =
+    profile.preferredOccupation ?? '';
+preferredGender =
+    profile.preferredGender ?? '';
+    preferredAge =
+    profile.preferredAgeGroup ?? '';
   budgetText = '₹${profile.rentPrice ?? 0}/month';
 
   propertyText =
@@ -432,23 +437,18 @@ const SizedBox(height: 8),
         bathroomType,
       ),
 
-    if (availableFor.isNotEmpty)
-      _buildChip(
-        Icons.group,
-        availableFor,
-      ),
 
-    if (preferredGender.isNotEmpty)
-      _buildChip(
-        Icons.person_outline,
-        preferredGender,
-      ),
+    // if (preferredGender.isNotEmpty)
+    //   _buildChip(
+    //     Icons.person_outline,
+    //     preferredGender,
+    //   ),
 
-    if (preferredAge.isNotEmpty)
-      _buildChip(
-        Icons.cake,
-        preferredAge,
-      ),
+    // if (preferredAge.isNotEmpty)
+    //   _buildChip(
+    //     Icons.cake,
+    //     preferredAge,
+    //   ),
 
     if (moveInDateText.isNotEmpty)
       _buildChip(
@@ -500,14 +500,11 @@ Wrap(
       _tagChip('🎉 $socialPreference'),
   ],
 ),
+const SizedBox(height: 12),
 
-                  const SizedBox(height: 12),
-
-Text(
-  profile is SeekingFlatmateProfile
-      ? 'Preferred Habits'
-      : 'Amenities',
-  style: const TextStyle(
+const Text(
+  'Looking For',
+  style: TextStyle(
     color: Colors.white,
     fontSize: 15,
     fontWeight: FontWeight.bold,
@@ -515,36 +512,41 @@ Text(
 ),
 
 const SizedBox(height: 8),
+Wrap(
+  spacing: 8,
+  runSpacing: 8,
+  children: [
 
-                  Wrap(
-                    spacing: 8,
-                    runSpacing: 8,
-                    children: tags.take(4).map((tag) {
-                      return Container(
-                        padding:
-                            const EdgeInsets.symmetric(
-                          horizontal: 12,
-                          vertical: 6,
-                        ),
-                        decoration: BoxDecoration(
-                         color: Colors.black38,
-border: Border.all(
-  color: Colors.white24,
+    if (availableFor.isNotEmpty)
+      _buildChip(
+        Icons.group,
+        availableFor,
+      ),
+
+    if (preferredGender.isNotEmpty)
+      _buildChip(
+        Icons.person_outline,
+        preferredGender,
+      ),
+
+    if (preferredAge.isNotEmpty)
+      _buildChip(
+        Icons.cake,
+        preferredAge,
+      ),
+
+    if (preferredOccupation.isNotEmpty)
+      _buildChip(
+        Icons.work,
+        preferredOccupation,
+      ),
+  ],
 ),
-                          borderRadius:
-                              BorderRadius.circular(
-                                  30),
-                        ),
-                        child: Text(
-                          tag,
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 13,
-                          ),
-                        ),
-                      );
-                    }).toList(),
-                  ),
+
+
+
+
+
 
                   const SizedBox(height: 20),
 
