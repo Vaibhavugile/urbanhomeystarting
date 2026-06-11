@@ -15,6 +15,13 @@ import 'package:mytennat/screens/flat_with_flatmate_profile_screen.dart';
 import 'package:mytennat/screens/PlansScreen.dart';
 import 'package:mytennat/screens/user_screen.dart';
 import 'package:mytennat/screens/profile_switch_animation.dart';
+import '../widgets/home/hero_banner.dart';
+import '../widgets/home/quick_actions_section.dart';
+import '../widgets/home/Community_Stats_Section.dart';
+import '../widgets/home/PopularCitiesSection.dart';
+import '../widgets/home/Success_Stories_Section.dart';
+import '../widgets/home/subscription_section.dart';
+
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -289,62 +296,82 @@ class _HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.transparent,
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        toolbarHeight: 90,
-        title: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(
-              'Hi $_userName Welcome To MyTennant!',
-              style: const TextStyle(
-                color: Colors.white,
-                fontSize: 22,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            const Text(
-              'Let\'s find your perfect FlatMate & Home',
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: 18,
-                fontWeight: FontWeight.normal,
-              ),
-            ),
-          ],
-        ),
-        actions: [
-          IconButton(
-            icon: const CircleAvatar(
-              radius: 20,
-              backgroundColor: Colors.white,
-              child: Icon(Icons.person, color: Color(0xFFAD1457)),
-            ),
-            tooltip: 'My Profile',
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => const UserScreen()),
-              );
-            },
-          ),
-          const SizedBox(width: 16),
+      backgroundColor: const Color(0xFFF8FAFC),
+     appBar: AppBar(
+  elevation: 0,
+  toolbarHeight: 90,
+  flexibleSpace: Container(
+    decoration: const BoxDecoration(
+      gradient: LinearGradient(
+        begin: Alignment.topLeft,
+        end: Alignment.bottomRight,
+        colors: [
+          Color(0xFF6A1B9A),
+          Color(0xFFAD1457),
         ],
       ),
-      extendBodyBehindAppBar: true,
+    ),
+  ),
+  title: Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    mainAxisSize: MainAxisSize.min,
+    children: [
+      Text(
+        'Good Afternoon 👋',
+        style: TextStyle(
+          color: Colors.white.withOpacity(.85),
+          fontSize: 13,
+        ),
+      ),
+
+      const SizedBox(height: 2),
+
+      Text(
+        _userName,
+        style: const TextStyle(
+          color: Colors.white,
+          fontSize: 24,
+          fontWeight: FontWeight.w800,
+        ),
+      ),
+    ],
+  ),
+  actions: [
+    Padding(
+      padding: const EdgeInsets.only(right: 16),
+      child: InkWell(
+        onTap: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (_) => const UserScreen(),
+            ),
+          );
+        },
+        child: Container(
+          height: 46,
+          width: 46,
+          decoration: BoxDecoration(
+            color: Colors.white.withOpacity(.15),
+            borderRadius: BorderRadius.circular(14),
+            border: Border.all(
+              color: Colors.white.withOpacity(.15),
+            ),
+          ),
+          child: const Icon(
+            Icons.person_outline,
+            color: Colors.white,
+          ),
+        ),
+      ),
+    ),
+  ],
+),
+      
       body: Container(
         width: double.infinity,
         height: double.infinity,
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            colors: [Color(0xFF6A1B9A), Color(0xFFAD1457)],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-          ),
-        ),
+       color: const Color(0xFFF8FAFC),
         child: _isLoadingProfileType
             ? const Center(child: CircularProgressIndicator(color: Colors.white))
             : SingleChildScrollView(
@@ -352,114 +379,139 @@ class _HomePageState extends State<HomePage> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              SizedBox(height: MediaQuery.of(context).padding.top + AppBar().preferredSize.height + 80),
 
-              Container(
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(10),
-                  border: Border.all(color: Colors.grey.shade300),
-                ),
-                padding: const EdgeInsets.symmetric(horizontal: 10),
-                child: const TextField(
-                  decoration: InputDecoration(
-                    hintText: 'Search location...',
-                    hintStyle: TextStyle(color: Colors.grey),
-                    border: InputBorder.none,
-                    prefixIcon: Icon(Icons.search, color: Colors.grey),
-                  ),
-                  style: TextStyle(color: Colors.black87),
-                ),
-              ),
-              const SizedBox(height: 50),
+const SizedBox(height: 20),
 
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  const Text(
-                    'Post Your Requirement',
-                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.white),
-                  ),
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                    decoration: BoxDecoration(
-                      color: Colors.green.shade500,
-                      borderRadius: BorderRadius.circular(5),
-                    ),
-                    child: const Text(
-                      'FREE',
-                      style: TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.bold),
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 15),
-              Row(
-                children: [
-                  Expanded(
-                    child: _buildRequirementCard(
-                      context,
-                      title: 'Need Room',
-                      subtitle: 'with roommate',
-                      imagePath: 'assets/images/flatmate_animation_image.jpg',
-                      color: const Color(0xFFC7BCEF),
-                      onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(builder: (context) => FlatWithFlatmateProfileScreen(initialPhoneNumber: null)),
-                        );
-                      },
-                    ),
-                  ),
-                  const SizedBox(width: 16),
-                  Expanded(
-                    child: _buildRequirementCard(
-                      context,
-                      title: 'Need Roommate',
-                      subtitle: 'for your room',
-                      imagePath: 'assets/images/flat_listing_animation_image.png',
-                      color: const Color(0xFFFFD1DC),
-                      onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(builder: (context) => FlatmateProfileScreen(initialPhoneNumber: null)),
-                        );
-                      },
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 20),
+HeroBanner(
+  onFindRoom: () {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => FlatWithFlatmateProfileScreen(
+          initialPhoneNumber: null,
+        ),
+      ),
+    );
+  },
+  onFindFlatmate: () {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => FlatmateProfileScreen(
+          initialPhoneNumber: null,
+        ),
+      ),
+    );
+  },
+),
+
+const SizedBox(height: 24),
+const Text(
+  "List Your Requirement",
+  style: TextStyle(
+    fontSize: 22,
+    fontWeight: FontWeight.w800,
+    color: Color(0xFF111827),
+  ),
+),
+
+SizedBox(height: 16),
+QuickActionsSection(
+  onNeedRoom: () {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => FlatWithFlatmateProfileScreen(
+          initialPhoneNumber: null,
+        ),
+      ),
+    );
+  },
+
+  onNeedFlatmate: () {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => FlatmateProfileScreen(
+          initialPhoneNumber: null,
+        ),
+      ),
+    );
+  },
+
+  onListProperty: () {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => FlatmateProfileScreen(
+          initialPhoneNumber: null,
+        ),
+      ),
+    );
+  },
+
+  onExplore: () {
+      // Future Explore Screen
+  },
+),
+const SizedBox(height: 28),
+
+const CommunityStatsSection(),
+
+const SizedBox(height: 32),
+
+const PopularCitiesSection(),
+
+
+const SizedBox(height: 32),
+
+const SuccessStoriesSection(),
+const SizedBox(height: 32),
+
+const SubscriptionSection(),
+const SizedBox(height: 24),
+            
               // New ElevatedButton for the profile switch button
               if (_userProfileType != null)
                 Center(
-                  child: ElevatedButton(
-                    onPressed: _switchProfileTypeWithAnimation,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFFAD1457), // A new gold color for better contrast
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(20),
-                      ),
-                      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        const Icon(Icons.swap_horiz, color: Colors.white), // Icon color changed to black for contrast
-                        const SizedBox(width: 8),
-                        Text(
-                          _userProfileType == 'flat_listing'
-                              ? 'Switch to Flatmate Profile'
-                              : 'Switch to Flat Profile',
-                          style: const TextStyle(
-                            color: Colors.white, // Text color changed to black for contrast
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
+                  child: Container(
+  padding: const EdgeInsets.symmetric(
+    horizontal: 18,
+    vertical: 12,
+  ),
+  decoration: BoxDecoration(
+    color: Colors.white,
+    borderRadius: BorderRadius.circular(18),
+    boxShadow: [
+      BoxShadow(
+        color: Colors.black.withOpacity(.06),
+        blurRadius: 15,
+      ),
+    ],
+  ),
+  child: InkWell(
+    onTap: _switchProfileTypeWithAnimation,
+    child: Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        const Icon(
+          Icons.swap_horiz,
+          color: Color(0xFF7C3AED),
+        ),
+        const SizedBox(width: 8),
+        Text(
+          _userProfileType == 'flat_listing'
+              ? 'Switch to Flatmate'
+              : 'Switch to Flat',
+          style: const TextStyle(
+            fontWeight: FontWeight.w700,
+            color: Color(0xFF111827),
+          ),
+        ),
+      ],
+    ),
+  ),
+),
                 ),
               const SizedBox(height: 20),
             ],

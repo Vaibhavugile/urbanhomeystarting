@@ -251,145 +251,337 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
     }
   }
 
-  Widget _buildMobileLoginUi(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.white,
-      body: Center(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(horizontal: 24.0),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              FadeTransition(
-                opacity: _fadeInAnimation,
-                child: SlideTransition(
-                  position: _slideUpAnimation,
+Widget _buildMobileLoginUi(BuildContext context) {
+  return Scaffold(
+    backgroundColor: const Color(0xFF6A1B9A),
+    body: Container(
+      decoration: const BoxDecoration(
+        gradient: LinearGradient(
+          colors: [
+            Color(0xFF6A1B9A),
+            Color(0xFFAD1457),
+          ],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+      ),
+      child: SafeArea(
+        child: Center(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.symmetric(horizontal: 24),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                FadeTransition(
+                  opacity: _fadeInAnimation,
+                  child: SlideTransition(
+                    position: _slideUpAnimation,
+                    child: Column(
+                      children: [
+                        Container(
+                          width: 130,
+                          height: 130,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: Colors.white.withOpacity(.12),
+                            border: Border.all(
+                              color: Colors.white24,
+                              width: 1.5,
+                            ),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withOpacity(.15),
+                                blurRadius: 30,
+                                spreadRadius: 2,
+                              ),
+                            ],
+                          ),
+                          child: const Icon(
+                            Icons.home_work_rounded,
+                            color: Colors.white,
+                            size: 65,
+                          ),
+                        ),
+
+                        const SizedBox(height: 30),
+
+                        const Text(
+                          'Find Your Perfect\nFlatmate & Home',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            fontSize: 34,
+                            fontWeight: FontWeight.w800,
+                            color: Colors.white,
+                            height: 1.2,
+                            letterSpacing: -0.5,
+                          ),
+                        ),
+
+                        const SizedBox(height: 18),
+
+                        Text(
+                          'Connect with compatible flatmates and discover your ideal living space effortlessly.',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            fontSize: 16,
+                            color: Colors.white.withOpacity(.85),
+                            height: 1.6,
+                            fontWeight: FontWeight.w400,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+
+                const SizedBox(height: 50),
+
+                FadeTransition(
+                  opacity: _fadeInAnimation,
+                  child: SlideTransition(
+                    position: _slideUpAnimation,
+                    child: Container(
+                      padding: const EdgeInsets.all(24),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withOpacity(.12),
+                        borderRadius: BorderRadius.circular(30),
+                        border: Border.all(
+                          color: Colors.white24,
+                        ),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(.12),
+                            blurRadius: 30,
+                            offset: const Offset(0, 10),
+                          ),
+                        ],
+                      ),
+                      child: Column(
+                        children: [
+                          Container(
+                            decoration: BoxDecoration(
+                              color: Colors.white.withOpacity(.10),
+                              borderRadius: BorderRadius.circular(18),
+                              border: Border.all(
+                                color: Colors.white24,
+                              ),
+                            ),
+                            child: TextField(
+                              controller: _phoneController,
+                              keyboardType: TextInputType.phone,
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 16,
+                                fontWeight: FontWeight.w600,
+                              ),
+                              decoration: InputDecoration(
+                                hintText: 'Enter Phone Number',
+                                hintStyle: TextStyle(
+                                  color: Colors.white.withOpacity(.65),
+                                ),
+                                prefixIcon: Container(
+                                  margin: const EdgeInsets.all(10),
+                                  decoration: BoxDecoration(
+                                    color: Colors.white.withOpacity(.15),
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                  child: const Icon(
+                                    Icons.phone,
+                                    color: Colors.white,
+                                  ),
+                                ),
+                                border: InputBorder.none,
+                                contentPadding: const EdgeInsets.symmetric(
+                                  vertical: 20,
+                                  horizontal: 20,
+                                ),
+                              ),
+                            ),
+                          ),
+
+                          const SizedBox(height: 18),
+
+                          if (_isOtpSent)
+                            Container(
+                              decoration: BoxDecoration(
+                                color: Colors.white.withOpacity(.10),
+                                borderRadius: BorderRadius.circular(18),
+                                border: Border.all(
+                                  color: Colors.white24,
+                                ),
+                              ),
+                              child: TextField(
+                                controller: _otpController,
+                                keyboardType: TextInputType.number,
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w600,
+                                  letterSpacing: 3,
+                                ),
+                                decoration: InputDecoration(
+                                  hintText: 'Enter OTP',
+                                  hintStyle: TextStyle(
+                                    color: Colors.white.withOpacity(.65),
+                                  ),
+                                  prefixIcon: Container(
+                                    margin: const EdgeInsets.all(10),
+                                    decoration: BoxDecoration(
+                                      color: Colors.white.withOpacity(.15),
+                                      borderRadius: BorderRadius.circular(12),
+                                    ),
+                                    child: const Icon(
+                                      Icons.lock_outline,
+                                      color: Colors.white,
+                                    ),
+                                  ),
+                                  border: InputBorder.none,
+                                  contentPadding: const EdgeInsets.symmetric(
+                                    vertical: 20,
+                                    horizontal: 20,
+                                  ),
+                                ),
+                              ),
+                            ),
+
+                          const SizedBox(height: 28),
+
+                          SizedBox(
+                            width: double.infinity,
+                            height: 58,
+                            child: ElevatedButton(
+                              onPressed: _loading
+                                  ? null
+                                  : (_isOtpSent
+                                      ? _verifyOtpAndSignIn
+                                      : _verifyPhoneNumber),
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.white,
+                                foregroundColor: const Color(0xFF6A1B9A),
+                                elevation: 0,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(18),
+                                ),
+                              ),
+                              child: _loading
+                                  ? const SizedBox(
+                                      width: 22,
+                                      height: 22,
+                                      child: CircularProgressIndicator(
+                                        strokeWidth: 2.5,
+                                        color: Color(0xFF6A1B9A),
+                                      ),
+                                    )
+                                  : Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
+                                      children: [
+                                        Text(
+                                          _isOtpSent
+                                              ? 'Verify OTP'
+                                              : 'Get OTP',
+                                          style: const TextStyle(
+                                            fontSize: 18,
+                                            fontWeight: FontWeight.w700,
+                                          ),
+                                        ),
+                                        const SizedBox(width: 8),
+                                        const Icon(
+                                          Icons.arrow_forward_rounded,
+                                          size: 20,
+                                        ),
+                                      ],
+                                    ),
+                            ),
+                          ),
+
+                          const SizedBox(height: 16),
+
+                          if (_isOtpSent)
+                            TextButton(
+                              onPressed:
+                                  _canResendOtp ? _verifyPhoneNumber : null,
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 16,
+                                  vertical: 8,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: Colors.white.withOpacity(.12),
+                                  borderRadius: BorderRadius.circular(30),
+                                  border: Border.all(
+                                    color: Colors.white24,
+                                  ),
+                                ),
+                                child: Text(
+                                  _canResendOtp
+                                      ? 'Resend OTP'
+                                      : 'Resend in $_resendOtpTimer seconds',
+                                  style: TextStyle(
+                                    color: _canResendOtp
+                                        ? Colors.white
+                                        : Colors.white54,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              ),
+                            ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+
+                const SizedBox(height: 30),
+
+                TextButton(
+                  onPressed: () {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text('Opening feedback form...'),
+                      ),
+                    );
+                  },
                   child: Column(
                     children: [
-                      const Icon(Icons.home_work_rounded, color: Colors.redAccent, size: 100),
-                      const SizedBox(height: 32),
-                      Text(
-                        'Find Your Perfect Flatmate & Home',
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                          fontSize: 28,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.grey[800],
-                        ),
+                      const Icon(
+                        Icons.support_agent_rounded,
+                        color: Colors.white70,
+                        size: 22,
                       ),
-                      const SizedBox(height: 16),
+                      const SizedBox(height: 8),
                       Text(
-                        'Connect with compatible flatmates and discover your ideal living space effortlessly.',
-                        textAlign: TextAlign.center,
+                        'Having trouble? Give Feedback',
                         style: TextStyle(
-                          fontSize: 16,
-                          color: Colors.grey[600],
+                          color: Colors.white.withOpacity(.85),
+                          fontSize: 15,
+                          fontWeight: FontWeight.w600,
                         ),
                       ),
                     ],
                   ),
                 ),
-              ),
-              const SizedBox(height: 40),
-              FadeTransition(
-                opacity: _fadeInAnimation,
-                child: SlideTransition(
-                  position: _slideUpAnimation,
-                  child: Column(
-                    children: [
-                      TextField(
-                        controller: _phoneController,
-                        keyboardType: TextInputType.phone,
-                        decoration: InputDecoration(
-                          hintText: 'Enter Phone Number',
-                          prefixIcon: const Icon(Icons.phone, color: Colors.redAccent),
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12),
-                            borderSide: BorderSide.none,
-                          ),
-                          filled: true,
-                          fillColor: Colors.grey[100],
-                          contentPadding: const EdgeInsets.symmetric(vertical: 16, horizontal: 20),
-                        ),
-                      ),
-                      const SizedBox(height: 16),
-                      if (_isOtpSent)
-                        TextField(
-                          controller: _otpController,
-                          keyboardType: TextInputType.number,
-                          decoration: InputDecoration(
-                            hintText: 'Enter OTP',
-                            prefixIcon: const Icon(Icons.lock, color: Colors.redAccent),
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(12),
-                              borderSide: BorderSide.none,
-                            ),
-                            filled: true,
-                            fillColor: Colors.grey[100],
-                            contentPadding: const EdgeInsets.symmetric(vertical: 16, horizontal: 20),
-                          ),
-                        ),
-                      const SizedBox(height: 24),
-                      SizedBox(
-                        width: double.infinity,
-                        child: ElevatedButton(
-                          onPressed: _loading
-                              ? null
-                              : (_isOtpSent ? _verifyOtpAndSignIn : _verifyPhoneNumber),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.redAccent,
-                            foregroundColor: Colors.white,
-                            padding: const EdgeInsets.symmetric(vertical: 16),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            elevation: 5,
-                          ),
-                          child: _loading
-                              ? const CircularProgressIndicator(color: Colors.white)
-                              : Text(
-                            _isOtpSent ? 'Verify OTP' : 'Get OTP',
-                            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                          ),
-                        ),
-                      ),
-                      const SizedBox(height: 16),
-                      if (_isOtpSent)
-                        TextButton(
-                          onPressed: _canResendOtp ? _verifyPhoneNumber : null,
-                          child: Text(
-                            _canResendOtp
-                                ? 'Resend OTP'
-                                : 'Resend in $_resendOtpTimer seconds',
-                            style: TextStyle(
-                              color: _canResendOtp ? Colors.redAccent : Colors.grey,
-                              fontSize: 15,
-                            ),
-                          ),
-                        ),
-                      const SizedBox(height: 32),
-                      TextButton(
-                        onPressed: () {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(content: Text('Opening feedback form...')),
-                          );
-                        },
-                        child: Text(
-                          'Having trouble? Give Feedback',
-                          style: TextStyle(color: Colors.grey[600], fontSize: 15),
-                        ),
-                      ),
-                    ],
+
+                const SizedBox(height: 10),
+
+                Text(
+                  'By continuing, you agree to our Terms & Privacy Policy',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    color: Colors.white.withOpacity(.65),
+                    fontSize: 12,
+                    fontWeight: FontWeight.w500,
                   ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),
-    );
-  }
+    ),
+  );
+}
 
   Widget _buildWebLoginUi(BuildContext context) {
     return Scaffold(
