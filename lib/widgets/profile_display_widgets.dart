@@ -5,47 +5,83 @@ import 'package:mytennat/screens/flat_with_flatmate_profile_screen.dart';
 import 'package:mytennat/screens/flatmate_profile_screen.dart';
 import 'package:lottie/lottie.dart'; // Import Lottie
 
-// --- Premium UrbanHomey Color Palettes ---
+// ===============================
+// PREMIUM 2026 LUXURY PALETTES
+// ===============================
+
 final List<MapEntry<Color, Color>> _vibrantColorPalettes = [
-  MapEntry(
-    const Color(0xFFF3E8FF),
-    const Color(0xFF6A1B9A),
-  ), // Purple
 
+  // Royal Purple
   MapEntry(
-    const Color(0xFFFCE7F3),
-    const Color(0xFFAD1457),
-  ), // Pink
+    const Color(0xFF22163A),
+    const Color(0xFF9B6DFF),
+  ),
 
+  // Neon Pink
   MapEntry(
-    const Color(0xFFE0E7FF),
-    const Color(0xFF4338CA),
-  ), // Indigo
+    const Color(0xFF2A1624),
+    const Color(0xFFFF5DA8),
+  ),
 
+  // Indigo
   MapEntry(
-    const Color(0xFFDBEAFE),
-    const Color(0xFF2563EB),
-  ), // Blue
+    const Color(0xFF17203B),
+    const Color(0xFF7A8DFF),
+  ),
 
+  // Electric Blue
   MapEntry(
-    const Color(0xFFD1FAE5),
-    const Color(0xFF059669),
-  ), // Emerald
+    const Color(0xFF13283E),
+    const Color(0xFF3EA6FF),
+  ),
 
+  // Emerald
   MapEntry(
-    const Color(0xFFFEF3C7),
-    const Color(0xFFD97706),
-  ), // Amber
+    const Color(0xFF132B25),
+    const Color(0xFF2DD4A7),
+  ),
 
+  // Gold
   MapEntry(
-    const Color(0xFFFFEDD5),
-    const Color(0xFFEA580C),
-  ), // Orange
+    const Color(0xFF302615),
+    const Color(0xFFFFC857),
+  ),
 
+  // Orange
   MapEntry(
-    const Color(0xFFFEE2E2),
-    const Color(0xFFDC2626),
-  ), // Rose Red
+    const Color(0xFF311E16),
+    const Color(0xFFFF8A4C),
+  ),
+
+  // Ruby Red
+  MapEntry(
+    const Color(0xFF311A1E),
+    const Color(0xFFFF5B6E),
+  ),
+
+  // Cyan
+  MapEntry(
+    const Color(0xFF132A30),
+    const Color(0xFF4DE2FF),
+  ),
+
+  // Lime
+  MapEntry(
+    const Color(0xFF212D19),
+    const Color(0xFFA3E635),
+  ),
+
+  // Platinum
+  MapEntry(
+    const Color(0xFF24262D),
+    const Color(0xFFE5E7EB),
+  ),
+
+  // Premium Gradient Purple
+  MapEntry(
+    const Color(0xFF24173F),
+    const Color(0xFFC084FC),
+  ),
 ];
 // Helper widget to build consistent sections (Cards)
 Widget _buildSection({
@@ -57,65 +93,77 @@ Widget _buildSection({
   return Container(
     margin: margin ??
         const EdgeInsets.symmetric(
-          horizontal: 16,
+          horizontal: 18,
           vertical: 10,
         ),
-    decoration: BoxDecoration(
-      borderRadius: BorderRadius.circular(24),
 
-      gradient: LinearGradient(
+    decoration: BoxDecoration(
+      borderRadius: BorderRadius.circular(32),
+
+      gradient: const LinearGradient(
         begin: Alignment.topLeft,
         end: Alignment.bottomRight,
         colors: [
-          Colors.white.withOpacity(0.12),
-          Colors.white.withOpacity(0.05),
+          Color(0xFF1A2238),
+          Color(0xFF111827),
         ],
       ),
 
       border: Border.all(
-        color: Colors.white.withOpacity(0.12),
-        width: 1,
+        color: const Color(0xFF2A3448),
+        width: 1.2,
       ),
 
       boxShadow: [
         BoxShadow(
-          color: Colors.black.withOpacity(0.12),
-          blurRadius: 20,
-          offset: const Offset(0, 10),
+          color: Colors.black.withOpacity(.35),
+          blurRadius: 40,
+          spreadRadius: -8,
+          offset: const Offset(0, 18),
         ),
       ],
     ),
+
     child: Padding(
       padding:
           padding ??
               const EdgeInsets.symmetric(
-                horizontal: 18,
-                vertical: 18,
+                horizontal: 24,
+                vertical: 24,
               ),
+
       child: Column(
         crossAxisAlignment:
             CrossAxisAlignment.start,
         children: [
 
-          /// SECTION HEADER
+          /// HEADER
           Row(
             children: [
 
+              /// PREMIUM ACCENT DOT
               Container(
-                width: 5,
-                height: 26,
+                width: 12,
+                height: 12,
                 decoration: BoxDecoration(
-                  borderRadius:
-                      BorderRadius.circular(
-                    20,
-                  ),
-                  gradient:
-                      const LinearGradient(
+                  shape: BoxShape.circle,
+
+                  gradient: const LinearGradient(
                     colors: [
-                      Color(0xFF6A1B9A),
-                      Color(0xFFAD1457),
+                      Color(0xFF9B6DFF),
+                      Color(0xFFFF5DA8),
                     ],
                   ),
+
+                  boxShadow: [
+                    BoxShadow(
+                      color: const Color(
+                        0xFF9B6DFF,
+                      ).withOpacity(.45),
+                      blurRadius: 12,
+                      spreadRadius: 1,
+                    ),
+                  ],
                 ),
               ),
 
@@ -125,34 +173,36 @@ Widget _buildSection({
                 child: Text(
                   title,
                   style: const TextStyle(
-                    fontSize: 20,
-                    fontWeight:
-                        FontWeight.w700,
+                    fontSize: 22,
+                    fontWeight: FontWeight.w800,
                     color: Colors.white,
-                    letterSpacing: .3,
+                    letterSpacing: -0.4,
+                    height: 1.1,
                   ),
                 ),
               ),
             ],
           ),
 
-          const SizedBox(height: 14),
+          const SizedBox(height: 22),
 
+          /// SUBTLE DIVIDER
           Container(
             height: 1,
             decoration: BoxDecoration(
               gradient: LinearGradient(
                 colors: [
-                  Colors.white
-                      .withOpacity(.20),
+                  Colors.white.withOpacity(.08),
+                  Colors.white.withOpacity(.02),
                   Colors.transparent,
                 ],
               ),
             ),
           ),
 
-          const SizedBox(height: 18),
+          const SizedBox(height: 22),
 
+          /// CONTENT
           ...children,
         ],
       ),
@@ -180,48 +230,77 @@ Widget _buildProfileField(
 
   return Container(
     margin: const EdgeInsets.only(
-      bottom: 12,
+      bottom: 14,
     ),
-    padding: const EdgeInsets.all(14),
+    padding: const EdgeInsets.all(16),
+
     decoration: BoxDecoration(
       borderRadius:
-          BorderRadius.circular(18),
-      color: Colors.white.withOpacity(.05),
-      border: Border.all(
-        color: Colors.white.withOpacity(.08),
+          BorderRadius.circular(24),
+
+      gradient: LinearGradient(
+        begin: Alignment.topLeft,
+        end: Alignment.bottomRight,
+        colors: [
+          palette.key.withOpacity(.45),
+          const Color(0xFF111827),
+        ],
       ),
+
+      border: Border.all(
+        color: Colors.white.withOpacity(.06),
+      ),
+
+      boxShadow: [
+        BoxShadow(
+          color: Colors.black.withOpacity(.20),
+          blurRadius: 20,
+          offset: const Offset(0, 10),
+        ),
+      ],
     ),
+
     child: Row(
-      crossAxisAlignment:
-          CrossAxisAlignment.center,
       children: [
 
-        /// ICON
+        /// ICON CONTAINER
         if (icon != null)
           Container(
-            width: 46,
-            height: 46,
+            width: 54,
+            height: 54,
+
             decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              color: palette.key,
-              boxShadow: [
-                BoxShadow(
-                  color: palette.value
-                      .withOpacity(.15),
-                  blurRadius: 8,
-                  offset: const Offset(0, 3),
-                ),
-              ],
+              borderRadius:
+                  BorderRadius.circular(
+                18,
+              ),
+
+              gradient: LinearGradient(
+                colors: [
+                  palette.value.withOpacity(
+                    .25,
+                  ),
+                  palette.value.withOpacity(
+                    .12,
+                  ),
+                ],
+              ),
+
+              border: Border.all(
+                color: palette.value
+                    .withOpacity(.20),
+              ),
             ),
+
             child: Icon(
               icon,
               color: palette.value,
-              size: 22,
+              size: 24,
             ),
           ),
 
         if (icon != null)
-          const SizedBox(width: 14),
+          const SizedBox(width: 16),
 
         /// CONTENT
         Expanded(
@@ -232,31 +311,52 @@ Widget _buildProfileField(
 
               /// LABEL
               Text(
-                label.toUpperCase(),
+                label,
                 style: TextStyle(
-                  fontSize: 11,
-                  fontWeight:
-                      FontWeight.w600,
-                  letterSpacing: 1,
                   color: Colors.white
-                      .withOpacity(.60),
+                      .withOpacity(.55),
+                  fontSize: 12,
+                  fontWeight:
+                      FontWeight.w500,
+                  letterSpacing: .5,
                 ),
               ),
 
-              const SizedBox(height: 4),
+              const SizedBox(height: 6),
 
               /// VALUE
               Text(
                 value,
+                maxLines: 3,
+                overflow:
+                    TextOverflow.ellipsis,
                 style: const TextStyle(
-                  fontSize: 15,
-                  fontWeight:
-                      FontWeight.w600,
                   color: Colors.white,
+                  fontSize: 16,
+                  fontWeight:
+                      FontWeight.w700,
                   height: 1.3,
                 ),
               ),
             ],
+          ),
+        ),
+
+        /// CHEVRON
+        Container(
+          width: 32,
+          height: 32,
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            color:
+                Colors.white.withOpacity(
+              .04,
+            ),
+          ),
+          child: const Icon(
+            Icons.arrow_forward_ios_rounded,
+            size: 14,
+            color: Colors.white38,
           ),
         ),
       ],
@@ -265,31 +365,40 @@ Widget _buildProfileField(
 }
 // Helper for displaying list fields (used for sections that remain as text chips, if any)
 Widget _buildProfileListField(
-  String label,
+  String title,
   List<String>? values,
 ) {
   if (values == null || values.isEmpty) {
     return _buildSection(
-      title: label,
+      title: title,
       children: [
         Container(
-          padding: const EdgeInsets.all(14),
+          width: double.infinity,
+          padding: const EdgeInsets.all(20),
           decoration: BoxDecoration(
-            borderRadius:
-                BorderRadius.circular(16),
-            color: Colors.white.withOpacity(.05),
+            borderRadius: BorderRadius.circular(24),
+            color: const Color(0xFF171F33),
             border: Border.all(
-              color:
-                  Colors.white.withOpacity(.08),
+              color: Colors.white.withOpacity(.06),
             ),
           ),
-          child: Text(
-            'No preferences added yet',
-            style: TextStyle(
-              color:
-                  Colors.white.withOpacity(.65),
-              fontSize: 14,
-            ),
+          child: Row(
+            children: [
+              Icon(
+                Icons.info_outline_rounded,
+                color: Colors.white.withOpacity(.5),
+                size: 18,
+              ),
+              const SizedBox(width: 10),
+              Text(
+                "No preferences added yet",
+                style: TextStyle(
+                  color: Colors.white.withOpacity(.65),
+                  fontSize: 14,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ],
           ),
         ),
       ],
@@ -297,84 +406,89 @@ Widget _buildProfileListField(
   }
 
   return _buildSection(
-    title: label,
+    title: title,
     children: [
       Wrap(
-        spacing: 10,
-        runSpacing: 10,
-        children: values.asMap().entries.map(
-          (entry) {
-            final index = entry.key;
-            final item = entry.value;
+        spacing: 12,
+        runSpacing: 12,
+        children: values.asMap().entries.map((entry) {
+          final index = entry.key;
+          final item = entry.value;
 
-            final palette =
-                _vibrantColorPalettes[
-                    index %
-                        _vibrantColorPalettes
-                            .length];
+          final palette =
+              _vibrantColorPalettes[
+                  index %
+                      _vibrantColorPalettes.length];
 
-            return Container(
-              padding:
-                  const EdgeInsets.symmetric(
-                horizontal: 14,
-                vertical: 10,
-              ),
-              decoration: BoxDecoration(
-                borderRadius:
-                    BorderRadius.circular(
-                  20,
-                ),
+          return Container(
+            padding: const EdgeInsets.symmetric(
+              horizontal: 16,
+              vertical: 12,
+            ),
+            decoration: BoxDecoration(
+              borderRadius:
+                  BorderRadius.circular(100),
 
-                gradient: LinearGradient(
-                  begin: Alignment.topLeft,
-                  end:
-                      Alignment.bottomRight,
-                  colors: [
-                    palette.key,
-                    palette.key.withOpacity(
-                      .75,
-                    ),
-                  ],
-                ),
-
-                boxShadow: [
-                  BoxShadow(
-                    color: palette.value
-                        .withOpacity(.15),
-                    blurRadius: 8,
-                    offset:
-                        const Offset(0, 4),
-                  ),
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [
+                  palette.key.withOpacity(.85),
+                  palette.key.withOpacity(.55),
                 ],
               ),
-              child: Row(
-                mainAxisSize:
-                    MainAxisSize.min,
-                children: [
-                  Icon(
-                    Icons.check_circle,
-                    size: 16,
+
+              border: Border.all(
+                color: palette.value.withOpacity(
+                  .25,
+                ),
+              ),
+
+              boxShadow: [
+                BoxShadow(
+                  color: palette.value
+                      .withOpacity(.15),
+                  blurRadius: 14,
+                  offset: const Offset(0, 6),
+                ),
+              ],
+            ),
+
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+
+                Container(
+                  width: 22,
+                  height: 22,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: palette.value
+                        .withOpacity(.18),
+                  ),
+                  child: Icon(
+                    Icons.auto_awesome_rounded,
+                    size: 12,
                     color: palette.value,
                   ),
+                ),
 
-                  const SizedBox(width: 6),
+                const SizedBox(width: 10),
 
-                  Text(
-                    item,
-                    style:
-                        TextStyle(
-                      fontSize: 13,
-                      fontWeight:
-                          FontWeight.w600,
-                      color:
-                          palette.value,
-                    ),
+                Text(
+                  item,
+                  style: TextStyle(
+                    fontSize: 13,
+                    fontWeight:
+                        FontWeight.w700,
+                    color: palette.value,
+                    letterSpacing: .2,
                   ),
-                ],
-              ),
-            );
-          },
-        ).toList(),
+                ),
+              ],
+            ),
+          );
+        }).toList(),
       ),
     ],
   );
@@ -542,7 +656,7 @@ Widget _buildIconValueCard(
   Color? iconColor,
 }) {
   if (value == null ||
-      value.isEmpty ||
+      value.trim().isEmpty ||
       value == 'N/A') {
     return const SizedBox.shrink();
   }
@@ -567,107 +681,147 @@ Widget _buildIconValueCard(
   if (iconData is IconData) {
     iconWidget = Icon(
       iconData,
-      size: 42,
+      size: 28,
       color: fgColor,
     );
   } else if (iconData is String &&
       iconData.endsWith('.json')) {
     iconWidget = Lottie.asset(
       iconData,
-      width: 65,
-      height: 65,
+      width: 42,
+      height: 42,
       fit: BoxFit.contain,
       repeat: true,
     );
   } else {
     iconWidget = Icon(
-      Icons.auto_awesome,
-      size: 42,
+      Icons.auto_awesome_rounded,
+      size: 28,
       color: fgColor,
     );
   }
 
   return Container(
-    padding: const EdgeInsets.all(14),
+    padding: const EdgeInsets.all(18),
 
     decoration: BoxDecoration(
       borderRadius:
-          BorderRadius.circular(22),
+          BorderRadius.circular(28),
 
       gradient: LinearGradient(
         begin: Alignment.topLeft,
         end: Alignment.bottomRight,
         colors: [
-          bgColor,
-          bgColor.withOpacity(.75),
+          bgColor.withOpacity(.90),
+          const Color(0xFF111827),
         ],
       ),
 
       border: Border.all(
-        color: Colors.white.withOpacity(.15),
+        color: Colors.white.withOpacity(.06),
       ),
 
       boxShadow: [
         BoxShadow(
-          color: fgColor.withOpacity(.15),
-          blurRadius: 12,
-          offset: const Offset(0, 6),
+          color: fgColor.withOpacity(.12),
+          blurRadius: 24,
+          offset: const Offset(0, 10),
         ),
       ],
     ),
 
     child: Column(
-      mainAxisAlignment:
-          MainAxisAlignment.center,
+      crossAxisAlignment:
+          CrossAxisAlignment.start,
       children: [
 
-        /// LABEL
-        Text(
-          label,
-          textAlign: TextAlign.center,
-          maxLines: 2,
-          overflow:
-              TextOverflow.ellipsis,
-          style: TextStyle(
-            fontSize: 11,
-            fontWeight:
-                FontWeight.w700,
-            letterSpacing: .5,
-            color: fgColor,
-          ),
+        /// TOP ROW
+        Row(
+          children: [
+
+            Container(
+              width: 52,
+              height: 52,
+
+              decoration: BoxDecoration(
+                borderRadius:
+                    BorderRadius.circular(
+                  16,
+                ),
+
+                gradient: LinearGradient(
+                  colors: [
+                    fgColor.withOpacity(.20),
+                    fgColor.withOpacity(.08),
+                  ],
+                ),
+
+                border: Border.all(
+                  color: fgColor
+                      .withOpacity(.15),
+                ),
+              ),
+
+              child: Center(
+                child: iconWidget,
+              ),
+            ),
+
+            const Spacer(),
+
+            Container(
+              padding:
+                  const EdgeInsets.symmetric(
+                horizontal: 10,
+                vertical: 6,
+              ),
+              decoration: BoxDecoration(
+                borderRadius:
+                    BorderRadius.circular(
+                  100,
+                ),
+                color: Colors.white
+                    .withOpacity(.05),
+              ),
+              child: Text(
+                label,
+                style: TextStyle(
+                  fontSize: 10,
+                  fontWeight:
+                      FontWeight.w700,
+                  color: Colors.white
+                      .withOpacity(.65),
+                  letterSpacing: .8,
+                ),
+              ),
+            ),
+          ],
         ),
 
-        const SizedBox(height: 12),
-
-        /// ICON
-        Container(
-          width: 72,
-          height: 72,
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            color: Colors.white
-                .withOpacity(.55),
-          ),
-          child: Center(
-            child: iconWidget,
-          ),
-        ),
-
-        const SizedBox(height: 14),
+        const Spacer(),
 
         /// VALUE
         Text(
           value,
-          textAlign: TextAlign.center,
           maxLines: 2,
-          overflow:
-              TextOverflow.ellipsis,
+          overflow: TextOverflow.ellipsis,
           style: const TextStyle(
-            fontSize: 14,
-            fontWeight:
-                FontWeight.w600,
-            color: Colors.black87,
+            fontSize: 16,
+            fontWeight: FontWeight.w800,
+            color: Colors.white,
             height: 1.3,
+          ),
+        ),
+
+        const SizedBox(height: 6),
+
+        Container(
+          width: 40,
+          height: 4,
+          decoration: BoxDecoration(
+            borderRadius:
+                BorderRadius.circular(20),
+            color: fgColor,
           ),
         ),
       ],
@@ -694,23 +848,33 @@ Widget _buildCharacteristicGrid(
       title: title,
       children: [
         Container(
-          padding: const EdgeInsets.all(16),
+          width: double.infinity,
+          padding: const EdgeInsets.all(20),
           decoration: BoxDecoration(
             borderRadius:
-                BorderRadius.circular(18),
-            color: Colors.white.withOpacity(.05),
+                BorderRadius.circular(24),
+            color: const Color(0xFF171F33),
             border: Border.all(
-              color:
-                  Colors.white.withOpacity(.08),
+              color: Colors.white.withOpacity(.06),
             ),
           ),
-          child: Text(
-            'No details available yet',
-            style: TextStyle(
-              color:
-                  Colors.white.withOpacity(.65),
-              fontSize: 14,
-            ),
+          child: Row(
+            children: [
+              Icon(
+                Icons.info_outline_rounded,
+                color: Colors.white.withOpacity(.5),
+                size: 18,
+              ),
+              const SizedBox(width: 10),
+              Text(
+                'No details available yet',
+                style: TextStyle(
+                  color: Colors.white.withOpacity(.65),
+                  fontSize: 14,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ],
           ),
         ),
       ],
@@ -731,10 +895,10 @@ Widget _buildCharacteristicGrid(
             const SliverGridDelegateWithFixedCrossAxisCount(
           crossAxisCount: 2,
 
-          crossAxisSpacing: 12,
-          mainAxisSpacing: 12,
+          crossAxisSpacing: 14,
+          mainAxisSpacing: 14,
 
-          childAspectRatio: 0.92,
+          childAspectRatio: 0.78,
         ),
 
         itemBuilder: (context, index) {
@@ -743,20 +907,30 @@ Widget _buildCharacteristicGrid(
           return TweenAnimationBuilder<double>(
             duration: Duration(
               milliseconds:
-                  250 + (index * 60),
+                  300 + (index * 80),
             ),
-            tween:
-                Tween(begin: 0, end: 1),
+
+            curve: Curves.easeOutCubic,
+
+            tween: Tween(
+              begin: 0,
+              end: 1,
+            ),
+
             builder:
                 (context, value, child) {
-              return Transform.scale(
-                scale: value,
+              return Transform.translate(
+                offset: Offset(
+                  0,
+                  20 * (1 - value),
+                ),
                 child: Opacity(
                   opacity: value,
                   child: child,
                 ),
               );
             },
+
             child: _buildIconValueCard(
               entry.key,
               entry.value,
@@ -783,7 +957,6 @@ final Map<String, dynamic> _preferenceIcons = { // Changed to dynamic to hold Ic
   'Gamer': 'assets/lottie/gamer.json', // Example Lottie
   'Cook': 'assets/lottie/cook.json', // Reusing
 };
-
 Widget _buildPreferenceGrid(
   String title,
   List<String>? preferences,
@@ -794,23 +967,36 @@ Widget _buildPreferenceGrid(
       title: title,
       children: [
         Container(
-          padding: const EdgeInsets.all(16),
+          width: double.infinity,
+          padding: const EdgeInsets.all(20),
           decoration: BoxDecoration(
             borderRadius:
-                BorderRadius.circular(18),
-            color: Colors.white.withOpacity(.05),
+                BorderRadius.circular(24),
+            color: const Color(0xFF171F33),
             border: Border.all(
-              color:
-                  Colors.white.withOpacity(.08),
+              color: Colors.white.withOpacity(.06),
             ),
           ),
-          child: Text(
-            'No preferences added yet',
-            style: TextStyle(
-              color:
-                  Colors.white.withOpacity(.65),
-              fontSize: 14,
-            ),
+          child: Row(
+            children: [
+              Icon(
+                Icons.auto_awesome_rounded,
+                color:
+                    Colors.white.withOpacity(.5),
+                size: 18,
+              ),
+              const SizedBox(width: 10),
+              Text(
+                'No preferences added yet',
+                style: TextStyle(
+                  color:
+                      Colors.white.withOpacity(.65),
+                  fontSize: 14,
+                  fontWeight:
+                      FontWeight.w500,
+                ),
+              ),
+            ],
           ),
         ),
       ],
@@ -830,9 +1016,9 @@ Widget _buildPreferenceGrid(
         gridDelegate:
             const SliverGridDelegateWithFixedCrossAxisCount(
           crossAxisCount: 2,
-          crossAxisSpacing: 12,
-          mainAxisSpacing: 12,
-          childAspectRatio: 0.95,
+          crossAxisSpacing: 14,
+          mainAxisSpacing: 14,
+          childAspectRatio: 0.80,
         ),
 
         itemBuilder: (context, index) {
@@ -854,22 +1040,22 @@ Widget _buildPreferenceGrid(
           if (iconData is IconData) {
             iconWidget = Icon(
               iconData,
-              size: 38,
+              size: 26,
               color: palette.value,
             );
           } else if (iconData is String &&
               iconData.endsWith('.json')) {
             iconWidget = Lottie.asset(
               iconData,
-              width: 60,
-              height: 60,
+              width: 42,
+              height: 42,
               fit: BoxFit.contain,
               repeat: true,
             );
           } else {
             iconWidget = Icon(
-              Icons.auto_awesome,
-              size: 38,
+              Icons.auto_awesome_rounded,
+              size: 26,
               color: palette.value,
             );
           }
@@ -877,14 +1063,23 @@ Widget _buildPreferenceGrid(
           return TweenAnimationBuilder<double>(
             duration: Duration(
               milliseconds:
-                  250 + (index * 60),
+                  300 + (index * 80),
             ),
-            tween:
-                Tween(begin: 0, end: 1),
+
+            curve: Curves.easeOutCubic,
+
+            tween: Tween(
+              begin: 0,
+              end: 1,
+            ),
+
             builder:
                 (context, value, child) {
-              return Transform.scale(
-                scale: value,
+              return Transform.translate(
+                offset: Offset(
+                  0,
+                  20 * (1 - value),
+                ),
                 child: Opacity(
                   opacity: value,
                   child: child,
@@ -894,12 +1089,12 @@ Widget _buildPreferenceGrid(
 
             child: Container(
               padding:
-                  const EdgeInsets.all(14),
+                  const EdgeInsets.all(18),
 
               decoration: BoxDecoration(
                 borderRadius:
                     BorderRadius.circular(
-                  22,
+                  28,
                 ),
 
                 gradient:
@@ -909,69 +1104,113 @@ Widget _buildPreferenceGrid(
                   end: Alignment
                       .bottomRight,
                   colors: [
-                    palette.key,
                     palette.key
-                        .withOpacity(.75),
+                        .withOpacity(.90),
+                    const Color(
+                      0xFF111827,
+                    ),
                   ],
                 ),
 
                 border: Border.all(
                   color: Colors.white
-                      .withOpacity(.15),
+                      .withOpacity(.06),
                 ),
 
                 boxShadow: [
                   BoxShadow(
                     color: palette.value
-                        .withOpacity(.15),
-                    blurRadius: 10,
+                        .withOpacity(.12),
+                    blurRadius: 24,
                     offset:
-                        const Offset(0, 5),
+                        const Offset(
+                      0,
+                      10,
+                    ),
                   ),
                 ],
               ),
 
               child: Column(
-                mainAxisAlignment:
-                    MainAxisAlignment
-                        .center,
+                crossAxisAlignment:
+                    CrossAxisAlignment
+                        .start,
                 children: [
 
+                  /// ICON
                   Container(
-                    width: 70,
-                    height: 70,
+                    width: 54,
+                    height: 54,
+
                     decoration:
                         BoxDecoration(
-                      shape:
-                          BoxShape.circle,
-                      color: Colors.white
-                          .withOpacity(
-                              .55),
+                      borderRadius:
+                          BorderRadius
+                              .circular(
+                        18,
+                      ),
+
+                      gradient:
+                          LinearGradient(
+                        colors: [
+                          palette.value
+                              .withOpacity(
+                                  .20),
+                          palette.value
+                              .withOpacity(
+                                  .08),
+                        ],
+                      ),
+
+                      border:
+                          Border.all(
+                        color: palette
+                            .value
+                            .withOpacity(
+                                .15),
+                      ),
                     ),
+
                     child: Center(
                       child:
                           iconWidget,
                     ),
                   ),
 
-                  const SizedBox(
-                    height: 12,
-                  ),
+                  const Spacer(),
 
                   Text(
                     preference,
-                    textAlign:
-                        TextAlign.center,
                     maxLines: 2,
                     overflow:
                         TextOverflow
                             .ellipsis,
                     style:
-                        TextStyle(
-                      fontSize: 13,
+                        const TextStyle(
+                      fontSize: 15,
                       fontWeight:
                           FontWeight
-                              .w600,
+                              .w800,
+                      color:
+                          Colors.white,
+                      height: 1.3,
+                    ),
+                  ),
+
+                  const SizedBox(
+                    height: 8,
+                  ),
+
+                  Container(
+                    width: 40,
+                    height: 4,
+                    decoration:
+                        BoxDecoration(
+                      borderRadius:
+                          BorderRadius
+                              .circular(
+                        20,
+                      ),
                       color:
                           palette.value,
                     ),
