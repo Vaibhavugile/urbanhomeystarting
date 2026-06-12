@@ -7,11 +7,54 @@ import 'package:rxdart/rxdart.dart'; // Ensure rxdart is imported if not already
 
 
 // Custom Colors for a modern look, aligned with your gradient theme
-const Color kPrimaryColor = Color(0xFF6A1B9A); // Deep Purple
-const Color kAccentColor = Color(0xFFAD1457); // Pink-Red/Magenta
-const Color kLightGrey = Color(0xFFF3F4F6); // Very Light Grey for text field background
-const Color kDarkGrey = Color(0xFF6B7280); // Softer Grey for text and icons on white background
-const Color kReadTickColor = Color(0xFF3B82F6); // Blue for read ticks (distinct operational color)
+// ======================================================
+// PREMIUM APP COLORS
+// ======================================================
+
+const Color kPrimaryColor = Color(0xFF7C3AED);
+const Color kSecondaryColor = Color(0xFF9333EA);
+const Color kAccentColor = Color(0xFFEC4899);
+
+const Color kBackgroundColor = Color(0xFFF8FAFC);
+
+const Color kCardColor = Colors.white;
+
+const Color kLightGrey = Color(0xFFF1F5F9);
+
+const Color kBorderColor = Color(0xFFE2E8F0);
+
+const Color kDarkText = Color(0xFF111827);
+
+const Color kMediumText = Color(0xFF64748B);
+
+const Color kLightText = Color(0xFF94A3B8);
+
+const Color kOnlineColor = Color(0xFF22C55E);
+
+const Color kReadTickColor = Color(0xFF3B82F6);
+
+const Color kErrorColor = Color(0xFFEF4444);
+
+const LinearGradient kPrimaryGradient =
+    LinearGradient(
+  begin: Alignment.topLeft,
+  end: Alignment.bottomRight,
+  colors: [
+    Color(0xFF7C3AED),
+    Color(0xFF9333EA),
+    Color(0xFFEC4899),
+  ],
+);
+
+const LinearGradient kMessageGradient =
+    LinearGradient(
+  begin: Alignment.topLeft,
+  end: Alignment.bottomRight,
+  colors: [
+    Color(0xFF7C3AED),
+    Color(0xFF8B5CF6),
+  ],
+);
 
 class ChatScreen extends StatefulWidget {
   final String chatPartnerId; // The UID of the chat partner
@@ -281,69 +324,196 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white, // Full page background is now white
-      appBar: AppBar(
-        // Removed const for AppBar to allow dynamic flexibleSpace
-        backgroundColor: Colors.transparent, // Make app bar background transparent to show gradient
-        elevation: 0, // No shadow for a flat, modern look
-        flexibleSpace: Container( // Removed const here to fix potential `const_with_non_const` error
-          decoration: const BoxDecoration( // BoxDecoration can be const
-            gradient: LinearGradient(
-              colors: [Color(0xFF6A1B9A), Color(0xFFAD1457)], // Deep Purple to Pink-Red
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-            ),
-          ),
+      backgroundColor: kBackgroundColor, // Full page background is now white
+      appBar: PreferredSize(
+  preferredSize: const Size.fromHeight(80),
+  child: Container(
+    decoration: const BoxDecoration(
+      gradient: kPrimaryGradient,
+    ),
+    child: SafeArea(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(
+          horizontal: 16,
         ),
-        title: Row(
+        child: Row(
           children: [
-            if (widget.chatPartnerImageUrl != null && widget.chatPartnerImageUrl!.isNotEmpty) // Check for empty string too
-              Padding(
-                padding: const EdgeInsets.only(right: 8.0),
-                child: CircleAvatar(
-                  backgroundImage: NetworkImage(widget.chatPartnerImageUrl!),
-                  radius: 20,
-                  backgroundColor: Colors.white, // White background for avatar
+            IconButton(
+              onPressed: () => Navigator.pop(context),
+              icon: const Icon(
+                Icons.arrow_back_ios_new_rounded,
+                color: Colors.white,
+              ),
+            ),
+
+            Stack(
+              children: [
+                CircleAvatar(
+                  radius: 22,
+                  backgroundColor:
+                      Colors.white24,
+                  backgroundImage:
+                      widget.chatPartnerImageUrl != null &&
+                              widget.chatPartnerImageUrl!
+                                  .isNotEmpty
+                          ? NetworkImage(
+                              widget.chatPartnerImageUrl!,
+                            )
+                          : null,
+                  child: widget.chatPartnerImageUrl ==
+                              null ||
+                          widget.chatPartnerImageUrl!
+                              .isEmpty
+                      ? Text(
+                          widget
+                              .chatPartnerName[0]
+                              .toUpperCase(),
+                          style:
+                              const TextStyle(
+                            color:
+                                Colors.white,
+                            fontWeight:
+                                FontWeight
+                                    .bold,
+                          ),
+                        )
+                      : null,
+                ),
+
+                Positioned(
+                  right: 2,
+                  bottom: 2,
+                  child: Container(
+                    width: 12,
+                    height: 12,
+                    decoration:
+                        BoxDecoration(
+                      color:
+                          kOnlineColor,
+                      borderRadius:
+                          BorderRadius
+                              .circular(
+                                  100),
+                      border:
+                          Border.all(
+                        color:
+                            Colors.white,
+                        width: 2,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+
+            const SizedBox(width: 12),
+
+            Expanded(
+              child: Column(
+                mainAxisAlignment:
+                    MainAxisAlignment.center,
+                crossAxisAlignment:
+                    CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    widget.chatPartnerName,
+                    maxLines: 1,
+                    overflow:
+                        TextOverflow
+                            .ellipsis,
+                    style:
+                        const TextStyle(
+                      color:
+                          Colors.white,
+                      fontSize: 18,
+                      fontWeight:
+                          FontWeight
+                              .w800,
+                    ),
+                  ),
+
+                  const SizedBox(height: 2),
+
+                  const Text(
+                    "Active now",
+                    style: TextStyle(
+                      color:
+                          Colors.white70,
+                      fontSize: 12,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+
+            Container(
+              width: 42,
+              height: 42,
+              decoration:
+                  BoxDecoration(
+                color: Colors.white
+                    .withOpacity(.15),
+                borderRadius:
+                    BorderRadius
+                        .circular(
+                            14),
+              ),
+              child: IconButton(
+                onPressed: () {},
+                icon: const Icon(
+                  Icons.call_rounded,
+                  color:
+                      Colors.white,
+                  size: 20,
                 ),
               ),
-            Text(
-              widget.chatPartnerName,
-              style: const TextStyle(
-                fontWeight: FontWeight.bold,
-                fontSize: 20,
-                color: Colors.white, // White text on gradient
+            ),
+
+            const SizedBox(width: 8),
+
+            Container(
+              width: 42,
+              height: 42,
+              decoration:
+                  BoxDecoration(
+                color: Colors.white
+                    .withOpacity(.15),
+                borderRadius:
+                    BorderRadius
+                        .circular(
+                            14),
+              ),
+              child: PopupMenuButton(
+                icon: const Icon(
+                  Icons.more_vert,
+                  color:
+                      Colors.white,
+                ),
+                itemBuilder: (context) =>
+                    [
+                  const PopupMenuItem(
+                    value:
+                        "profile",
+                    child: Text(
+                      "View Profile",
+                    ),
+                  ),
+                  const PopupMenuItem(
+                    value:
+                        "block",
+                    child: Text(
+                      "Block User",
+                    ),
+                  ),
+                ],
               ),
             ),
           ],
         ),
-        iconTheme: const IconThemeData(color: Colors.white), // White back arrow
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.call, color: Colors.white),
-            onPressed: () {},
-            tooltip: 'Audio Call',
-          ),
-          IconButton(
-            icon: const Icon(Icons.video_call, color: Colors.white),
-            onPressed: () {},
-            tooltip: 'Video Call',
-          ),
-          PopupMenuButton<String>(
-            icon: const Icon(Icons.more_vert, color: Colors.white),
-            onSelected: (value) {},
-            itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
-              const PopupMenuItem<String>(
-                value: 'view_profile',
-                child: Text('View Profile'),
-              ),
-              const PopupMenuItem<String>(
-                value: 'block_user',
-                child: Text('Block User'),
-              ),
-            ],
-          ),
-        ],
       ),
+    ),
+  ),
+),
       body: _isLoadingChat // Show loading indicator while chat room is being initialized
           ? const Center(child: CircularProgressIndicator(valueColor: AlwaysStoppedAnimation<Color>(kAccentColor)))
           : Stack(
@@ -363,19 +533,113 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
                       return const Center(child: CircularProgressIndicator(valueColor: AlwaysStoppedAnimation<Color>(kAccentColor)));
                     }
                     if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-                      return const Center(
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(Icons.chat_bubble_outline_rounded, size: 60, color: kDarkGrey),
-                            SizedBox(height: 15),
-                            Text('Start your conversation! 🎉', style: TextStyle(fontSize: 18, color: kDarkGrey)),
-                            SizedBox(height: 5),
-                            Text('No messages yet. Send one to begin.', style: TextStyle(fontSize: 14, color: kDarkGrey)),
-                          ],
-                        ),
-                      );
-                    }
+  return Center(
+    child: Padding(
+      padding: const EdgeInsets.symmetric(
+        horizontal: 32,
+      ),
+      child: Column(
+        mainAxisAlignment:
+            MainAxisAlignment.center,
+        children: [
+          Container(
+            width: 130,
+            height: 130,
+            decoration:
+                const BoxDecoration(
+              gradient:
+                  kPrimaryGradient,
+              shape:
+                  BoxShape.circle,
+            ),
+            child: const Icon(
+              Icons.chat_bubble_rounded,
+              size: 56,
+              color: Colors.white,
+            ),
+          ),
+
+          const SizedBox(height: 28),
+
+          const Text(
+            "Start the Conversation",
+            textAlign:
+                TextAlign.center,
+            style: TextStyle(
+              fontSize: 24,
+              fontWeight:
+                  FontWeight.w800,
+              color: kDarkText,
+            ),
+          ),
+
+          const SizedBox(height: 10),
+
+          const Text(
+            "Say hello, introduce yourself, and start connecting with your match.",
+            textAlign:
+                TextAlign.center,
+            style: TextStyle(
+              fontSize: 15,
+              height: 1.5,
+              color: kMediumText,
+            ),
+          ),
+
+          const SizedBox(height: 28),
+
+          Container(
+            padding:
+                const EdgeInsets.symmetric(
+              horizontal: 20,
+              vertical: 12,
+            ),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius:
+                  BorderRadius.circular(
+                      100),
+              border: Border.all(
+                color: kBorderColor,
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black
+                      .withOpacity(.04),
+                  blurRadius: 15,
+                  offset:
+                      const Offset(0, 6),
+                ),
+              ],
+            ),
+            child: const Row(
+              mainAxisSize:
+                  MainAxisSize.min,
+              children: [
+                Icon(
+                  Icons.waving_hand_rounded,
+                  color:
+                      kPrimaryColor,
+                  size: 18,
+                ),
+                SizedBox(width: 8),
+                Text(
+                  "Be the first to message",
+                  style: TextStyle(
+                    fontWeight:
+                        FontWeight.w600,
+                    color:
+                        kDarkText,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    ),
+  );
+}
 
                     final messages = snapshot.data!.docs;
 
@@ -491,67 +755,115 @@ class _MessageBubble extends StatelessWidget {
   final bool isRead;
 
   const _MessageBubble({
-    Key? key,
+    super.key,
     required this.message,
     required this.time,
     required this.isMe,
     required this.isRead,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      margin: const EdgeInsets.symmetric(vertical: 4.0, horizontal: 0),
-      constraints: BoxConstraints(maxWidth: MediaQuery.of(context).size.width * 0.75),
+      margin: const EdgeInsets.symmetric(
+        vertical: 6,
+      ),
+      constraints: BoxConstraints(
+        maxWidth:
+            MediaQuery.of(context).size.width *
+                0.78,
+      ),
       decoration: BoxDecoration(
-        color: isMe ? kAccentColor.withOpacity(0.9) : kPrimaryColor.withOpacity(0.9), // Uses new kAccentColor
-        borderRadius: BorderRadius.only(
-          topLeft: const Radius.circular(18),
-          topRight: const Radius.circular(18),
-          bottomLeft: isMe ? const Radius.circular(18) : const Radius.circular(6),
-          bottomRight: isMe ? const Radius.circular(6) : const Radius.circular(18),
-        ),
+        gradient: isMe
+            ? const LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [
+                  Color(0xFF7C3AED),
+                  Color(0xFF9333EA),
+                ],
+              )
+            : null,
+        color: isMe
+            ? null
+            : Colors.white,
+        borderRadius:
+            BorderRadius.circular(24),
+        border: !isMe
+            ? Border.all(
+                color: kBorderColor,
+              )
+            : null,
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.08),
-            blurRadius: 6,
-            offset: const Offset(0, 3),
+            color: Colors.black
+                .withOpacity(.05),
+            blurRadius: 18,
+            offset:
+                const Offset(0, 8),
           ),
         ],
       ),
-      padding: const EdgeInsets.symmetric(vertical: 10.0, horizontal: 14.0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.end,
-        children: [
-          Text(
-            message,
-            style: TextStyle(
-              color: isMe ? Colors.white : Colors.white, // White text on "my" gradient, kDarkGrey on white
-              fontSize: 16.0,
-            ),
-          ),
-          const SizedBox(height: 5),
-          Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(
-                time,
-                style: TextStyle(
-                  fontSize: 11.0,
-                  color: isMe ? Colors.white70 : Colors.white,
-                ),
+      child: Padding(
+        padding:
+            const EdgeInsets.symmetric(
+          horizontal: 16,
+          vertical: 12,
+        ),
+        child: Column(
+          crossAxisAlignment:
+              CrossAxisAlignment.end,
+          children: [
+            Text(
+              message,
+              style: TextStyle(
+                color: isMe
+                    ? Colors.white
+                    : kDarkText,
+                fontSize: 15,
+                height: 1.4,
+                fontWeight:
+                    FontWeight.w500,
               ),
-              if (isMe) ...[
-                const SizedBox(width: 4),
-                Icon(
-                  isRead ? Icons.done_all : Icons.done,
-                  size: 15,
-                  color: isRead ? kReadTickColor : (isMe ? Colors.white70 : Colors.grey[600]),
+            ),
+
+            const SizedBox(height: 8),
+
+            Row(
+              mainAxisSize:
+                  MainAxisSize.min,
+              children: [
+                Text(
+                  time,
+                  style: TextStyle(
+                    fontSize: 11,
+                    fontWeight:
+                        FontWeight.w500,
+                    color: isMe
+                        ? Colors.white70
+                        : kMediumText,
+                  ),
                 ),
+
+                if (isMe) ...[
+                  const SizedBox(
+                    width: 4,
+                  ),
+
+                  Icon(
+                    isRead
+                        ? Icons.done_all_rounded
+                        : Icons.done_rounded,
+                    size: 16,
+                    color: isRead
+                        ? kReadTickColor
+                        : Colors.white70,
+                  ),
+                ],
               ],
-            ],
-          ),
-        ],
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -561,24 +873,73 @@ class _MessageBubble extends StatelessWidget {
 class _DateSeparator extends StatelessWidget {
   final DateTime date;
 
-  const _DateSeparator({Key? key, required this.date}) : super(key: key);
+  const _DateSeparator({
+    super.key,
+    required this.date,
+  });
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      margin: const EdgeInsets.symmetric(vertical: 10.0),
-      padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 6.0),
-      decoration: BoxDecoration(
-        color: Colors.white, // Keep a light grey for separation
-        borderRadius: BorderRadius.circular(20.0),
+    return Padding(
+      padding: const EdgeInsets.symmetric(
+        vertical: 16,
       ),
-      child: Text(
-        DateFormat('MMMM d, y').format(date),
-        style: const TextStyle(
-          color: kDarkGrey, // Dark grey text on light grey background
-          fontSize: 12.0,
-          fontWeight: FontWeight.w600,
-        ),
+      child: Row(
+        children: [
+          Expanded(
+            child: Container(
+              height: 1,
+              color: kBorderColor,
+            ),
+          ),
+
+          Container(
+            margin: const EdgeInsets.symmetric(
+              horizontal: 12,
+            ),
+            padding:
+                const EdgeInsets.symmetric(
+              horizontal: 14,
+              vertical: 8,
+            ),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius:
+                  BorderRadius.circular(
+                      100),
+              border: Border.all(
+                color: kBorderColor,
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black
+                      .withOpacity(.03),
+                  blurRadius: 10,
+                  offset:
+                      const Offset(0, 4),
+                ),
+              ],
+            ),
+            child: Text(
+              DateFormat(
+                'MMMM d, y',
+              ).format(date),
+              style: const TextStyle(
+                color: kMediumText,
+                fontSize: 12,
+                fontWeight:
+                    FontWeight.w600,
+              ),
+            ),
+          ),
+
+          Expanded(
+            child: Container(
+              height: 1,
+              color: kBorderColor,
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -591,74 +952,167 @@ class _MessageInput extends StatelessWidget {
   final VoidCallback onSendMessage;
 
   const _MessageInput({
-    Key? key,
+    super.key,
     required this.controller,
     required this.onSendMessage,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 8.0),
-      color: Colors.white, // White background for the input area
-      child: Row(
-        children: [
-          IconButton(
-            icon: const Icon(Icons.add_circle_outline, color: kPrimaryColor, size: 28), // Uses new kPrimaryColor
-            onPressed: () {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Attachment functionality coming soon!')),
-              );
-            },
-            tooltip: 'Attach File',
-          ),
-          Expanded(
-            child: TextField(
-              controller: controller,
-              decoration: InputDecoration(
-                hintText: 'Type your message...',
-                hintStyle: TextStyle(color: Colors.grey[500]),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(28.0),
-                  borderSide: BorderSide.none,
-                ),
-                filled: true,
-                fillColor: kLightGrey, // Very light grey for text field fill
-                contentPadding: const EdgeInsets.symmetric(horizontal: 18.0, vertical: 12.0),
-                suffixIcon: IconButton(
-                  icon: const Icon(Icons.emoji_emotions_outlined, color: kPrimaryColor), // Uses new kPrimaryColor
-                  onPressed: () {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Emoji picker coming soon!')),
-                    );
-                  },
-                  tooltip: 'Emoji',
+    return SafeArea(
+      top: false,
+      child: Container(
+        padding: const EdgeInsets.fromLTRB(
+          16,
+          12,
+          16,
+          16,
+        ),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(.05),
+              blurRadius: 20,
+              offset: const Offset(0, -6),
+            ),
+          ],
+        ),
+        child: Row(
+          crossAxisAlignment:
+              CrossAxisAlignment.end,
+          children: [
+            Container(
+              width: 48,
+              height: 48,
+              decoration: BoxDecoration(
+                color: kLightGrey,
+                borderRadius:
+                    BorderRadius.circular(
+                        16),
+              ),
+              child: IconButton(
+                onPressed: () {
+                  ScaffoldMessenger.of(
+                    context,
+                  ).showSnackBar(
+                    const SnackBar(
+                      content: Text(
+                        "Attachments coming soon",
+                      ),
+                    ),
+                  );
+                },
+                icon: const Icon(
+                  Icons.add_rounded,
+                  color: kPrimaryColor,
                 ),
               ),
-              onSubmitted: (value) => onSendMessage(),
-              textCapitalization: TextCapitalization.sentences,
-              keyboardType: TextInputType.text,
-              maxLines: null,
-              minLines: 1,
             ),
-          ),
-          const SizedBox(width: 8.0),
-          Container(
-            decoration: const BoxDecoration(
-              gradient: LinearGradient(
-                colors: [Color(0xFF6A1B9A), Color(0xFFAD1457)], // Deep Purple to Pink-Red
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
+
+            const SizedBox(width: 12),
+
+            Expanded(
+              child: Container(
+                decoration:
+                    BoxDecoration(
+                  color: Colors.white,
+                  borderRadius:
+                      BorderRadius
+                          .circular(
+                              28),
+                  border: Border.all(
+                    color:
+                        kBorderColor,
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors
+                          .black
+                          .withOpacity(
+                              .03),
+                      blurRadius: 10,
+                      offset:
+                          const Offset(
+                              0, 4),
+                    ),
+                  ],
+                ),
+                child: TextField(
+                  controller:
+                      controller,
+                  minLines: 1,
+                  maxLines: 5,
+                  textCapitalization:
+                      TextCapitalization
+                          .sentences,
+                  decoration:
+                      InputDecoration(
+                    hintText:
+                        "Type a message...",
+                    hintStyle:
+                        const TextStyle(
+                      color:
+                          kMediumText,
+                    ),
+                    border:
+                        InputBorder.none,
+                    contentPadding:
+                        const EdgeInsets.symmetric(
+                      horizontal: 18,
+                      vertical: 14,
+                    ),
+                    suffixIcon:
+                        IconButton(
+                      onPressed: () {
+                        ScaffoldMessenger.of(
+                          context,
+                        ).showSnackBar(
+                          const SnackBar(
+                            content: Text(
+                              "Emoji picker coming soon",
+                            ),
+                          ),
+                        );
+                      },
+                      icon: const Icon(
+                        Icons
+                            .emoji_emotions_outlined,
+                        color:
+                            kPrimaryColor,
+                      ),
+                    ),
+                  ),
+                  onSubmitted:
+                      (_) =>
+                          onSendMessage(),
+                ),
               ),
-              shape: BoxShape.circle,
             ),
-            child: IconButton(
-              onPressed: onSendMessage,
-              icon: const Icon(Icons.send_rounded, color: Colors.white), // White icon on gradient
-              tooltip: 'Send message',
+
+            const SizedBox(width: 12),
+
+            GestureDetector(
+              onTap: onSendMessage,
+              child: Container(
+                width: 56,
+                height: 56,
+                decoration:
+                    const BoxDecoration(
+                  gradient:
+                      kPrimaryGradient,
+                  shape:
+                      BoxShape.circle,
+                ),
+                child: const Icon(
+                  Icons.send_rounded,
+                  color: Colors.white,
+                  size: 24,
+                ),
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
