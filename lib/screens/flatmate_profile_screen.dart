@@ -13,34 +13,7 @@ class FlatListingProfile {
   String? uid; // Added: To store the user ID (UID)
   UserProfile userProfile; // The new required field
 
-  // Basic Info - Moved to UserProfile
-  // String ownerName;
-  // String? ownerPhonenumber;
-  // int? ownerAge;
-  // String ownerGender;
-  // String ownerOccupation;
-  // String ownerReligion;
-  // String ownerBio;
-  // String desiredCity;
-  // String areaPreference;
-
-  // Habits - Moved to UserProfile
-  // String smokingHabit;
-  // String drinkingHabit;
-  // String foodPreference;
-  // String cleanlinessLevel;
-  // String noiseLevel;
-  // String socialPreferences;
-  // String visitorsPolicy;
-  // String petOwnership;
-  // String petTolerance;
-  // String sleepingSchedule;
-  // String workSchedule;
-  // String sharingCommonSpaces;
-  // String guestsOvernightPolicy;
-  // String personalSpaceVsSocialization;
-
-  // Flat Details
+  
   String flatType;
   String roomType;
   String furnishedStatus;
@@ -242,7 +215,8 @@ class SingleChoiceQuestionWidget extends StatefulWidget {
       _SingleChoiceQuestionWidgetState();
 }
 
-class _SingleChoiceQuestionWidgetState extends State<SingleChoiceQuestionWidget> {
+class _SingleChoiceQuestionWidgetState
+    extends State<SingleChoiceQuestionWidget> {
   String? _selectedOption;
 
   @override
@@ -252,161 +226,220 @@ class _SingleChoiceQuestionWidgetState extends State<SingleChoiceQuestionWidget>
   }
 
   @override
-  void didUpdateWidget(covariant SingleChoiceQuestionWidget oldWidget) {
+  void didUpdateWidget(
+      covariant SingleChoiceQuestionWidget oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (widget.initialValue != oldWidget.initialValue && widget.initialValue != _selectedOption) {
-      setState(() {
-        _selectedOption = widget.initialValue;
-      });
+
+    if (widget.initialValue !=
+            oldWidget.initialValue &&
+        widget.initialValue != _selectedOption) {
+      _selectedOption = widget.initialValue;
     }
   }
 
-  Widget _buildChipOptions(List<String> options) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 0),
-      child: Wrap(
-        spacing: 10.0,
-        runSpacing: 10.0,
-        children: options.map((option) {
-          final isSelected = _selectedOption == option;
+  Widget _buildPremiumOptions() {
+    return SingleChildScrollView(
+      child: Column(
+        children: widget.options.map((option) {
+          final isSelected =
+              _selectedOption == option;
 
-          return ChoiceChip(
-            label: Text(option),
-            selected: isSelected,
-            onSelected: (bool selected) {
-              if (selected) {
-                setState(() {
-                  _selectedOption = option;
-                });
-                widget.onSelected(option);
-              }
+          return GestureDetector(
+            onTap: () {
+              setState(() {
+                _selectedOption = option;
+              });
+
+              widget.onSelected(option);
             },
-            selectedColor: Colors.red[700],
-            labelStyle: TextStyle(
-              color: isSelected ? Colors.white : Colors.black,
-              fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-            ),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(30),
-              side: BorderSide(
-                color: isSelected ? Colors.red[700]! : Colors.grey.shade300,
-                width: 2,
+            child: AnimatedContainer(
+              duration: const Duration(
+                milliseconds: 250,
+              ),
+              margin:
+                  const EdgeInsets.only(bottom: 14),
+              padding:
+                  const EdgeInsets.all(18),
+              decoration: BoxDecoration(
+                borderRadius:
+                    BorderRadius.circular(24),
+
+                gradient: isSelected
+                    ? const LinearGradient(
+                        begin:
+                            Alignment.topLeft,
+                        end: Alignment
+                            .bottomRight,
+                        colors: [
+                          Color(0xFF7C3AED),
+                          Color(0xFF9333EA),
+                          Color(0xFFEC4899),
+                        ],
+                      )
+                    : null,
+
+                color: isSelected
+                    ? null
+                    : Colors.white,
+
+                border: Border.all(
+                  color: isSelected
+                      ? Colors.transparent
+                      : const Color(
+                          0xFFE5E7EB),
+                  width: 1.5,
+                ),
+
+                boxShadow: [
+                  BoxShadow(
+                    color: isSelected
+                        ? const Color(
+                                0xFF7C3AED)
+                            .withOpacity(.25)
+                        : Colors.black
+                            .withOpacity(.05),
+                    blurRadius: 20,
+                    offset:
+                        const Offset(0, 8),
+                  ),
+                ],
+              ),
+              child: Row(
+                children: [
+                  AnimatedContainer(
+                    duration:
+                        const Duration(
+                      milliseconds: 250,
+                    ),
+                    width: 28,
+                    height: 28,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: isSelected
+                          ? Colors.white
+                          : Colors
+                              .transparent,
+                      border: Border.all(
+                        color: isSelected
+                            ? Colors.white
+                            : const Color(
+                                0xFFD1D5DB),
+                        width: 2,
+                      ),
+                    ),
+                    child: isSelected
+                        ? const Icon(
+                            Icons.check,
+                            size: 16,
+                            color: Color(
+                                0xFF7C3AED),
+                          )
+                        : null,
+                  ),
+
+                  const SizedBox(width: 16),
+
+                  Expanded(
+                    child: Text(
+                      option,
+                      style: TextStyle(
+                        color: isSelected
+                            ? Colors.white
+                            : const Color(
+                                0xFF111827),
+                        fontWeight:
+                            FontWeight.w700,
+                        fontSize: 16,
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ),
-            backgroundColor: Colors.transparent,
-            showCheckmark: true,
-            checkmarkColor: Colors.white,
-            elevation: 0,
-            pressElevation: 0,
           );
         }).toList(),
       ),
     );
   }
 
-  Widget _buildCardOptions(List<String> options) {
-    return GridView.builder(
-      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 2,
-        crossAxisSpacing: 10,
-        mainAxisSpacing: 10,
-        childAspectRatio: 1.5,
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding:
+          const EdgeInsets.symmetric(
+        horizontal: 24,
       ),
-      padding: EdgeInsets.zero,
-      itemCount: options.length,
-      itemBuilder: (context, index) {
-        final option = options[index];
-        final isSelected = _selectedOption == option;
-        return GestureDetector(
-          onTap: () {
-            setState(() {
-              _selectedOption = option;
-            });
-            widget.onSelected(option);
-          },
-          child: Container(
+      child: Column(
+        crossAxisAlignment:
+            CrossAxisAlignment.start,
+        children: [
+          Container(
+            padding:
+                const EdgeInsets.all(22),
             decoration: BoxDecoration(
-              color: isSelected ? Colors.red.withOpacity(0.1) : Colors.white,
-              borderRadius: BorderRadius.circular(15),
-              border: Border.all(
-                color: isSelected ? Colors.redAccent : Colors.grey.shade300,
-                width: 2,
-              ),
-              boxShadow: isSelected
-                  ? [
+              color: Colors.white,
+              borderRadius:
+                  BorderRadius.circular(28),
+              boxShadow: [
                 BoxShadow(
-                  color: Colors.red.withOpacity(0.2),
-                  spreadRadius: 1,
-                  blurRadius: 5,
-                  offset: const Offset(0, 3),
-                ),
-              ]
-                  : [
-                BoxShadow(
-                  color: Colors.grey.withOpacity(0.1),
-                  spreadRadius: 1,
-                  blurRadius: 3,
-                  offset: const Offset(0, 2),
+                  color: Colors.black
+                      .withOpacity(.04),
+                  blurRadius: 20,
+                  offset:
+                      const Offset(0, 8),
                 ),
               ],
             ),
             child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment:
+                  CrossAxisAlignment.start,
               children: [
                 Text(
-                  option,
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-                    color: isSelected ? Colors.redAccent : Colors.black,
+                  widget.title,
+                  style:
+                      const TextStyle(
+                    fontSize: 26,
+                    fontWeight:
+                        FontWeight.w800,
+                    color:
+                        Color(0xFF111827),
                   ),
                 ),
-                if (isSelected)
-                  const Icon(Icons.check_circle,
-                      color: Colors.redAccent, size: 20),
+
+                const SizedBox(height: 10),
+
+                Text(
+                  widget.subtitle,
+                  style:
+                      const TextStyle(
+                    fontSize: 15,
+                    height: 1.5,
+                    color:
+                        Color(0xFF6B7280),
+                  ),
+                ),
               ],
             ),
           ),
-        );
-      },
-    );
-  }
 
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 24.0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            widget.title,
-            style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            widget.subtitle,
-            style: const TextStyle(fontSize: 15, color: Colors.grey),
-          ),
-          const SizedBox(height: 30),
+          const SizedBox(height: 24),
+
           Expanded(
-            child: widget.isCard
-                ? _buildCardOptions(widget.options)
-                : _buildChipOptions(widget.options),
+            child: _buildPremiumOptions(),
           ),
         ],
       ),
     );
   }
 }
-
 // Stateful Widget for Multi Choice Questions
-class MultiChoiceQuestionWidget extends StatefulWidget {
+class MultiChoiceQuestionWidget
+    extends StatefulWidget {
   final String title;
   final String subtitle;
   final List<String> options;
-  final Function(List<String>) onSelected;
+  final Function(List<String>)
+      onSelected;
   final List<String> initialValues;
 
   const MultiChoiceQuestionWidget({
@@ -419,85 +452,319 @@ class MultiChoiceQuestionWidget extends StatefulWidget {
   });
 
   @override
-  State<MultiChoiceQuestionWidget> createState() => _MultiChoiceQuestionWidgetState();
+  State<MultiChoiceQuestionWidget>
+      createState() =>
+          _MultiChoiceQuestionWidgetState();
 }
 
-class _MultiChoiceQuestionWidgetState extends State<MultiChoiceQuestionWidget> {
-  late List<String> _selectedOptions;
+class _MultiChoiceQuestionWidgetState
+    extends State<
+        MultiChoiceQuestionWidget> {
+  late List<String>
+      _selectedOptions;
 
   @override
   void initState() {
     super.initState();
-    _selectedOptions = List.from(widget.initialValues);
+    _selectedOptions = List.from(
+      widget.initialValues,
+    );
   }
 
   @override
-  void didUpdateWidget(covariant MultiChoiceQuestionWidget oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    if (widget.initialValues != oldWidget.initialValues) {
-      setState(() {
-        _selectedOptions = List.from(widget.initialValues);
-      });
+  void didUpdateWidget(
+      covariant MultiChoiceQuestionWidget
+          oldWidget) {
+    super.didUpdateWidget(
+        oldWidget);
+
+    if (widget.initialValues !=
+        oldWidget.initialValues) {
+      _selectedOptions =
+          List.from(
+              widget.initialValues);
     }
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(
+      BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 24.0),
+      padding:
+          const EdgeInsets.symmetric(
+        horizontal: 24,
+      ),
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+        crossAxisAlignment:
+            CrossAxisAlignment.start,
         children: [
-          Text(
-            widget.title,
-            style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            widget.subtitle,
-            style: const TextStyle(fontSize: 15, color: Colors.grey),
-          ),
-          const SizedBox(height: 30),
-          Expanded(
-            child: SingleChildScrollView(
-              child: Wrap(
-                spacing: 10,
-                runSpacing: 10,
-                children: widget.options.map((option) {
-                  final isSelected = _selectedOptions.contains(option);
-                  return ChoiceChip(
-                    label: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Text(option),
-                        if (isSelected) const SizedBox(width: 8),
-                        if (isSelected) const Icon(Icons.check, size: 18, color: Colors.redAccent),
-                      ],
+          Container(
+            padding:
+                const EdgeInsets.all(
+                    22),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius:
+                  BorderRadius.circular(
+                      28),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black
+                      .withOpacity(.04),
+                  blurRadius: 20,
+                  offset:
+                      const Offset(
+                          0, 8),
+                ),
+              ],
+            ),
+            child: Column(
+              crossAxisAlignment:
+                  CrossAxisAlignment
+                      .start,
+              children: [
+                Text(
+                  widget.title,
+                  style:
+                      const TextStyle(
+                    fontSize: 26,
+                    fontWeight:
+                        FontWeight.w800,
+                    color: Color(
+                        0xFF111827),
+                  ),
+                ),
+
+                const SizedBox(
+                    height: 10),
+
+                Text(
+                  widget.subtitle,
+                  style:
+                      const TextStyle(
+                    fontSize: 15,
+                    color: Color(
+                        0xFF6B7280),
+                    height: 1.5,
+                  ),
+                ),
+
+                const SizedBox(
+                    height: 12),
+
+                Container(
+                  padding:
+                      const EdgeInsets
+                          .symmetric(
+                    horizontal: 12,
+                    vertical: 8,
+                  ),
+                  decoration:
+                      BoxDecoration(
+                    color:
+                        const Color(
+                      0xFFF3F4F6,
                     ),
-                    selected: isSelected,
-                    onSelected: (selected) {
+                    borderRadius:
+                        BorderRadius
+                            .circular(
+                                12),
+                  ),
+                  child: Text(
+                    "${_selectedOptions.length} selected",
+                    style:
+                        const TextStyle(
+                      fontWeight:
+                          FontWeight
+                              .w600,
+                      color: Color(
+                          0xFF7C3AED),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+
+          const SizedBox(height: 24),
+
+          Expanded(
+            child:
+                SingleChildScrollView(
+              child: Wrap(
+                spacing: 12,
+                runSpacing: 12,
+                children: widget.options
+                    .map((option) {
+                  final isSelected =
+                      _selectedOptions
+                          .contains(
+                              option);
+
+                  return GestureDetector(
+                    onTap: () {
                       setState(() {
-                        if (selected) {
-                          _selectedOptions.add(option);
+                        if (isSelected) {
+                          _selectedOptions
+                              .remove(
+                                  option);
                         } else {
-                          _selectedOptions.remove(option);
+                          _selectedOptions
+                              .add(
+                                  option);
                         }
-                        widget.onSelected(_selectedOptions);
+
+                        widget
+                            .onSelected(
+                          _selectedOptions,
+                        );
                       });
                     },
-                    labelPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(30),
-                    ),
-                    side: BorderSide(
-                      color: isSelected ? Colors.redAccent : Colors.grey.shade300,
-                      width: 1.5,
-                    ),
-                    backgroundColor: Colors.grey.shade50,
-                    selectedColor: Colors.red.withOpacity(0.1),
-                    labelStyle: TextStyle(
-                      color: isSelected ? Colors.redAccent : Colors.black,
-                      fontWeight: FontWeight.w600,
+                    child:
+                        AnimatedContainer(
+                      duration:
+                          const Duration(
+                        milliseconds:
+                            250,
+                      ),
+                      padding:
+                          const EdgeInsets
+                              .symmetric(
+                        horizontal:
+                            16,
+                        vertical: 14,
+                      ),
+                      decoration:
+                          BoxDecoration(
+                        borderRadius:
+                            BorderRadius
+                                .circular(
+                                    18),
+
+                        gradient:
+                            isSelected
+                                ? const LinearGradient(
+                                    begin:
+                                        Alignment.topLeft,
+                                    end:
+                                        Alignment.bottomRight,
+                                    colors: [
+                                      Color(
+                                          0xFF7C3AED),
+                                      Color(
+                                          0xFF9333EA),
+                                      Color(
+                                          0xFFEC4899),
+                                    ],
+                                  )
+                                : null,
+
+                        color:
+                            isSelected
+                                ? null
+                                : Colors
+                                    .white,
+
+                        border:
+                            Border.all(
+                          color: isSelected
+                              ? Colors
+                                  .transparent
+                              : const Color(
+                                  0xFFE5E7EB),
+                          width: 1.5,
+                        ),
+
+                        boxShadow: [
+                          BoxShadow(
+                            color: isSelected
+                                ? const Color(
+                                        0xFF7C3AED)
+                                    .withOpacity(
+                                        .25)
+                                : Colors
+                                    .black
+                                    .withOpacity(
+                                        .04),
+                            blurRadius:
+                                18,
+                            offset:
+                                const Offset(
+                                    0,
+                                    8),
+                          ),
+                        ],
+                      ),
+                      child: Row(
+                        mainAxisSize:
+                            MainAxisSize
+                                .min,
+                        children: [
+                          AnimatedContainer(
+                            duration:
+                                const Duration(
+                              milliseconds:
+                                  250,
+                            ),
+                            width: 22,
+                            height: 22,
+                            decoration:
+                                BoxDecoration(
+                              shape: BoxShape
+                                  .circle,
+                              color:
+                                  isSelected
+                                      ? Colors
+                                          .white
+                                      : Colors
+                                          .transparent,
+                              border:
+                                  Border
+                                      .all(
+                                color: isSelected
+                                    ? Colors.white
+                                    : const Color(
+                                        0xFFD1D5DB),
+                                width:
+                                    2,
+                              ),
+                            ),
+                            child:
+                                isSelected
+                                    ? const Icon(
+                                        Icons
+                                            .check,
+                                        size:
+                                            14,
+                                        color:
+                                            Color(0xFF7C3AED),
+                                      )
+                                    : null,
+                          ),
+
+                          const SizedBox(
+                              width:
+                                  10),
+
+                          Text(
+                            option,
+                            style:
+                                TextStyle(
+                              color:
+                                  isSelected
+                                      ? Colors
+                                          .white
+                                      : const Color(
+                                          0xFF111827),
+                              fontWeight:
+                                  FontWeight
+                                      .w600,
+                              fontSize:
+                                  14,
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                   );
                 }).toList(),
@@ -755,517 +1022,1008 @@ class _FlatmateProfileScreenState extends State<FlatmateProfileScreen> {
 
   // --- Common Question Builders ---
 
-  Widget _buildTextQuestion({
-    required String title,
-    required String subtitle,
-    required String hintText,
-    required TextEditingController controller,
-    TextInputType keyboardType = TextInputType.text,
-    List<TextInputFormatter>? inputFormatters,
-    int? maxLines = 1,
-    Widget? prefixIcon, // New parameter
-    Widget? suffixIcon, // New parameter
-  }) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 24.0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            title,
-            style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            subtitle,
-            style: const TextStyle(fontSize: 15, color: Colors.grey),
-          ),
-          const SizedBox(height: 30),
-          TextField(
-            controller: controller,
-            keyboardType: keyboardType,
-            inputFormatters: inputFormatters,
-            maxLines: maxLines,
-            decoration: InputDecoration(
-              hintText: hintText,
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(15),
-                borderSide: BorderSide.none,
-              ),
-              filled: true,
-              fillColor: Colors.grey[200],
-              prefixIcon: prefixIcon,
-              suffixIcon: suffixIcon,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
+Widget _buildTextQuestion({
+  required String title,
+  required String subtitle,
+  required String hintText,
+  required TextEditingController controller,
+  TextInputType keyboardType =
+      TextInputType.text,
+  List<TextInputFormatter>?
+      inputFormatters,
+  int? maxLines = 1,
+  Widget? prefixIcon,
+  Widget? suffixIcon,
+}) {
+  return Padding(
+    padding:
+        const EdgeInsets.symmetric(
+      horizontal: 24,
+    ),
+    child: Column(
+      crossAxisAlignment:
+          CrossAxisAlignment.start,
+      children: [
+        // HEADER CARD
 
-  Widget _buildDateQuestion({
-    required String title,
-    required String subtitle,
-    required Function(DateTime?) onDateSelected,
-    DateTime? initialDate,
-  }) {
-    return StatefulBuilder(
-      builder: (context, setState) {
-        DateTime? selectedDate = initialDate;
-        return Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 24.0),
+        Container(
+          padding:
+              const EdgeInsets.all(
+                  22),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius:
+                BorderRadius.circular(
+                    28),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black
+                    .withOpacity(.04),
+                blurRadius: 20,
+                offset:
+                    const Offset(
+                        0, 8),
+              ),
+            ],
+          ),
           child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+            crossAxisAlignment:
+                CrossAxisAlignment
+                    .start,
             children: [
               Text(
                 title,
                 style:
-                const TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+                    const TextStyle(
+                  fontSize: 26,
+                  fontWeight:
+                      FontWeight.w800,
+                  color: Color(
+                      0xFF111827),
+                ),
               ),
-              const SizedBox(height: 8),
+
+              const SizedBox(
+                  height: 10),
+
               Text(
                 subtitle,
-                style: const TextStyle(fontSize: 15, color: Colors.grey),
+                style:
+                    const TextStyle(
+                  fontSize: 15,
+                  height: 1.5,
+                  color: Color(
+                      0xFF6B7280),
+                ),
               ),
-              const SizedBox(height: 30),
-              GestureDetector(
-                onTap: () async {
-                  final DateTime? picked = await showDatePicker(
-                    context: context,
-                    initialDate: selectedDate ?? DateTime.now(),
-                    firstDate: DateTime(2000),
-                    lastDate: DateTime(2101),
-                    builder: (context, child) {
-                      return Theme(
-                        data: ThemeData.light().copyWith(
-                          colorScheme: const ColorScheme.light(
-                            primary: Colors.redAccent,
-                            onPrimary: Colors.white,
-                            onSurface: Colors.black,
-                          ),
-                          textButtonTheme: TextButtonThemeData(
-                            style: TextButton.styleFrom(
-                              foregroundColor:
-                              Colors.redAccent,
+            ],
+          ),
+        ),
+
+        const SizedBox(height: 24),
+
+        // TEXT FIELD CARD
+
+        Container(
+          decoration:
+              BoxDecoration(
+            color: Colors.white,
+            borderRadius:
+                BorderRadius.circular(
+                    24),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black
+                    .withOpacity(.05),
+                blurRadius: 18,
+                offset:
+                    const Offset(
+                        0, 8),
+              ),
+            ],
+          ),
+          child: TextField(
+            controller: controller,
+            keyboardType:
+                keyboardType,
+            inputFormatters:
+                inputFormatters,
+            maxLines: maxLines,
+            cursorColor:
+                const Color(
+              0xFF7C3AED,
+            ),
+            style:
+                const TextStyle(
+              fontSize: 16,
+              fontWeight:
+                  FontWeight.w500,
+              color:
+                  Color(0xFF111827),
+            ),
+            decoration:
+                InputDecoration(
+              hintText: hintText,
+
+              hintStyle:
+                  const TextStyle(
+                color:
+                    Color(0xFF9CA3AF),
+                fontWeight:
+                    FontWeight.w500,
+              ),
+
+              prefixIcon:
+                  prefixIcon ??
+                      const Icon(
+                    Icons
+                        .edit_rounded,
+                    color: Color(
+                        0xFF7C3AED),
+                  ),
+
+              suffixIcon:
+                  suffixIcon,
+
+              filled: true,
+              fillColor:
+                  Colors.white,
+
+              contentPadding:
+                  EdgeInsets.symmetric(
+                horizontal: 20,
+                vertical:
+                    maxLines == 1
+                        ? 18
+                        : 22,
+              ),
+
+              border:
+                  OutlineInputBorder(
+                borderRadius:
+    BorderRadius.circular(24),
+                borderSide:
+                    BorderSide.none,
+              ),
+
+              enabledBorder:
+                  OutlineInputBorder(
+                borderRadius:
+                    BorderRadius
+                        .circular(
+                            24),
+                borderSide:
+                    const BorderSide(
+                  color: Color(
+                      0xFFE5E7EB),
+                  width: 1.2,
+                ),
+              ),
+
+              focusedBorder:
+                  OutlineInputBorder(
+                borderRadius:
+                    BorderRadius
+                        .circular(
+                            24),
+                borderSide:
+                    const BorderSide(
+                  color: Color(
+                      0xFF7C3AED),
+                  width: 2,
+                ),
+              ),
+            ),
+          ),
+        ),
+
+        if (maxLines != null &&
+            maxLines > 1)
+          const Padding(
+            padding:
+                EdgeInsets.only(
+              top: 12,
+            ),
+            child: Text(
+              "Write a clear and detailed description to get better matches.",
+              style: TextStyle(
+                fontSize: 13,
+                color:
+                    Color(0xFF6B7280),
+              ),
+            ),
+          ),
+      ],
+    ),
+  );
+}
+
+  Widget _buildDateQuestion({
+  required String title,
+  required String subtitle,
+  required Function(DateTime?) onDateSelected,
+  DateTime? initialDate,
+}) {
+  return StatefulBuilder(
+    builder: (context, setState) {
+      DateTime? selectedDate = initialDate;
+
+      return Padding(
+        padding: const EdgeInsets.symmetric(
+          horizontal: 24,
+        ),
+        child: Column(
+          crossAxisAlignment:
+              CrossAxisAlignment.start,
+          children: [
+            // HEADER CARD
+
+            Container(
+              padding:
+                  const EdgeInsets.all(22),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius:
+                    BorderRadius.circular(
+                        28),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black
+                        .withOpacity(.04),
+                    blurRadius: 20,
+                    offset:
+                        const Offset(
+                            0, 8),
+                  ),
+                ],
+              ),
+              child: Column(
+                crossAxisAlignment:
+                    CrossAxisAlignment
+                        .start,
+                children: [
+                  Text(
+                    title,
+                    style:
+                        const TextStyle(
+                      fontSize: 26,
+                      fontWeight:
+                          FontWeight.w800,
+                      color: Color(
+                          0xFF111827),
+                    ),
+                  ),
+
+                  const SizedBox(
+                      height: 10),
+
+                  Text(
+                    subtitle,
+                    style:
+                        const TextStyle(
+                      fontSize: 15,
+                      height: 1.5,
+                      color: Color(
+                          0xFF6B7280),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+
+            const SizedBox(height: 24),
+
+            GestureDetector(
+              onTap: () async {
+                final picked =
+                    await showDatePicker(
+                  context: context,
+                  initialDate:
+                      selectedDate ??
+                          DateTime.now(),
+                  firstDate:
+                      DateTime(2020),
+                  lastDate:
+                      DateTime(2100),
+                  builder:
+                      (context, child) {
+                    return Theme(
+                      data: Theme.of(
+                              context)
+                          .copyWith(
+                        colorScheme:
+                            const ColorScheme
+                                .light(
+                          primary:
+                              Color(
+                                  0xFF7C3AED),
+                          secondary:
+                              Color(
+                                  0xFFEC4899),
+                        ),
+                      ),
+                      child: child!,
+                    );
+                  },
+                );
+
+                if (picked != null) {
+                  setState(() {
+                    selectedDate =
+                        picked;
+                  });
+
+                  onDateSelected(
+                    picked,
+                  );
+                }
+              },
+
+              child: AnimatedContainer(
+                duration:
+                    const Duration(
+                  milliseconds: 250,
+                ),
+                padding:
+                    const EdgeInsets.all(
+                        20),
+                decoration:
+                    BoxDecoration(
+                  color: Colors.white,
+                  borderRadius:
+                      BorderRadius
+                          .circular(
+                              24),
+                  border: Border.all(
+                    color:
+                        selectedDate !=
+                                null
+                            ? const Color(
+                                0xFF7C3AED)
+                            : const Color(
+                                0xFFE5E7EB),
+                    width: 1.5,
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors
+                          .black
+                          .withOpacity(
+                              .05),
+                      blurRadius: 18,
+                      offset:
+                          const Offset(
+                              0, 8),
+                    ),
+                  ],
+                ),
+                child: Row(
+                  children: [
+                    Container(
+                      width: 52,
+                      height: 52,
+                      decoration:
+                          BoxDecoration(
+                        gradient:
+                            const LinearGradient(
+                          colors: [
+                            Color(
+                                0xFF7C3AED),
+                            Color(
+                                0xFFEC4899),
+                          ],
+                        ),
+                        borderRadius:
+                            BorderRadius
+                                .circular(
+                                    16),
+                      ),
+                      child: const Icon(
+                        Icons
+                            .calendar_month_rounded,
+                        color:
+                            Colors.white,
+                      ),
+                    ),
+
+                    const SizedBox(
+                        width: 16),
+
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment:
+                            CrossAxisAlignment
+                                .start,
+                        children: [
+                          const Text(
+                            "Selected Date",
+                            style:
+                                TextStyle(
+                              fontSize:
+                                  13,
+                              color: Color(
+                                  0xFF6B7280),
                             ),
                           ),
-                        ),
-                        child: child!,
-                      );
-                    },
-                  );
-                  if (picked != null && picked != selectedDate) {
-                    setState(() {
-                      selectedDate = picked;
-                    });
-                    onDateSelected(picked);
-                  }
-                },
-                child: Container(
-                  padding:
-                  const EdgeInsets.symmetric(vertical: 15, horizontal: 15),
-                  decoration: BoxDecoration(
-                    color: Colors.grey[200],
-                    borderRadius: BorderRadius.circular(15),
-                  ),
-                  child: Row(
-                    children: [
-                      const Icon(Icons.calendar_today, color: Colors.grey),
-                      const SizedBox(width: 10),
-                      Text(
-                        selectedDate == null
-                            ? 'Select a date'
-                            : DateFormat('dd/MM/yyyy').format(selectedDate!),
-                        style: TextStyle(
-                            fontSize: 16,
-                            color: selectedDate == null
-                                ? Colors.grey[700]
-                                : Colors.black),
+
+                          const SizedBox(
+                              height:
+                                  4),
+
+                          Text(
+                            selectedDate ==
+                                    null
+                                ? "Tap to choose a date"
+                                : DateFormat(
+                                    'dd MMM yyyy')
+                                .format(
+                                    selectedDate!),
+                            style:
+                                TextStyle(
+                              fontSize:
+                                  17,
+                              fontWeight:
+                                  FontWeight
+                                      .w700,
+                              color: selectedDate ==
+                                      null
+                                  ? const Color(
+                                      0xFF9CA3AF)
+                                  : const Color(
+                                      0xFF111827),
+                            ),
+                          ),
+                        ],
                       ),
+                    ),
+
+                    const Icon(
+                      Icons
+                          .arrow_forward_ios_rounded,
+                      size: 18,
+                      color: Color(
+                          0xFF7C3AED),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+
+            const SizedBox(height: 16),
+
+            Container(
+              padding:
+                  const EdgeInsets.all(
+                      14),
+              decoration:
+                  BoxDecoration(
+                color:
+                    const Color(
+                  0xFFF5F3FF,
+                ),
+                borderRadius:
+                    BorderRadius
+                        .circular(
+                            16),
+              ),
+              child: const Row(
+                children: [
+                  Icon(
+                    Icons
+                        .lightbulb_outline_rounded,
+                    color: Color(
+                        0xFF7C3AED),
+                    size: 18,
+                  ),
+                  SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      "Choose an accurate move-in or availability date to get better matches.",
+                      style:
+                          TextStyle(
+                        fontSize: 13,
+                        color: Color(
+                            0xFF6B7280),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      );
+    },
+  );
+}
+
+Widget _buildAreaSelectionQuestion({
+  required String title,
+  required String subtitle,
+  required Function(String) onAreaSelected,
+  required List<String> areas,
+  String? initialValue,
+  required String selectedCity,
+}) {
+  return Padding(
+    padding: const EdgeInsets.symmetric(
+      horizontal: 24,
+    ),
+    child: Column(
+      crossAxisAlignment:
+          CrossAxisAlignment.start,
+      children: [
+        // HEADER CARD
+
+        Container(
+          padding: const EdgeInsets.all(22),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius:
+                BorderRadius.circular(28),
+            boxShadow: [
+              BoxShadow(
+                color:
+                    Colors.black.withOpacity(.04),
+                blurRadius: 20,
+                offset: const Offset(0, 8),
+              ),
+            ],
+          ),
+          child: Column(
+            crossAxisAlignment:
+                CrossAxisAlignment.start,
+            children: [
+              Text(
+                title,
+                style: const TextStyle(
+                  fontSize: 26,
+                  fontWeight:
+                      FontWeight.w800,
+                  color:
+                      Color(0xFF111827),
+                ),
+              ),
+
+              const SizedBox(height: 10),
+
+              Text(
+                subtitle,
+                style: const TextStyle(
+                  fontSize: 15,
+                  height: 1.5,
+                  color:
+                      Color(0xFF6B7280),
+                ),
+              ),
+            ],
+          ),
+        ),
+
+        const SizedBox(height: 24),
+
+        Container(
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius:
+                BorderRadius.circular(24),
+            boxShadow: [
+              BoxShadow(
+                color:
+                    Colors.black.withOpacity(.05),
+                blurRadius: 18,
+                offset: const Offset(0, 8),
+              ),
+            ],
+          ),
+          child: DropdownButtonFormField<String>(
+            value: initialValue == '' ||
+                    !areas.contains(
+                        initialValue)
+                ? null
+                : initialValue,
+
+            decoration: InputDecoration(
+              filled: true,
+              fillColor: Colors.white,
+
+              prefixIcon: Container(
+                margin:
+                    const EdgeInsets.all(12),
+                decoration:
+                    BoxDecoration(
+                  gradient:
+                      const LinearGradient(
+                    colors: [
+                      Color(0xFF7C3AED),
+                      Color(0xFFEC4899),
                     ],
+                  ),
+                  borderRadius:
+                      BorderRadius.circular(
+                          12),
+                ),
+                child: const Icon(
+                  Icons.location_on_rounded,
+                  color: Colors.white,
+                ),
+              ),
+
+              hintText:
+                  selectedCity.isNotEmpty
+                      ? "Choose Area"
+                      : "Select City First",
+
+              hintStyle:
+                  const TextStyle(
+                color:
+                    Color(0xFF9CA3AF),
+                fontWeight:
+                    FontWeight.w500,
+              ),
+
+              border:
+                  OutlineInputBorder(
+                borderRadius:
+                    BorderRadius.circular(
+                        24),
+                borderSide:
+                    BorderSide.none,
+              ),
+
+              enabledBorder:
+                  OutlineInputBorder(
+                borderRadius:
+                    BorderRadius.circular(
+                        24),
+                borderSide:
+                    const BorderSide(
+                  color:
+                      Color(0xFFE5E7EB),
+                ),
+              ),
+
+              focusedBorder:
+                  OutlineInputBorder(
+                borderRadius:
+                    BorderRadius.circular(
+                        24),
+                borderSide:
+                    const BorderSide(
+                  color:
+                      Color(0xFF7C3AED),
+                  width: 2,
+                ),
+              ),
+            ),
+
+            dropdownColor:
+                Colors.white,
+
+            icon: const Icon(
+              Icons.keyboard_arrow_down,
+              color: Color(0xFF7C3AED),
+            ),
+
+            style: const TextStyle(
+              color: Color(0xFF111827),
+              fontSize: 16,
+              fontWeight:
+                  FontWeight.w600,
+            ),
+
+            items: areas.map((area) {
+              return DropdownMenuItem(
+                value: area,
+                child: Text(area),
+              );
+            }).toList(),
+
+            onChanged:
+                selectedCity.isNotEmpty
+                    ? (value) {
+                        if (value !=
+                            null) {
+                          onAreaSelected(
+                              value);
+                        }
+                      }
+                    : null,
+
+            isExpanded: true,
+          ),
+        ),
+
+        const SizedBox(height: 16),
+
+        Container(
+          padding:
+              const EdgeInsets.all(14),
+          decoration: BoxDecoration(
+            color:
+                const Color(0xFFF5F3FF),
+            borderRadius:
+                BorderRadius.circular(
+                    16),
+          ),
+          child: Row(
+            children: [
+              const Icon(
+                Icons.info_outline,
+                color:
+                    Color(0xFF7C3AED),
+                size: 18,
+              ),
+
+              const SizedBox(width: 8),
+
+              Expanded(
+                child: Text(
+                  selectedCity.isEmpty
+                      ? "Please select a city before choosing an area."
+                      : "Selecting the correct area improves listing visibility.",
+                  style:
+                      const TextStyle(
+                    fontSize: 13,
+                    color: Color(
+                        0xFF6B7280),
                   ),
                 ),
               ),
             ],
           ),
-        );
-      },
-    );
-  }
-
-  Widget _buildAreaSelectionQuestion({
-    required String title,
-    required String subtitle,
-    required Function(String) onAreaSelected,
-    required List<String> areas,
-    String? initialValue,
-    required String selectedCity, // To enable/disable based on city selection
-  }) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 24.0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            title,
-            style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            subtitle,
-            style: const TextStyle(fontSize: 15, color: Colors.grey),
-          ),
-          const SizedBox(height: 30),
-          DropdownButtonFormField<String>(
-            value: initialValue == '' || !areas.contains(initialValue) ? null : initialValue,
-            decoration: InputDecoration(
-              hintText: selectedCity.isNotEmpty ? "Select an area" : "Select a city first",
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(15),
-                borderSide: BorderSide.none,
-              ),
-              filled: true,
-              fillColor: Colors.grey[200],
-            ),
-            items: areas.map((String area) {
-              return DropdownMenuItem<String>(
-                value: area,
-                child: Text(area),
-              );
-            }).toList(),
-            onChanged: selectedCity.isNotEmpty // Enable only if a city is selected
-                ? (String? newValue) {
-              if (newValue != null) {
-                onAreaSelected(newValue);
-              }
-            }
-                : null, // Disable if no city is selected
-            isExpanded: true,
-          ),
-        ],
-      ),
-    );
-  }
+        ),
+      ],
+    ),
+  );
+}
   Widget _buildCitySelectionQuestion({
-    required String title,
-    required String subtitle,
-    required Function(String) onCitySelected,
-    required List<String> cities,
-    String? initialValue,
-  }) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 24.0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            title,
-            style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            subtitle,
-            style: const TextStyle(fontSize: 15, color: Colors.grey),
-          ),
-          const SizedBox(height: 30),
-          DropdownButtonFormField<String>(
-            value: initialValue == '' ? null : initialValue, // Set to null if initial value is empty string
-            decoration: InputDecoration(
-              hintText: "Select a city",
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(15),
-                borderSide: BorderSide.none,
+  required String title,
+  required String subtitle,
+  required Function(String) onCitySelected,
+  required List<String> cities,
+  String? initialValue,
+}) {
+  return Padding(
+    padding: const EdgeInsets.symmetric(
+      horizontal: 24,
+    ),
+    child: Column(
+      crossAxisAlignment:
+          CrossAxisAlignment.start,
+      children: [
+        // HEADER CARD
+
+        Container(
+          padding: const EdgeInsets.all(22),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius:
+                BorderRadius.circular(28),
+            boxShadow: [
+              BoxShadow(
+                color:
+                    Colors.black.withOpacity(.04),
+                blurRadius: 20,
+                offset: const Offset(0, 8),
               ),
-              filled: true,
-              fillColor: Colors.grey[200],
+            ],
+          ),
+          child: Column(
+            crossAxisAlignment:
+                CrossAxisAlignment.start,
+            children: [
+              Text(
+                title,
+                style: const TextStyle(
+                  fontSize: 26,
+                  fontWeight:
+                      FontWeight.w800,
+                  color:
+                      Color(0xFF111827),
+                ),
+              ),
+
+              const SizedBox(height: 10),
+
+              Text(
+                subtitle,
+                style: const TextStyle(
+                  fontSize: 15,
+                  height: 1.5,
+                  color:
+                      Color(0xFF6B7280),
+                ),
+              ),
+            ],
+          ),
+        ),
+
+        const SizedBox(height: 24),
+
+        // CITY DROPDOWN
+
+        Container(
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius:
+                BorderRadius.circular(24),
+            boxShadow: [
+              BoxShadow(
+                color:
+                    Colors.black.withOpacity(.05),
+                blurRadius: 18,
+                offset: const Offset(0, 8),
+              ),
+            ],
+          ),
+          child: DropdownButtonFormField<String>(
+            value: initialValue == ''
+                ? null
+                : initialValue,
+
+            isExpanded: true,
+
+            dropdownColor: Colors.white,
+
+            icon: const Icon(
+              Icons.keyboard_arrow_down_rounded,
+              color: Color(0xFF7C3AED),
+              size: 28,
             ),
-            items: cities.map((String city) {
-              return DropdownMenuItem<String>(
+
+            style: const TextStyle(
+              fontSize: 16,
+              fontWeight:
+                  FontWeight.w600,
+              color:
+                  Color(0xFF111827),
+            ),
+
+            decoration: InputDecoration(
+              filled: true,
+              fillColor: Colors.white,
+
+              hintText:
+                  "Choose Your City",
+
+              hintStyle:
+                  const TextStyle(
+                color:
+                    Color(0xFF9CA3AF),
+                fontWeight:
+                    FontWeight.w500,
+              ),
+
+              prefixIcon: Container(
+                margin:
+                    const EdgeInsets.all(12),
+                decoration:
+                    BoxDecoration(
+                  gradient:
+                      const LinearGradient(
+                    colors: [
+                      Color(0xFF7C3AED),
+                      Color(0xFFEC4899),
+                    ],
+                  ),
+                  borderRadius:
+                      BorderRadius.circular(
+                          12),
+                ),
+                child: const Icon(
+                  Icons.location_city_rounded,
+                  color: Colors.white,
+                ),
+              ),
+
+              border:
+                  OutlineInputBorder(
+                borderRadius:
+                    BorderRadius.circular(
+                        24),
+                borderSide:
+                    BorderSide.none,
+              ),
+
+              enabledBorder:
+                  OutlineInputBorder(
+                borderRadius:
+                    BorderRadius.circular(
+                        24),
+                borderSide:
+                    const BorderSide(
+                  color:
+                      Color(0xFFE5E7EB),
+                ),
+              ),
+
+              focusedBorder:
+                  OutlineInputBorder(
+                borderRadius:
+                    BorderRadius.circular(
+                        24),
+                borderSide:
+                    const BorderSide(
+                  color:
+                      Color(0xFF7C3AED),
+                  width: 2,
+                ),
+              ),
+            ),
+
+            items: cities.map((city) {
+              return DropdownMenuItem<
+                  String>(
                 value: city,
-                child: Text(city),
+                child: Row(
+                  children: [
+                    const Icon(
+                      Icons.location_on,
+                      color: Color(
+                          0xFF7C3AED),
+                      size: 18,
+                    ),
+                    const SizedBox(
+                        width: 10),
+                    Text(city),
+                  ],
+                ),
               );
             }).toList(),
-            onChanged: (String? newValue) {
-              if (newValue != null) {
-                onCitySelected(newValue);
+
+            onChanged: (value) {
+              if (value != null) {
+                onCitySelected(value);
               }
             },
-            isExpanded: true,
           ),
-        ],
-      ),
-    );
-  }
+        ),
+
+        const SizedBox(height: 16),
+
+        Container(
+          padding:
+              const EdgeInsets.all(14),
+          decoration: BoxDecoration(
+            color:
+                const Color(0xFFF5F3FF),
+            borderRadius:
+                BorderRadius.circular(
+                    16),
+          ),
+          child: const Row(
+            children: [
+              Icon(
+                Icons.location_searching,
+                color:
+                    Color(0xFF7C3AED),
+                size: 18,
+              ),
+              SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  "Choose the city where you want to find a flat, room, or flatmate.",
+                  style: TextStyle(
+                    fontSize: 13,
+                    color:
+                        Color(0xFF6B7280),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    ),
+  );
+}
 
   // --- Page Definitions ---
 
   List<Widget> _buildPages() {
     return [
-      // --- Section 1: About You (Pages 0-6) ---
-      // Page 0: Owner Name
-      // _buildTextQuestion(
-      //   title: "What's your name?",
-      //   subtitle: "This will be visible to potential flatmates.",
-      //   hintText: "Enter your name",
-      //   controller: _ownerNameController,
-      // ),
-
-      // Page 1: Owner Age
-      // _buildTextQuestion(
-      //   title: "How old are you?",
-      //   subtitle: "This helps flatmates understand your age group.",
-      //   hintText: "e.g., 25",
-      //   keyboardType: TextInputType.number,
-      //   inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-      //   controller: _ownerAgeController,
-      // ),
-
-      // Page 2: Owner Gender
-      // SingleChoiceQuestionWidget(
-      //   title: "What's your gender?",
-      //   subtitle: "This helps potential flatmates relate to you.",
-      //   options: ['Male', 'Female', 'Non-binary', 'Prefer not to say'],
-      //   onSelected: (value) {
-      //     setState(() {
-      //       _flatListingProfile.ownerGender = value;
-      //     });
-      //   },
-      //   initialValue: _flatListingProfile.ownerGender,
-      // ),
-
-      // Page 3: Owner Occupation
-      // _buildTextQuestion(
-      //   title: "What do you do for a living?",
-      //   subtitle: "Share your profession or student status.",
-      //   hintText: "e.g., Software Engineer, Student, Freelancer",
-      //   controller: _ownerOccupationController,
-      // ),
-      // SingleChoiceQuestionWidget(
-      //   title: "What's your Religion?",
-      //   subtitle: "This helps potential flatmates relate to you.",
-      //   options: ['Hindu', 'Muslim', 'Christian','Sikh','Buddhism','Prefer not to say'],
-      //   onSelected: (value) {
-      //     setState(() {
-      //       _flatListingProfile.ownerReligion = value;
-      //     });
-      //   },
-      //   initialValue: _flatListingProfile.ownerReligion,
-      // ),
-
-      // Page 4: Owner Bio
-      // _buildTextQuestion(
-      //   title: "Tell us a bit about yourself as a flat owner/current flatmate.",
-      //   subtitle: "Share something interesting! This helps others get to know you.",
-      //   hintText: "e.g., I'm a quiet person who loves reading...",
-      //   controller: _ownerBioController,
-      //   maxLines: 5,
-      // ),
-
-      // Page 5: Desired City (This is the city the flat is *in*)
-
-
-      // Page 6: Area Preference (This is for the flat's area)
-      // _buildCitySelectionQuestion(
-      //   title: "Which city does your flat located ?",
-      //   subtitle: "This helps us filter relevant listings for you.",
-      //   onCitySelected: (value) {
-      //     setState(() {
-      //       _flatListingProfile.desiredCity = value;
-      //       // Clear area preference when city changes
-      //       _flatListingProfile.areaPreference = '';
-      //       _areaPreferenceController.clear();
-      //     });
-      //   },
-      //   initialValue: _flatListingProfile.desiredCity,
-      //   cities: maharashtraLocations.keys.toList(),
-      // ),
-      // _buildAreaSelectionQuestion(
-      //   title: "What is your flat located  areas/localities?",
-      //   subtitle: "Select preferred areas within ${(_flatListingProfile.desiredCity.isNotEmpty ? _flatListingProfile.desiredCity : 'the selected city')}.",
-      //   onAreaSelected: (value) {
-      //     setState(() {
-      //       _flatListingProfile.areaPreference = value;
-      //     });
-      //   },
-      //   initialValue: _flatListingProfile.areaPreference,
-      //   areas: maharashtraLocations[_flatListingProfile.desiredCity] ?? [], // Dynamically load areas
-      //   selectedCity: _flatListingProfile.desiredCity, // Pass selected city to enable/disable
-      // ),
-      // --- Section 2: Your Habits (Owner's Habits) (Pages 7-20) ---
-      // Page 7: Smoking Habits (Owner's)
-      // SingleChoiceQuestionWidget(
-      //   title: "What are your smoking habits?",
-      //   subtitle: "This helps in matching with compatible flatmates.",
-      //   options: ['Never', 'Occasionally', 'Socially', 'Regularly'],
-      //   onSelected: (value) {
-      //     setState(() {
-      //       _flatListingProfile.smokingHabit = value;
-      //     });
-      //   },
-      //   initialValue: _flatListingProfile.smokingHabit,
-      // ),
-      // Page 8: Drinking Habits (Owner's)
-      // SingleChoiceQuestionWidget(
-      //   title: "What are your drinking habits?",
-      //   subtitle: "Are you a non-drinker, social drinker, or regular drinker?",
-      //   options: ['Never', 'Occasionally', 'Socially', 'Regularly'],
-      //   onSelected: (value) {
-      //     setState(() {
-      //       _flatListingProfile.drinkingHabit = value;
-      //     });
-      //   },
-      //   initialValue: _flatListingProfile.drinkingHabit,
-      // ),
-      // Page 9: Food Preference (Owner's)
-      // SingleChoiceQuestionWidget(
-      //   title: "What is your food preference?",
-      //   subtitle: "Any specific dietary habits or restrictions?",
-      //   options: ['Vegetarian', 'Non-Vegetarian', 'Vegan', 'Eggetarian', 'Jain', 'Other'],
-      //   onSelected: (value) {
-      //     setState(() {
-      //       _flatListingProfile.foodPreference = value;
-      //     });
-      //   },
-      //   initialValue: _flatListingProfile.foodPreference,
-      // ),
-
-      // Page 10: Cleanliness Level (Owner's)
-      // SingleChoiceQuestionWidget(
-      //   title: "How clean are you?",
-      //   subtitle: "Be honest! This helps manage expectations.",
-      //   options: ['Very Tidy', 'Moderately Tidy', 'Flexible', 'Can be messy at times'],
-      //   onSelected: (value) {
-      //     setState(() {
-      //       _flatListingProfile.cleanlinessLevel = value;
-      //     });
-      //   },
-      //   initialValue: _flatListingProfile.cleanlinessLevel,
-      // ),
-
-      // Page 11: Noise level (Owner's preference)
-      // SingleChoiceQuestionWidget(
-      //   title: "What's your preferred noise level in a flat?",
-      //   subtitle: "How quiet or lively do you like the home to be?",
-      //   options: ['Very quiet', 'Moderate noise', 'Lively', 'Flexible'],
-      //   onSelected: (value) {
-      //     setState(() {
-      //       _flatListingProfile.noiseLevel = value;
-      //     });
-      //   },
-      //   initialValue: _flatListingProfile.noiseLevel,
-      // ),
-
-      // Page 12: Social Habits (Owner's)
-      // SingleChoiceQuestionWidget(
-      //   title: "What are your social habits?",
-      //   subtitle: "Do you enjoy social gatherings or prefer quiet?",
-      //   options: ['Social & outgoing', 'Occasional gatherings', 'Quiet & private', 'Flexible'],
-      //   onSelected: (value) {
-      //     setState(() {
-      //       _flatListingProfile.socialPreferences = value;
-      //     });
-      //   },
-      //   initialValue: _flatListingProfile.socialPreferences,
-      // ),
-
-      // Page 13: Visitors policy (Owner's)
-      // SingleChoiceQuestionWidget(
-      //   title: "What's your policy on visitors?",
-      //   subtitle: "How often do you plan to have guests over?",
-      //   options: ['Frequent visitors', 'Occasional visitors', 'Rarely have visitors', 'No visitors'],
-      //   onSelected: (value) {
-      //     setState(() {
-      //       _flatListingProfile.visitorsPolicy = value;
-      //     });
-      //   },
-      //   initialValue: _flatListingProfile.visitorsPolicy,
-      // ),
-
-      // Page 14: Pet ownership (Owner's)
-      // SingleChoiceQuestionWidget(
-      //   title: "Do you currently own pets?",
-      //   subtitle: "Are you bringing any furry friends?",
-      //   options: ['Yes', 'No', 'Planning to get one'],
-      //   onSelected: (value) {
-      //     setState(() {
-      //       _flatListingProfile.petOwnership = value;
-      //     });
-      //   },
-      //   initialValue: _flatListingProfile.petOwnership,
-      // ),
-      // Page 15: Pet tolerance (Owner's)
-      // SingleChoiceQuestionWidget(
-      //   title: "What's your tolerance for flatmates with pets?",
-      //   subtitle: "Are you comfortable living with pets?",
-      //   options: ['Comfortable with pets', 'Tolerant of pets', 'Prefer no pets', 'Allergic to pets'],
-      //   onSelected: (value) {
-      //     setState(() {
-      //       _flatListingProfile.petTolerance = value;
-      //     });
-      //   },
-      //   initialValue: _flatListingProfile.petTolerance,
-      // ),
-      // // Page 16: Sleeping schedule (Owner's)
-      // SingleChoiceQuestionWidget(
-      //   title: "What's your typical sleeping schedule?",
-      //   subtitle: "Are you an early bird or a night owl?",
-      //   options: ['Early riser', 'Night Owl', 'Flexible', 'Irregular'],
-      //   onSelected: (value) {
-      //     setState(() {
-      //       _flatListingProfile.sleepingSchedule = value;
-      //     });
-      //   },
-      //   initialValue: _flatListingProfile.sleepingSchedule,
-      // ),
-      // // Page 17: Work schedule (Owner's)
-      // SingleChoiceQuestionWidget(
-      //   title: "What's your typical work/study schedule?",
-      //   subtitle: "This helps in understanding common space usage.",
-      //   options: ['9-5 Office hours', 'Freelance/Flexible hours', 'Night shifts', 'Student schedule', 'Mixed'],
-      //   onSelected: (value) {
-      //     setState(() {
-      //       _flatListingProfile.workSchedule = value;
-      //     });
-      //   },
-      //   initialValue: _flatListingProfile.workSchedule,
-      // ),
-
-      // Page 18: Sharing Common Spaces (Owner's)
-      // SingleChoiceQuestionWidget(
-      //   title: "How do you prefer sharing common spaces?",
-      //   subtitle: "Do you like to share everything or prefer separate items?",
-      //   options: ['Share everything', 'Share some items', 'Prefer separate items', 'Flexible'],
-      //   onSelected: (value) {
-      //     setState(() {
-      //       _flatListingProfile.sharingCommonSpaces = value;
-      //     });
-      //   },
-      //   initialValue: _flatListingProfile.sharingCommonSpaces,
-      // ),
-      // Page 19: Guests Policy for Overnight Stays (Owner's)
-      // SingleChoiceQuestionWidget(
-      //   title: "What's your policy on overnight guests?",
-      //   subtitle: "How often do you expect to have guests stay overnight?",
-      //   options: ['Frequently', 'Occasionally', 'Rarely', 'Never'],
-      //   onSelected: (value) {
-      //     setState(() {
-      //       _flatListingProfile.guestsOvernightPolicy = value;
-      //     });
-      //   },
-      //   initialValue: _flatListingProfile.guestsOvernightPolicy,
-      // ),
-      // Page 20: Personal Space (Owner's)
-      // SingleChoiceQuestionWidget(
-      //   title: "How do you balance personal space and socialization?",
-      //   subtitle: "Do you value quiet personal time or enjoy interactive common spaces?",
-      //   options: ['Value personal space highly', 'Enjoy a balance', 'Prefer more socialization', 'Flexible'],
-      //   onSelected: (value) {
-      //     setState(() {
-      //       _flatListingProfile.personalSpaceVsSocialization = value;
-      //     });
-      //   },
-      //   initialValue: _flatListingProfile.personalSpaceVsSocialization,
-      // ),
+     
 
 
       // --- Section 3: Flat Details (Pages 21-33) ---
@@ -1776,96 +2534,391 @@ class _FlatmateProfileScreenState extends State<FlatmateProfileScreen> {
   }
 
   @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        leading: _currentPage > 0
-            ? IconButton(
-          icon: const Icon(Icons.arrow_back_ios, color: Colors.black),
-          onPressed: _previousPage,
-        )
-            : null,
-        actions: [
-          TextButton(
-            onPressed: _showSectionsBottomSheet,
-            child: const Text(
-              'Sections',
-              style: TextStyle(color: Colors.redAccent, fontSize: 16),
-            ),
-          ),
-        ],
-      ),
-      body: Stack(
-        children: [
-          Column(
+Widget build(BuildContext context) {
+  final progress =
+      (_currentPage + 1) / _pages.length;
+
+  final currentSectionIndex = _sections.indexOf(
+        _sections.firstWhere(
+          (s) =>
+              _currentPage >= s['startPage'] &&
+              _currentPage <= s['endPage'],
+        ),
+      ) +
+      1;
+
+  return Scaffold(
+    backgroundColor: const Color(0xFFF8FAFC),
+
+    body: Stack(
+      children: [
+        SafeArea(
+          child: Column(
             children: [
-              // Section Title and Progress Indicator
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 8.0),
+              // ===========================
+              // PREMIUM HEADER
+              // ===========================
+
+              Container(
+                margin: const EdgeInsets.all(20),
+                padding: const EdgeInsets.all(24),
+                decoration: BoxDecoration(
+                  borderRadius:
+                      BorderRadius.circular(32),
+                  gradient:
+                      const LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: [
+                      Color(0xFF7C3AED),
+                      Color(0xFF9333EA),
+                      Color(0xFFEC4899),
+                    ],
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: const Color(
+                        0xFF7C3AED,
+                      ).withOpacity(.25),
+                      blurRadius: 30,
+                      offset: const Offset(0, 14),
+                    ),
+                  ],
+                ),
                 child: Column(
                   children: [
-                    Text(
-                      'Section ${_sections.indexOf(_sections.firstWhere((s) => _currentPage >= s['startPage'] && _currentPage <= s['endPage'])) + 1} of ${_sections.length}: ${_getCurrentSectionTitle()}',
-                      style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                      textAlign: TextAlign.center,
+                    Row(
+                      children: [
+                        if (_currentPage > 0)
+                          GestureDetector(
+                            onTap: _previousPage,
+                            child: Container(
+                              padding:
+                                  const EdgeInsets.all(
+                                      10),
+                              decoration:
+                                  BoxDecoration(
+                                color: Colors
+                                    .white24,
+                                borderRadius:
+                                    BorderRadius
+                                        .circular(
+                                            14),
+                              ),
+                              child:
+                                  const Icon(
+                                Icons
+                                    .arrow_back_ios_new,
+                                color:
+                                    Colors.white,
+                                size: 18,
+                              ),
+                            ),
+                          ),
+
+                        if (_currentPage > 0)
+                          const SizedBox(
+                              width: 12),
+
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment:
+                                CrossAxisAlignment
+                                    .start,
+                            children: [
+                              const Text(
+                                "Create Listing",
+                                style:
+                                    TextStyle(
+                                  color: Colors
+                                      .white,
+                                  fontSize:
+                                      24,
+                                  fontWeight:
+                                      FontWeight
+                                          .w800,
+                                ),
+                              ),
+
+                              const SizedBox(
+                                  height: 4),
+
+                              Text(
+                                "Section $currentSectionIndex of ${_sections.length}",
+                                style:
+                                    const TextStyle(
+                                  color: Colors
+                                      .white70,
+                                  fontSize:
+                                      13,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+
+                        GestureDetector(
+                          onTap:
+                              _showSectionsBottomSheet,
+                          child: Container(
+                            padding:
+                                const EdgeInsets
+                                    .symmetric(
+                              horizontal: 14,
+                              vertical: 8,
+                            ),
+                            decoration:
+                                BoxDecoration(
+                              color: Colors
+                                  .white24,
+                              borderRadius:
+                                  BorderRadius
+                                      .circular(
+                                          30),
+                            ),
+                            child:
+                                const Row(
+                              children: [
+                                Icon(
+                                  Icons
+                                      .grid_view_rounded,
+                                  color: Colors
+                                      .white,
+                                  size: 16,
+                                ),
+                                SizedBox(
+                                    width: 6),
+                                Text(
+                                  "Sections",
+                                  style:
+                                      TextStyle(
+                                    color: Colors
+                                        .white,
+                                    fontWeight:
+                                        FontWeight
+                                            .w600,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
-                    const SizedBox(height: 8),
-                    LinearProgressIndicator(
-                      value: _getCurrentSectionProgress(),
-                      backgroundColor: Colors.grey[300],
-                      color: Colors.redAccent,
+
+                    const SizedBox(height: 24),
+
+                    Align(
+                      alignment:
+                          Alignment.centerLeft,
+                      child: Text(
+                        _getCurrentSectionTitle(),
+                        style:
+                            const TextStyle(
+                          color: Colors.white,
+                          fontSize: 20,
+                          fontWeight:
+                              FontWeight.w700,
+                        ),
+                      ),
+                    ),
+
+                    const SizedBox(height: 6),
+
+                    Align(
+                      alignment:
+                          Alignment.centerLeft,
+                      child: Text(
+                        "${(progress * 100).toInt()}% Complete",
+                        style:
+                            const TextStyle(
+                          color: Colors.white70,
+                          fontSize: 14,
+                        ),
+                      ),
+                    ),
+
+                    const SizedBox(height: 20),
+
+                    ClipRRect(
+                      borderRadius:
+                          BorderRadius.circular(
+                              100),
+                      child:
+                          LinearProgressIndicator(
+                        value: progress,
+                        minHeight: 8,
+                        backgroundColor:
+                            Colors.white24,
+                        valueColor:
+                            const AlwaysStoppedAnimation(
+                          Colors.white,
+                        ),
+                      ),
                     ),
                   ],
                 ),
               ),
+
+              // ===========================
+              // PAGE CONTENT
+              // ===========================
+
               Expanded(
                 child: PageView.builder(
-                  controller: _pageController,
-                  physics: const NeverScrollableScrollPhysics(),
-                  itemCount: _pages.length,
-                  onPageChanged: (int page) {
+                  controller:
+                      _pageController,
+                  physics:
+                      const NeverScrollableScrollPhysics(),
+                  itemCount:
+                      _pages.length,
+                  onPageChanged:
+                      (int page) {
                     setState(() {
-                      _currentPage = page;
+                      _currentPage =
+                          page;
                     });
                   },
-                  itemBuilder: (context, index) {
+                  itemBuilder:
+                      (context, index) {
                     return _pages[index];
                   },
                 ),
               ),
-              Padding(
-                padding: const EdgeInsets.all(24.0),
+
+              // ===========================
+              // PREMIUM FOOTER BUTTONS
+              // ===========================
+
+              Container(
+                padding:
+                    const EdgeInsets.fromLTRB(
+                  20,
+                  12,
+                  20,
+                  24,
+                ),
                 child: Row(
                   children: [
                     Expanded(
-                      child: OutlinedButton(
-                        onPressed: _currentPage > 0 ? _previousPage : null,
-                        style: OutlinedButton.styleFrom(
-                          foregroundColor: Colors.redAccent,
-                          side: BorderSide(color: _currentPage > 0 ? Colors.redAccent : Colors.grey),
-                          minimumSize: const Size(double.infinity, 50),
-                          shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(30)),
+                      child: Container(
+                        height: 58,
+                        decoration:
+                            BoxDecoration(
+                          color: Colors.white,
+                          borderRadius:
+                              BorderRadius
+                                  .circular(
+                                      18),
+                          border: Border.all(
+                            color: Colors
+                                .grey
+                                .shade300,
+                          ),
                         ),
                         child:
-                        const Text('Back', style: TextStyle(fontSize: 18)),
+                            TextButton(
+                          onPressed:
+                              _currentPage >
+                                      0
+                                  ? _previousPage
+                                  : null,
+                          child:
+                              const Text(
+                            "Back",
+                            style:
+                                TextStyle(
+                              color: Color(
+                                  0xFF111827),
+                              fontWeight:
+                                  FontWeight
+                                      .w700,
+                              fontSize:
+                                  16,
+                            ),
+                          ),
+                        ),
                       ),
                     ),
-                    const SizedBox(width: 10),
+
+                    const SizedBox(
+                        width: 14),
+
                     Expanded(
-                      child: ElevatedButton(
-                        onPressed: _nextPage, // Always enabled
-                        style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.redAccent, // Always red
-                            foregroundColor: Colors.white,
-                            minimumSize: const Size(double.infinity, 50),
-                            shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(30))),
-                        child: Text(
-                            _currentPage == _pages.length - 1 ? 'Finish' : 'Next',
-                            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                      flex: 2,
+                      child: Container(
+                        height: 58,
+                        decoration:
+                            BoxDecoration(
+                          gradient:
+                              const LinearGradient(
+                            colors: [
+                              Color(
+                                  0xFF7C3AED),
+                              Color(
+                                  0xFF9333EA),
+                              Color(
+                                  0xFFEC4899),
+                            ],
+                          ),
+                          borderRadius:
+                              BorderRadius
+                                  .circular(
+                                      18),
+                          boxShadow: [
+                            BoxShadow(
+                              color: const Color(
+                                0xFF7C3AED,
+                              ).withOpacity(
+                                  .25),
+                              blurRadius:
+                                  20,
+                              offset:
+                                  const Offset(
+                                      0,
+                                      10),
+                            ),
+                          ],
+                        ),
+                        child:
+                            ElevatedButton(
+                          onPressed:
+                              _nextPage,
+                          style:
+                              ElevatedButton
+                                  .styleFrom(
+                            backgroundColor:
+                                Colors
+                                    .transparent,
+                            shadowColor:
+                                Colors
+                                    .transparent,
+                            shape:
+                                RoundedRectangleBorder(
+                              borderRadius:
+                                  BorderRadius.circular(
+                                      18),
+                            ),
+                          ),
+                          child: Text(
+                            _currentPage ==
+                                    _pages
+                                            .length -
+                                        1
+                                ? "Publish Listing"
+                                : "Continue",
+                            style:
+                                const TextStyle(
+                              color: Colors
+                                  .white,
+                              fontWeight:
+                                  FontWeight
+                                      .w700,
+                              fontSize:
+                                  16,
+                            ),
+                          ),
+                        ),
                       ),
                     ),
                   ],
@@ -1873,15 +2926,52 @@ class _FlatmateProfileScreenState extends State<FlatmateProfileScreen> {
               ),
             ],
           ),
-          if (_isSubmitting) // Loading overlay
-            Container(
-              color: Colors.black.withOpacity(0.5),
-              child: const Center(
-                child: CircularProgressIndicator(color: Colors.redAccent),
+        ),
+
+        // ===========================
+        // LOADING OVERLAY
+        // ===========================
+
+        if (_isSubmitting)
+          Container(
+            color: Colors.black54,
+            child: Center(
+              child: Container(
+                padding:
+                    const EdgeInsets.all(
+                        24),
+                decoration:
+                    BoxDecoration(
+                  color: Colors.white,
+                  borderRadius:
+                      BorderRadius
+                          .circular(24),
+                ),
+                child: const Column(
+                  mainAxisSize:
+                      MainAxisSize.min,
+                  children: [
+                    CircularProgressIndicator(
+                      color: Color(
+                          0xFF7C3AED),
+                    ),
+                    SizedBox(height: 16),
+                    Text(
+                      "Publishing Listing...",
+                      style:
+                          TextStyle(
+                        fontWeight:
+                            FontWeight
+                                .w600,
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
-        ],
-      ),
-    );
-  }
+          ),
+      ],
+    ),
+  );
+}
 }
