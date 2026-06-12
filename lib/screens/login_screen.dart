@@ -253,18 +253,11 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
 
 Widget _buildMobileLoginUi(BuildContext context) {
   return Scaffold(
-    backgroundColor: const Color(0xFF6A1B9A),
+   backgroundColor: Colors.white,
     body: Container(
       decoration: const BoxDecoration(
-        gradient: LinearGradient(
-          colors: [
-            Color(0xFF6A1B9A),
-            Color(0xFFAD1457),
-          ],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-      ),
+  color: Colors.white,
+),
       child: SafeArea(
         child: Center(
           child: SingleChildScrollView(
@@ -284,24 +277,24 @@ Widget _buildMobileLoginUi(BuildContext context) {
                           height: 130,
                           decoration: BoxDecoration(
                             shape: BoxShape.circle,
-                            color: Colors.white.withOpacity(.12),
+                            color: const Color(0xFFAD1457).withOpacity(.08),
                             border: Border.all(
-                              color: Colors.white24,
+                              color: const Color(0xFFAD1457).withOpacity(.15),
                               width: 1.5,
                             ),
                             boxShadow: [
                               BoxShadow(
-                                color: Colors.black.withOpacity(.15),
+                                color: Colors.black.withOpacity(.06),
                                 blurRadius: 30,
                                 spreadRadius: 2,
                               ),
                             ],
                           ),
                           child: const Icon(
-                            Icons.home_work_rounded,
-                            color: Colors.white,
-                            size: 65,
-                          ),
+  Icons.home_work_rounded,
+  color: Color(0xFFAD1457),
+  size: 65,
+),
                         ),
 
                         const SizedBox(height: 30),
@@ -312,7 +305,7 @@ Widget _buildMobileLoginUi(BuildContext context) {
                           style: TextStyle(
                             fontSize: 34,
                             fontWeight: FontWeight.w800,
-                            color: Colors.white,
+                            color: Colors.black87,
                             height: 1.2,
                             letterSpacing: -0.5,
                           ),
@@ -344,14 +337,14 @@ Widget _buildMobileLoginUi(BuildContext context) {
                     child: Container(
                       padding: const EdgeInsets.all(24),
                       decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(.12),
+                        color: Colors.white,
                         borderRadius: BorderRadius.circular(30),
-                        border: Border.all(
-                          color: Colors.white24,
-                        ),
+                       border: Border.all(
+  color: Colors.grey.shade200,
+),
                         boxShadow: [
                           BoxShadow(
-                            color: Colors.black.withOpacity(.12),
+                           color: Colors.grey.shade50,
                             blurRadius: 30,
                             offset: const Offset(0, 10),
                           ),
@@ -363,32 +356,32 @@ Widget _buildMobileLoginUi(BuildContext context) {
                             decoration: BoxDecoration(
                               color: Colors.white.withOpacity(.10),
                               borderRadius: BorderRadius.circular(18),
-                              border: Border.all(
-                                color: Colors.white24,
-                              ),
+                             border: Border.all(
+  color: Colors.grey.shade300,
+),
                             ),
                             child: TextField(
                               controller: _phoneController,
                               keyboardType: TextInputType.phone,
                               style: const TextStyle(
-                                color: Colors.white,
+                                color: Colors.grey,
                                 fontSize: 16,
                                 fontWeight: FontWeight.w600,
                               ),
                               decoration: InputDecoration(
                                 hintText: 'Enter Phone Number',
                                 hintStyle: TextStyle(
-                                  color: Colors.white.withOpacity(.65),
+                                  color: Colors.grey,
                                 ),
                                 prefixIcon: Container(
                                   margin: const EdgeInsets.all(10),
                                   decoration: BoxDecoration(
-                                    color: Colors.white.withOpacity(.15),
+                                  color: const Color(0xFFAD1457).withOpacity(.08),
                                     borderRadius: BorderRadius.circular(12),
                                   ),
                                   child: const Icon(
                                     Icons.phone,
-                                    color: Colors.white,
+                                   color: Color(0xFFAD1457),
                                   ),
                                 ),
                                 border: InputBorder.none,
@@ -405,17 +398,17 @@ Widget _buildMobileLoginUi(BuildContext context) {
                           if (_isOtpSent)
                             Container(
                               decoration: BoxDecoration(
-                                color: Colors.white.withOpacity(.10),
+                               color: Colors.grey.shade50,
                                 borderRadius: BorderRadius.circular(18),
-                                border: Border.all(
-                                  color: Colors.white24,
-                                ),
+                               border: Border.all(
+  color: Colors.grey.shade300,
+),
                               ),
                               child: TextField(
                                 controller: _otpController,
                                 keyboardType: TextInputType.number,
                                 style: const TextStyle(
-                                  color: Colors.white,
+                                  color: Colors.black87,
                                   fontSize: 16,
                                   fontWeight: FontWeight.w600,
                                   letterSpacing: 3,
@@ -423,17 +416,17 @@ Widget _buildMobileLoginUi(BuildContext context) {
                                 decoration: InputDecoration(
                                   hintText: 'Enter OTP',
                                   hintStyle: TextStyle(
-                                    color: Colors.white.withOpacity(.65),
-                                  ),
+  color: Colors.grey,
+),
                                   prefixIcon: Container(
                                     margin: const EdgeInsets.all(10),
                                     decoration: BoxDecoration(
-                                      color: Colors.white.withOpacity(.15),
+                                      color: const Color(0xFFAD1457).withOpacity(.08),
                                       borderRadius: BorderRadius.circular(12),
                                     ),
                                     child: const Icon(
                                       Icons.lock_outline,
-                                      color: Colors.white,
+                                      color: Color(0xFFAD1457),
                                     ),
                                   ),
                                   border: InputBorder.none,
@@ -457,8 +450,8 @@ Widget _buildMobileLoginUi(BuildContext context) {
                                       ? _verifyOtpAndSignIn
                                       : _verifyPhoneNumber),
                               style: ElevatedButton.styleFrom(
-                                backgroundColor: Colors.white,
-                                foregroundColor: const Color(0xFF6A1B9A),
+                              backgroundColor: const Color(0xFFAD1457),
+foregroundColor: Colors.white,
                                 elevation: 0,
                                 shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(18),
@@ -470,7 +463,7 @@ Widget _buildMobileLoginUi(BuildContext context) {
                                       height: 22,
                                       child: CircularProgressIndicator(
                                         strokeWidth: 2.5,
-                                        color: Color(0xFF6A1B9A),
+                                        color: Colors.white,
                                       ),
                                     )
                                   : Row(
@@ -508,7 +501,7 @@ Widget _buildMobileLoginUi(BuildContext context) {
                                   vertical: 8,
                                 ),
                                 decoration: BoxDecoration(
-                                  color: Colors.white.withOpacity(.12),
+                                 color: const Color(0xFFAD1457).withOpacity(.08),
                                   borderRadius: BorderRadius.circular(30),
                                   border: Border.all(
                                     color: Colors.white24,
@@ -518,12 +511,13 @@ Widget _buildMobileLoginUi(BuildContext context) {
                                   _canResendOtp
                                       ? 'Resend OTP'
                                       : 'Resend in $_resendOtpTimer seconds',
-                                  style: TextStyle(
-                                    color: _canResendOtp
-                                        ? Colors.white
-                                        : Colors.white54,
-                                    fontWeight: FontWeight.w600,
-                                  ),
+                                style: TextStyle(
+  color: _canResendOtp
+      ? const Color(0xFFAD1457)
+      : Colors.grey,
+  fontWeight: FontWeight.w700,
+  fontSize: 14,
+),
                                 ),
                               ),
                             ),
@@ -547,14 +541,14 @@ Widget _buildMobileLoginUi(BuildContext context) {
                     children: [
                       const Icon(
                         Icons.support_agent_rounded,
-                        color: Colors.white70,
+                        color: Color(0xFFAD1457),
                         size: 22,
                       ),
                       const SizedBox(height: 8),
                       Text(
                         'Having trouble? Give Feedback',
                         style: TextStyle(
-                          color: Colors.white.withOpacity(.85),
+                        color: Colors.black87,
                           fontSize: 15,
                           fontWeight: FontWeight.w600,
                         ),
@@ -569,7 +563,7 @@ Widget _buildMobileLoginUi(BuildContext context) {
                   'By continuing, you agree to our Terms & Privacy Policy',
                   textAlign: TextAlign.center,
                   style: TextStyle(
-                    color: Colors.white.withOpacity(.65),
+                    color: Colors.grey,
                     fontSize: 12,
                     fontWeight: FontWeight.w500,
                   ),

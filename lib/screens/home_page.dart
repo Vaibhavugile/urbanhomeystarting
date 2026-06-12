@@ -456,9 +456,6 @@ QuickActionsSection(
 ),
 const SizedBox(height: 28),
 
-const CommunityStatsSection(),
-
-const SizedBox(height: 32),
 
 const PopularCitiesSection(),
 
@@ -468,8 +465,6 @@ const SizedBox(height: 32),
 const SuccessStoriesSection(),
 const SizedBox(height: 32),
 
-const SubscriptionSection(),
-const SizedBox(height: 24),
             
               // New ElevatedButton for the profile switch button
               if (_userProfileType != null)

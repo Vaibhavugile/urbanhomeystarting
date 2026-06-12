@@ -26,8 +26,8 @@ title: "Need Room",
 subtitle: "Find your next stay",
 icon: Icons.bed_rounded,
 gradient: const [
-Color(0xFF6366F1),
-Color(0xFF8B5CF6),
+Color(0xFFEDE9FE),
+Color(0xFFF5F3FF),
 ],
 badge: "POPULAR",
 onTap: onNeedRoom,
@@ -40,8 +40,8 @@ title: "Need Flatmate",
 subtitle: "Find roommates",
 icon: Icons.groups_rounded,
 gradient: const [
-Color(0xFFEC4899),
-Color(0xFF8B5CF6),
+Color(0xFFFCE7F3),
+Color(0xFFFDF2F8),
 ],
 badge: "TRENDING",
 onTap: onNeedFlatmate,
@@ -51,44 +51,45 @@ onTap: onNeedFlatmate,
 ),
 
 
-    const SizedBox(height: 14),
+  const SizedBox(height: 14),
 
-    Row(
-      children: [
-        Expanded(
-          child: _actionCard(
-            title: "List Property",
-            subtitle: "Post your flat",
-            icon: Icons.home_work_rounded,
-            gradient: const [
-              Color(0xFFF59E0B),
-              Color(0xFFFB7185),
-            ],
-            badge: "FREE",
-            onTap: onListProperty,
-          ),
+  Row(
+    children: [
+      Expanded(
+        child: _actionCard(
+          title: "List Property",
+          subtitle: "Post your flat",
+          icon: Icons.home_work_rounded,
+          gradient: const [
+            Color(0xFFFEF3C7),
+            Color(0xFFFFFBEB),
+          ],
+          badge: "FREE",
+          onTap: onListProperty,
         ),
-        const SizedBox(width: 14),
-        Expanded(
-          child: _actionCard(
-            title: "Explore",
-            subtitle: "Browse homes",
-            icon: Icons.explore_rounded,
-            gradient: const [
-              Color(0xFF06B6D4),
-              Color(0xFF14B8A6),
-            ],
-            badge: "NEW",
-            onTap: onExplore,
-          ),
+      ),
+      const SizedBox(width: 14),
+      Expanded(
+        child: _actionCard(
+          title: "Explore",
+          subtitle: "Browse homes",
+          icon: Icons.explore_rounded,
+          gradient: const [
+            Color(0xFFCFFAFE),
+            Color(0xFFF0FDFA),
+          ],
+          badge: "NEW",
+          onTap: onExplore,
         ),
-      ],
-    ),
-  ],
+      ),
+    ],
+  ),
+],
+
+
 );
-
-
 }
+
 
 Widget _actionCard({
 required String title,
@@ -111,11 +112,15 @@ begin: Alignment.topLeft,
 end: Alignment.bottomRight,
 colors: gradient,
 ),
+border: Border.all(
+color: Colors.white,
+width: 1.5,
+),
 boxShadow: [
 BoxShadow(
-color: gradient.first.withOpacity(.30),
-blurRadius: 20,
-offset: const Offset(0, 10),
+color: Colors.black.withOpacity(.05),
+blurRadius: 15,
+offset: const Offset(0, 8),
 ),
 ],
 ),
@@ -127,106 +132,115 @@ bottom: -10,
 child: Icon(
 icon,
 size: 90,
-color: Colors.white.withOpacity(.12),
+color: Colors.black.withOpacity(.04),
 ),
 ),
 
 
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 10,
-                  vertical: 5,
-                ),
-                decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(.18),
-                  borderRadius: BorderRadius.circular(50),
-                ),
-                child: Text(
-                  badge,
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 9,
-                    fontWeight: FontWeight.w700,
-                    letterSpacing: 1,
-                  ),
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Container(
+              padding: const EdgeInsets.symmetric(
+                horizontal: 10,
+                vertical: 5,
+              ),
+              decoration: BoxDecoration(
+                color: Colors.white.withOpacity(.75),
+                borderRadius:
+                    BorderRadius.circular(50),
+              ),
+              child: Text(
+                badge,
+                style: const TextStyle(
+                  color: Color(0xFF374151),
+                  fontSize: 9,
+                  fontWeight: FontWeight.w700,
+                  letterSpacing: 1,
                 ),
               ),
+            ),
 
-              const Spacer(),
+            const Spacer(),
 
-              Container(
-                padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(.15),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Icon(
-                  icon,
-                  color: Colors.white,
-                  size: 24,
-                ),
-              ),
-
-              const SizedBox(height: 10),
-
-              FittedBox(
-                fit: BoxFit.scaleDown,
-                alignment: Alignment.centerLeft,
-                child: Text(
-                  title,
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 17,
-                    fontWeight: FontWeight.w800,
-                  ),
-                ),
-              ),
-
-              const SizedBox(height: 4),
-
-              Text(
-                subtitle,
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-                style: TextStyle(
-                  color: Colors.white.withOpacity(.85),
-                  fontSize: 12,
-                  height: 1.3,
-                ),
-              ),
-
-              const SizedBox(height: 8),
-
-              Row(
-                mainAxisSize: MainAxisSize.min,
-                children: const [
-                  Text(
-                    "Open",
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 12,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                  SizedBox(width: 4),
-                  Icon(
-                    Icons.arrow_forward_rounded,
-                    color: Colors.white,
-                    size: 14,
+            Container(
+              padding: const EdgeInsets.all(10),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius:
+                    BorderRadius.circular(14),
+                boxShadow: [
+                  BoxShadow(
+                    color:
+                        Colors.black.withOpacity(.04),
+                    blurRadius: 8,
                   ),
                 ],
               ),
-            ],
-          ),
-        ],
-      ),
+              child: Icon(
+                icon,
+                color: const Color(0xFF7C3AED),
+                size: 24,
+              ),
+            ),
+
+            const SizedBox(height: 12),
+
+            Text(
+              title,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+              style: const TextStyle(
+                color: Color(0xFF111827),
+                fontSize: 17,
+                fontWeight: FontWeight.w800,
+                height: 1.1,
+              ),
+            ),
+
+            const SizedBox(height: 6),
+
+            Text(
+              subtitle,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+              style: const TextStyle(
+                color: Color(0xFF6B7280),
+                fontSize: 12,
+                height: 1.4,
+              ),
+            ),
+
+            const SizedBox(height: 10),
+
+            Row(
+              mainAxisSize: MainAxisSize.min,
+              children: const [
+                Text(
+                  "Open",
+                  style: TextStyle(
+                    color: Color(0xFF7C3AED),
+                    fontSize: 12,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+                SizedBox(width: 4),
+                Icon(
+                  Icons.arrow_forward_rounded,
+                  color: Color(0xFF7C3AED),
+                  size: 14,
+                ),
+              ],
+            ),
+          ],
+        ),
+      ],
     ),
   ),
+),
+
+
 );
-
-
 }
+
 }

@@ -41,3 +41,5 @@ flutter:
   assets:
     - assets/lottie/
     - assets/images/
+    - assets/banners/
+    - assets/cities/
