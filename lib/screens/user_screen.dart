@@ -3,7 +3,8 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:mytennat/data/user_profile.dart';
 import 'package:mytennat/screens/complete_user_profile_screen.dart';
-
+import 'package:mytennat/screens/my_listings_screen.dart';
+import 'package:mytennat/screens/view_profile_screen.dart';
 class UserScreen extends StatefulWidget {
   const UserScreen({Key? key}) : super(key: key);
 
@@ -99,200 +100,570 @@ class _UserScreenState extends State<UserScreen> {
   }
 
   @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text(
-          'My Profile',
-          style: TextStyle(
+Widget build(BuildContext context) {
+  return Scaffold(
+    backgroundColor: const Color(0xFFF8FAFC),
+    body: _isLoading
+        ? const Center(
+            child: CircularProgressIndicator(
+              color: Color(0xFF7C3AED),
+            ),
+          )
+        : _userProfile == null
+            ? const Center(
+                child: Text(
+                  'Profile not found',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              )
+            : CustomScrollView(
+                physics: const BouncingScrollPhysics(),
+                slivers: [
+                  SliverAppBar(
+                    expandedHeight: 320,
+                    pinned: true,
+                    backgroundColor: const Color(0xFF7C3AED),
+                    elevation: 0,
+                    centerTitle: true,
+                    title: const Text(
+                      "My Profile",
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                    flexibleSpace: FlexibleSpaceBar(
+                      background: Container(
+                        decoration: const BoxDecoration(
+                          gradient: LinearGradient(
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
+                            colors: [
+                              Color(0xFF7C3AED),
+                              Color(0xFFEC4899),
+                            ],
+                          ),
+                        ),
+                        child: SafeArea(
+                          child: Column(
+                            mainAxisAlignment:
+                                MainAxisAlignment.center,
+                            children: [
+                              const SizedBox(height: 30),
+
+                              Container(
+                                padding: const EdgeInsets.all(4),
+                                decoration: BoxDecoration(
+                                  color: Colors.white,
+                                  borderRadius:
+                                      BorderRadius.circular(100),
+                                ),
+                                child: _userProfile!
+                                            .profilePhotoUrl !=
+                                        null &&
+                                    _userProfile!
+                                        .profilePhotoUrl!
+                                        .isNotEmpty
+                                    ? CircleAvatar(
+                                        radius: 50,
+                                        backgroundImage:
+                                            NetworkImage(
+                                          _userProfile!
+                                              .profilePhotoUrl!,
+                                        ),
+                                      )
+                                    : const CircleAvatar(
+                                        radius: 50,
+                                        backgroundColor:
+                                            Colors.white,
+                                        child: Icon(
+                                          Icons.person,
+                                          size: 50,
+                                          color: Color(
+                                            0xFF7C3AED,
+                                          ),
+                                        ),
+                                      ),
+                              ),
+
+                              const SizedBox(height: 14),
+
+                              Text(
+                                _userProfile!.name ??
+                                    "User",
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 28,
+                                  fontWeight:
+                                      FontWeight.w800,
+                                ),
+                              ),
+
+                              const SizedBox(height: 4),
+
+                              Text(
+                                "${_userProfile!.city ?? 'Unknown City'} • ${_userProfile!.occupation ?? 'Member'}",
+                                style: const TextStyle(
+                                  color: Colors.white70,
+                                  fontSize: 14,
+                                ),
+                              ),
+
+                              const SizedBox(height: 14),
+
+                              Container(
+                                padding:
+                                    const EdgeInsets.symmetric(
+                                  horizontal: 12,
+                                  vertical: 6,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: Colors.white
+                                      .withOpacity(.18),
+                                  borderRadius:
+                                      BorderRadius.circular(
+                                          30),
+                                ),
+                                child: Row(
+                                  mainAxisSize:
+                                      MainAxisSize.min,
+                                  children: [
+                                    const Icon(
+                                      Icons.verified,
+                                      color: Colors.white,
+                                      size: 16,
+                                    ),
+                                    const SizedBox(width: 6),
+                                    Text(
+                                      "${_completionPercentage.toStringAsFixed(0)}% Complete",
+                                      style:
+                                          const TextStyle(
+                                        color: Colors.white,
+                                        fontWeight:
+                                            FontWeight.w600,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+
+                  SliverToBoxAdapter(
+                    child: Padding(
+                      padding:
+                          const EdgeInsets.all(20),
+                      child: Column(
+                        children: [
+                          Container(
+                            padding:
+                                const EdgeInsets.all(20),
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius:
+                                  BorderRadius.circular(
+                                      24),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black
+                                      .withOpacity(.05),
+                                  blurRadius: 20,
+                                  offset:
+                                      const Offset(0, 8),
+                                ),
+                              ],
+                            ),
+                            child: Column(
+                              crossAxisAlignment:
+                                  CrossAxisAlignment
+                                      .start,
+                              children: [
+                                const Text(
+                                  "Profile Completion",
+                                  style: TextStyle(
+                                    fontSize: 18,
+                                    fontWeight:
+                                        FontWeight.w700,
+                                  ),
+                                ),
+
+                                const SizedBox(
+                                    height: 14),
+
+                                ClipRRect(
+                                  borderRadius:
+                                      BorderRadius
+                                          .circular(20),
+                                  child:
+                                      LinearProgressIndicator(
+                                    value:
+                                        _completionPercentage /
+                                            100,
+                                    minHeight: 10,
+                                    backgroundColor:
+                                        const Color(
+                                            0xFFE5E7EB),
+                                    color:
+                                        const Color(
+                                            0xFF7C3AED),
+                                  ),
+                                ),
+
+                                const SizedBox(
+                                    height: 10),
+
+                                Text(
+                                  "${_completionPercentage.toStringAsFixed(0)}% profile completed",
+                                  style: const TextStyle(
+                                    color: Color(
+                                        0xFF6B7280),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+
+                          const SizedBox(height: 20),
+
+                          _buildActionButton(
+  label: 'Update Profile',
+  icon: Icons.edit_rounded,
+  onPressed: _navigateToUpdateProfile,
+),
+
+const SizedBox(height: 12),
+
+_buildActionButton(
+  label: 'My Listings',
+  icon: Icons.home_work_rounded,
+  onPressed: () {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => const MyListingsScreen(),
+      ),
+    );
+  },
+),
+
+const SizedBox(height: 12),
+
+_buildActionButton(
+  label: _showAdditionalData
+      ? 'Hide Details'
+      : 'View Details',
+                            icon: _showAdditionalData
+                                ? Icons.visibility_off
+                                : Icons.visibility,
+                            onPressed: () {
+                              setState(() {
+                                _showAdditionalData =
+                                    !_showAdditionalData;
+                              });
+                            },
+                          ),
+
+                          if (_showAdditionalData)
+                            ...[
+                              const SizedBox(
+                                  height: 20),
+                              _buildProfileDetailCard(),
+                            ],
+
+                          const SizedBox(height: 30),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+  );
+}
+Widget _buildActionButton({
+  required String label,
+  required IconData icon,
+  required VoidCallback onPressed,
+}) {
+  return Container(
+    width: double.infinity,
+    margin: const EdgeInsets.only(bottom: 4),
+    child: Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onPressed,
+        borderRadius: BorderRadius.circular(20),
+        child: Container(
+          padding: const EdgeInsets.symmetric(
+            horizontal: 20,
+            vertical: 18,
+          ),
+          decoration: BoxDecoration(
             color: Colors.white,
-            fontWeight: FontWeight.bold,
-            fontSize: 22,
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(
+              color: const Color(0xFFF1F5F9),
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(.04),
+                blurRadius: 16,
+                offset: const Offset(0, 6),
+              ),
+            ],
+          ),
+          child: Row(
+            children: [
+              Container(
+                width: 46,
+                height: 46,
+                decoration: BoxDecoration(
+                  color: const Color(0xFFF5F3FF),
+                  borderRadius: BorderRadius.circular(14),
+                ),
+                child: Icon(
+                  icon,
+                  color: const Color(0xFF7C3AED),
+                  size: 22,
+                ),
+              ),
+
+              const SizedBox(width: 16),
+
+              Expanded(
+                child: Text(
+                  label,
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w700,
+                    color: Color(0xFF111827),
+                  ),
+                ),
+              ),
+
+              Container(
+                width: 34,
+                height: 34,
+                decoration: BoxDecoration(
+                  color: const Color(0xFFF8FAFC),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: const Icon(
+                  Icons.arrow_forward_ios_rounded,
+                  size: 14,
+                  color: Color(0xFF6B7280),
+                ),
+              ),
+            ],
           ),
         ),
-        centerTitle: true,
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        iconTheme: const IconThemeData(color: Colors.white),
       ),
-      extendBodyBehindAppBar: true,
-      body: Stack(
-        children: [
+    ),
+  );
+}
+
+ Widget _buildProfileDetailCard() {
+  return Container(
+    width: double.infinity,
+    padding: const EdgeInsets.all(20),
+    decoration: BoxDecoration(
+      color: Colors.white,
+      borderRadius: BorderRadius.circular(24),
+      boxShadow: [
+        BoxShadow(
+          color: Colors.black.withOpacity(.04),
+          blurRadius: 20,
+          offset: const Offset(0, 8),
+        ),
+      ],
+    ),
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Row(
+          children: [
+            Icon(
+              Icons.person_outline_rounded,
+              color: Color(0xFF7C3AED),
+            ),
+            SizedBox(width: 10),
+            Text(
+              "Profile Details",
+              style: TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.w800,
+                color: Color(0xFF111827),
+              ),
+            ),
+          ],
+        ),
+
+        const SizedBox(height: 20),
+
+        _buildDetailTile(
+          Icons.badge_outlined,
+          "Occupation",
+          _userProfile!.occupation,
+        ),
+
+        _buildDetailTile(
+          Icons.menu_book_outlined,
+          "Religion",
+          _userProfile!.religion,
+        ),
+
+        _buildDetailTile(
+          Icons.smoke_free_outlined,
+          "Smoking Habit",
+          _userProfile!.smokingHabit,
+        ),
+
+        _buildDetailTile(
+          Icons.local_bar_outlined,
+          "Drinking Habit",
+          _userProfile!.drinkingHabit,
+        ),
+
+        _buildDetailTile(
+          Icons.restaurant_outlined,
+          "Food Preference",
+          _userProfile!.foodPreference,
+        ),
+
+        _buildDetailTile(
+          Icons.cleaning_services_outlined,
+          "Cleanliness",
+          _userProfile!.cleanlinessLevel,
+        ),
+
+        _buildDetailTile(
+          Icons.people_outline_rounded,
+          "Social Preferences",
+          _userProfile!.socialPreferences,
+        ),
+
+        _buildDetailTile(
+          Icons.pets_outlined,
+          "Pet Ownership",
+          _userProfile!.petOwnership,
+        ),
+
+        _buildDetailTile(
+          Icons.favorite_border_rounded,
+          "Pet Tolerance",
+          _userProfile!.petTolerance,
+        ),
+
+        _buildDetailTile(
+          Icons.groups_rounded,
+          "Guests Frequency",
+          _userProfile!.guestsFrequency,
+        ),
+
+        if (_userProfile!.bio != null &&
+            _userProfile!.bio!.isNotEmpty) ...[
+          const SizedBox(height: 20),
+
+          const Text(
+            "About Me",
+            style: TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.w700,
+              color: Color(0xFF111827),
+            ),
+          ),
+
+          const SizedBox(height: 10),
+
           Container(
-            decoration: const BoxDecoration(
-              gradient: LinearGradient(
-                colors: [Color(0xFF6A1B9A), Color(0xFFAD1457)],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
+            width: double.infinity,
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: const Color(0xFFF8FAFC),
+              borderRadius: BorderRadius.circular(16),
+            ),
+            child: Text(
+              _userProfile!.bio!,
+              style: const TextStyle(
+                color: Color(0xFF4B5563),
+                height: 1.5,
               ),
             ),
           ),
-          _isLoading
-              ? const Center(child: CircularProgressIndicator(color: Colors.white))
-              : _userProfile == null
-              ? const Center(child: Text('Profile not found.', style: TextStyle(color: Colors.white)))
-              : SingleChildScrollView(
-            padding: const EdgeInsets.all(20.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                SizedBox(height: MediaQuery.of(context).padding.top + kToolbarHeight),
-                Stack(
-                  alignment: Alignment.center,
-                  children: [
-                    TweenAnimationBuilder<double>(
-                      tween: Tween<double>(begin: 0, end: _completionPercentage / 100),
-                      duration: const Duration(milliseconds: 1000),
-                      builder: (context, value, child) {
-                        return SizedBox(
-                          width: 140,
-                          height: 140,
-                          child: CircularProgressIndicator(
-                            value: value,
-                            strokeWidth: 5,
-                            backgroundColor: Colors.white38,
-                            valueColor: const AlwaysStoppedAnimation<Color>(Colors.greenAccent),
-                          ),
-                        );
-                      },
-                    ),
-                    if (_userProfile!.profilePhotoUrl != null && _userProfile!.profilePhotoUrl!.isNotEmpty)
-                      CircleAvatar(
-                        radius: 60,
-                        backgroundImage: NetworkImage(_userProfile!.profilePhotoUrl!),
-                      )
-                    else
-                      const CircleAvatar(
-                        radius: 60,
-                        child: Icon(Icons.person, size: 60),
-                      ),
-                  ],
-                ),
-                const SizedBox(height: 10),
-                Text(
-                  '${_completionPercentage.toStringAsFixed(0)}% Complete',
-                  style: const TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
-                  ),
-                ),
-                const SizedBox(height: 20),
-                Text(
-                  _userProfile!.name ?? 'Name Not Provided',
-                  style: const TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: Colors.white),
-                ),
-                const SizedBox(height: 10),
-                Text(
-                  '${_userProfile!.age ?? 'N/A'} years old, ${_userProfile!.gender ?? 'N/A'}',
-                  style: const TextStyle(fontSize: 18, color: Colors.white70),
-                ),
-                Text(
-                  _userProfile!.city ?? 'City Not Provided',
-                  style: const TextStyle(fontSize: 18, color: Colors.white70),
-                ),
-                const SizedBox(height: 30),
-                _buildActionButton(
-                  label: _showAdditionalData ? 'Hide Additional Profile Data' : 'View Additional Profile Data',
-                  icon: _showAdditionalData ? Icons.visibility_off : Icons.visibility,
-                  onPressed: () {
-                    setState(() {
-                      _showAdditionalData = !_showAdditionalData;
-                    });
-                  },
-                ),
-                const SizedBox(height: 16),
-                _buildActionButton(
-                  label: 'Update Profile',
-                  icon: Icons.edit,
-                  onPressed: _navigateToUpdateProfile,
-                ),
-                if (_showAdditionalData) ...[
-                  const SizedBox(height: 30),
-                  _buildProfileDetailCard(),
-                ],
-              ],
-            ),
-          ),
         ],
-      ),
-    );
+      ],
+    ),
+  );
+}
+Widget _buildDetailTile(
+  IconData icon,
+  String title,
+  String? value,
+) {
+  if (value == null || value.isEmpty) {
+    return const SizedBox.shrink();
   }
 
-  Widget _buildActionButton({required String label, required IconData icon, required VoidCallback onPressed}) {
-    return SizedBox(
-      width: double.infinity,
-      child: ElevatedButton.icon(
-        onPressed: onPressed,
-        style: ElevatedButton.styleFrom(
-          backgroundColor: Colors.white,
-          foregroundColor: const Color(0xFF6A1B9A),
-          shape: RoundedRectangleBorder(
+  return Container(
+    margin: const EdgeInsets.only(bottom: 12),
+    padding: const EdgeInsets.all(14),
+    decoration: BoxDecoration(
+      color: const Color(0xFFF8FAFC),
+      borderRadius: BorderRadius.circular(16),
+    ),
+    child: Row(
+      children: [
+        Container(
+          width: 42,
+          height: 42,
+          decoration: BoxDecoration(
+            color: const Color(0xFFF5F3FF),
             borderRadius: BorderRadius.circular(12),
           ),
-          padding: const EdgeInsets.symmetric(vertical: 16),
-          elevation: 8,
-        ),
-        icon: Icon(icon),
-        label: Text(
-          label,
-          style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildProfileDetailCard() {
-    return Card(
-      elevation: 4,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
-      child: Padding(
-        padding: const EdgeInsets.all(20.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            _buildDetailRow('Bio', _userProfile!.bio),
-            _buildDetailRow('Occupation', _userProfile!.occupation),
-            _buildDetailRow('Religion', _userProfile!.religion),
-            _buildDetailRow('Smoking Habit', _userProfile!.smokingHabit),
-            _buildDetailRow('Drinking Habit', _userProfile!.drinkingHabit),
-            _buildDetailRow('Food Preference', _userProfile!.foodPreference),
-            _buildDetailRow('Cleanliness Level', _userProfile!.cleanlinessLevel),
-            _buildDetailRow('Social Preferences', _userProfile!.socialPreferences),
-            _buildDetailRow('Pet Ownership', _userProfile!.petOwnership),
-            _buildDetailRow('Pet Tolerance', _userProfile!.petTolerance),
-            _buildDetailRow('Guests Frequency', _userProfile!.guestsFrequency),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildDetailRow(String label, String? value) {
-    if (value == null || value.isEmpty) {
-      return const SizedBox.shrink();
-    }
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8.0),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          SizedBox(
-            width: 120,
-            child: Text(
-              label,
-              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-            ),
+          child: Icon(
+            icon,
+            color: const Color(0xFF7C3AED),
+            size: 20,
           ),
-          const SizedBox(width: 10),
-          Expanded(
-            child: Text(
-              value,
-              style: const TextStyle(fontSize: 16),
-            ),
+        ),
+
+        const SizedBox(width: 14),
+
+        Expanded(
+          child: Column(
+            crossAxisAlignment:
+                CrossAxisAlignment.start,
+            children: [
+              Text(
+                title,
+                style: const TextStyle(
+                  fontSize: 12,
+                  color: Color(0xFF6B7280),
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+              const SizedBox(height: 2),
+              Text(
+                value,
+                style: const TextStyle(
+                  fontSize: 15,
+                  fontWeight: FontWeight.w700,
+                  color: Color(0xFF111827),
+                ),
+              ),
+            ],
           ),
-        ],
-      ),
-    );
-  }
+        ),
+      ],
+    ),
+  );
+}
+
+  
 }
