@@ -1,4 +1,4 @@
-package com.example.mytennat
+package com.urbanhomey.app
 
 import io.flutter.embedding.android.FlutterActivity
 

@@ -23,10 +23,7 @@ class DefaultFirebaseOptions {
       case TargetPlatform.android:
         return android;
       case TargetPlatform.iOS:
-        throw UnsupportedError(
-          'DefaultFirebaseOptions have not been configured for ios - '
-          'you can reconfigure this by running the FlutterFire CLI again.',
-        );
+        return ios;
       case TargetPlatform.macOS:
         throw UnsupportedError(
           'DefaultFirebaseOptions have not been configured for macos - '
@@ -50,20 +47,30 @@ class DefaultFirebaseOptions {
   }
 
   static const FirebaseOptions web = FirebaseOptions(
-    apiKey: 'AIzaSyAE7AbifSiHMg8twzWhvKcUEvovnd3re9w',
-    appId: '1:23597975309:web:d3b01f86a0184650bb1244',
-    messagingSenderId: '23597975309',
-    projectId: 'mytennant-5cc44',
-    authDomain: 'mytennant-5cc44.firebaseapp.com',
-    storageBucket: 'mytennant-5cc44.firebasestorage.app',
-    measurementId: 'G-S5D5D3WETD',
+    apiKey: 'AIzaSyALksl6qc-ht2ArInPE2xA-q_7b7MgjwjU',
+    appId: '1:449162847594:web:96365101b00730ac527113',
+    messagingSenderId: '449162847594',
+    projectId: 'urbanhomey-363dc',
+    authDomain: 'urbanhomey-363dc.firebaseapp.com',
+    storageBucket: 'urbanhomey-363dc.firebasestorage.app',
+    measurementId: 'G-09Z250TQ76',
   );
 
   static const FirebaseOptions android = FirebaseOptions(
-    apiKey: 'AIzaSyCGJC2xx_5bW-DwaLWkkj8PlOCgfsF5Lj8',
-    appId: '1:23597975309:android:0a31095a9706eab9bb1244',
-    messagingSenderId: '23597975309',
-    projectId: 'mytennant-5cc44',
-    storageBucket: 'mytennant-5cc44.firebasestorage.app',
+    apiKey: 'AIzaSyADf9kgysGirNyfIBjtCGVtyVi0BGQW8oA',
+    appId: '1:449162847594:android:8d9433cfccd17997527113',
+    messagingSenderId: '449162847594',
+    projectId: 'urbanhomey-363dc',
+    storageBucket: 'urbanhomey-363dc.firebasestorage.app',
   );
+
+  static const FirebaseOptions ios = FirebaseOptions(
+    apiKey: 'AIzaSyCsUaVu-ft6DVq50pAU2l6NY4deZOSUd0s',
+    appId: '1:449162847594:ios:ea137a704dad6de1527113',
+    messagingSenderId: '449162847594',
+    projectId: 'urbanhomey-363dc',
+    storageBucket: 'urbanhomey-363dc.firebasestorage.app',
+    iosBundleId: 'com.urbanhomey.app',
+  );
+
 }
