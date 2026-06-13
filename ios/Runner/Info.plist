@@ -11,6 +11,7 @@
 	<key>CFBundleIdentifier</key>
 	<string>$(PRODUCT_BUNDLE_IDENTIFIER)</string>
 	<key>CFBundleInfoDictionaryVersion</key>
+
 	<string>6.0</string>
 	<key>CFBundleName</key>
 	<string>mytennat</string>
@@ -18,6 +19,15 @@
 	<string>APPL</string>
 	<key>CFBundleShortVersionString</key>
 	<string>$(FLUTTER_BUILD_NAME)</string>
+	<key>NSLocationWhenInUseUsageDescription</key>
+<string>
+We use your location to find nearby flats and flatmates.
+</string>
+
+<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+<string>
+We use your location to improve nearby matching.
+</string>
 	<key>CFBundleSignature</key>
 	<string>????</string>
 	<key>CFBundleVersion</key>

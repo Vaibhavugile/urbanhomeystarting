@@ -299,28 +299,31 @@ class _HomePageState extends State<HomePage> {
       backgroundColor: const Color(0xFFF8FAFC),
      appBar: AppBar(
   elevation: 0,
-  toolbarHeight: 90,
+  toolbarHeight: 95,
+  automaticallyImplyLeading: false,
   flexibleSpace: Container(
     decoration: const BoxDecoration(
       gradient: LinearGradient(
         begin: Alignment.topLeft,
         end: Alignment.bottomRight,
         colors: [
-          Color(0xFF6A1B9A),
-          Color(0xFFAD1457),
+          Color(0xFF7C3AED),
+          Color(0xFF9333EA),
+          Color(0xFFEC4899),
         ],
       ),
     ),
   ),
   title: Column(
     crossAxisAlignment: CrossAxisAlignment.start,
-    mainAxisSize: MainAxisSize.min,
+    mainAxisAlignment: MainAxisAlignment.center,
     children: [
       Text(
         'Good Afternoon 👋',
         style: TextStyle(
           color: Colors.white.withOpacity(.85),
           fontSize: 13,
+          fontWeight: FontWeight.w500,
         ),
       ),
 
@@ -332,14 +335,72 @@ class _HomePageState extends State<HomePage> {
           color: Colors.white,
           fontSize: 24,
           fontWeight: FontWeight.w800,
+          letterSpacing: -.5,
         ),
       ),
+
+      if (_remainingContacts != null)
+        Padding(
+          padding: const EdgeInsets.only(top: 2),
+          child: Text(
+            "${_remainingContacts!} contacts remaining",
+            style: TextStyle(
+              color: Colors.white.withOpacity(.80),
+              fontSize: 12,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+        ),
     ],
   ),
   actions: [
+    if (_currentPlanName != null)
+      Container(
+        margin: const EdgeInsets.only(
+          top: 20,
+          bottom: 20,
+          right: 10,
+        ),
+        padding: const EdgeInsets.symmetric(
+          horizontal: 12,
+          vertical: 6,
+        ),
+        decoration: BoxDecoration(
+          color: Colors.white.withOpacity(.15),
+          borderRadius: BorderRadius.circular(30),
+          border: Border.all(
+            color: Colors.white24,
+          ),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Icon(
+              Icons.workspace_premium_rounded,
+              color: Colors.amber,
+              size: 16,
+            ),
+
+            const SizedBox(width: 6),
+
+            Text(
+              _currentPlanName!,
+              style: const TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.w700,
+                fontSize: 12,
+              ),
+            ),
+          ],
+        ),
+      ),
+
     Padding(
-      padding: const EdgeInsets.only(right: 16),
+      padding: const EdgeInsets.only(
+        right: 16,
+      ),
       child: InkWell(
+        borderRadius: BorderRadius.circular(18),
         onTap: () {
           Navigator.push(
             context,
@@ -349,17 +410,17 @@ class _HomePageState extends State<HomePage> {
           );
         },
         child: Container(
-          height: 46,
-          width: 46,
+          height: 48,
+          width: 48,
           decoration: BoxDecoration(
             color: Colors.white.withOpacity(.15),
-            borderRadius: BorderRadius.circular(14),
+            borderRadius: BorderRadius.circular(18),
             border: Border.all(
-              color: Colors.white.withOpacity(.15),
+              color: Colors.white24,
             ),
           ),
           child: const Icon(
-            Icons.person_outline,
+            Icons.person_outline_rounded,
             color: Colors.white,
           ),
         ),
@@ -463,6 +524,232 @@ const PopularCitiesSection(),
 const SizedBox(height: 32),
 
 const SuccessStoriesSection(),
+
+const SizedBox(height: 32),
+
+if (_currentPlanName != null)
+  Container(
+    padding: const EdgeInsets.all(20),
+    decoration: BoxDecoration(
+      color: Colors.white,
+      borderRadius: BorderRadius.circular(28),
+      boxShadow: [
+        BoxShadow(
+          color: Colors.black.withOpacity(.05),
+          blurRadius: 15,
+          offset: const Offset(0, 8),
+        ),
+      ],
+    ),
+    child: Row(
+      children: [
+        Container(
+          height: 60,
+          width: 60,
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(18),
+            gradient: const LinearGradient(
+              colors: [
+                Color(0xFF7C3AED),
+                Color(0xFF9333EA),
+                Color(0xFFEC4899),
+              ],
+            ),
+          ),
+          child: const Icon(
+            Icons.workspace_premium_rounded,
+            color: Colors.white,
+            size: 30,
+          ),
+        ),
+
+        const SizedBox(width: 16),
+
+        Expanded(
+          child: Column(
+            crossAxisAlignment:
+                CrossAxisAlignment.start,
+            children: [
+              Text(
+                _currentPlanName!,
+                style: const TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.w800,
+                  color: Color(0xFF111827),
+                ),
+              ),
+
+              const SizedBox(height: 4),
+
+              Text(
+                "${_remainingContacts ?? 0} Contacts Remaining",
+                style: const TextStyle(
+                  color: Color(0xFF64748B),
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ],
+          ),
+        ),
+
+        Container(
+          padding:
+              const EdgeInsets.symmetric(
+            horizontal: 12,
+            vertical: 8,
+          ),
+          decoration: BoxDecoration(
+            color: Colors.green.shade50,
+            borderRadius:
+                BorderRadius.circular(20),
+          ),
+          child: const Text(
+            "ACTIVE",
+            style: TextStyle(
+              color: Colors.green,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+        ),
+      ],
+    ),
+  ),
+
+const SizedBox(height: 24),
+Container(
+  padding: const EdgeInsets.all(24),
+  decoration: BoxDecoration(
+    borderRadius: BorderRadius.circular(30),
+    gradient: const LinearGradient(
+      begin: Alignment.topLeft,
+      end: Alignment.bottomRight,
+      colors: [
+        Color(0xFF7C3AED),
+        Color(0xFF9333EA),
+        Color(0xFFEC4899),
+      ],
+    ),
+    boxShadow: [
+      BoxShadow(
+        color: const Color(0xFF7C3AED).withOpacity(.25),
+        blurRadius: 25,
+        offset: const Offset(0, 12),
+      ),
+    ],
+  ),
+  child: Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: Colors.white.withOpacity(.15),
+              borderRadius: BorderRadius.circular(16),
+            ),
+            child: const Icon(
+              Icons.workspace_premium_rounded,
+              color: Colors.white,
+              size: 28,
+            ),
+          ),
+
+          const Spacer(),
+
+          Container(
+            padding: const EdgeInsets.symmetric(
+              horizontal: 12,
+              vertical: 6,
+            ),
+            decoration: BoxDecoration(
+              color: Colors.white.withOpacity(.15),
+              borderRadius: BorderRadius.circular(30),
+            ),
+            child: const Text(
+              "PREMIUM",
+              style: TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
+                letterSpacing: 1,
+              ),
+            ),
+          ),
+        ],
+      ),
+
+      const SizedBox(height: 20),
+
+      const Text(
+        "Unlock Unlimited Matches",
+        style: TextStyle(
+          color: Colors.white,
+          fontSize: 24,
+          fontWeight: FontWeight.w800,
+        ),
+      ),
+
+      const SizedBox(height: 8),
+
+      const Text(
+        "Get more profile views, unlock contact details, priority matching and premium support.",
+        style: TextStyle(
+          color: Colors.white70,
+          fontSize: 15,
+          height: 1.5,
+        ),
+      ),
+
+      const SizedBox(height: 20),
+
+      Wrap(
+        spacing: 8,
+        runSpacing: 8,
+        children: [
+          _premiumChip("Unlimited Likes"),
+          _premiumChip("Priority Matching"),
+          _premiumChip("Contact Access"),
+          _premiumChip("Premium Badge"),
+        ],
+      ),
+
+      const SizedBox(height: 24),
+
+      SizedBox(
+        width: double.infinity,
+        child: ElevatedButton(
+          onPressed: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (_) => const PlansScreen(),
+              ),
+            );
+          },
+          style: ElevatedButton.styleFrom(
+            backgroundColor: Colors.white,
+            foregroundColor: const Color(0xFF7C3AED),
+            minimumSize: const Size(
+              double.infinity,
+              56,
+            ),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(18),
+            ),
+          ),
+          child: const Text(
+            "View Premium Plans",
+            style: TextStyle(
+              fontWeight: FontWeight.bold,
+              fontSize: 16,
+            ),
+          ),
+        ),
+      ),
+    ],
+  ),
+),
+
 const SizedBox(height: 32),
 
             
@@ -604,6 +891,26 @@ const SizedBox(height: 32),
       ),
     );
   }
+  Widget _premiumChip(String text) {
+  return Container(
+    padding: const EdgeInsets.symmetric(
+      horizontal: 12,
+      vertical: 8,
+    ),
+    decoration: BoxDecoration(
+      color: Colors.white.withOpacity(.15),
+      borderRadius: BorderRadius.circular(30),
+    ),
+    child: Text(
+      text,
+      style: const TextStyle(
+        color: Colors.white,
+        fontWeight: FontWeight.w600,
+        fontSize: 12,
+      ),
+    ),
+  );
+}
 }
 
 class FlatListingProfile {
