@@ -120,138 +120,441 @@ class _WhoLikedMeListState extends State<WhoLikedMeList> {
     );
   }
 
-  @override
-  Widget build(BuildContext context) {
-    if (_isLoading) {
-      return const Center(child: CircularProgressIndicator(color: Colors.redAccent));
-    }
-
-    if (_likingProfiles.isEmpty) {
-      return Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(Icons.sentiment_dissatisfied, size: 80, color: Colors.grey[400]),
-            const SizedBox(height: 20),
-            const Text(
-              'No one has liked your profile yet!',
-              style: TextStyle(fontSize: 18, color: Colors.grey),
-            ),
-            const SizedBox(height: 10),
-            const Text(
-              'Make sure your profile is complete and engaging!',
-              textAlign: TextAlign.center,
-              style: TextStyle(fontSize: 14, color: Colors.grey),
-            ),
-          ],
-        ),
-      );
-    }
-
-    return ListView.builder(
-      itemCount: _likingProfiles.length,
-      itemBuilder: (context, index) {
-        final profile = _likingProfiles[index];
-        String name = '';
-        String imageUrl = '';
-        String subtitle = '';
-        String profileId = profile.documentId;
-
-        if (profile is FlatListingProfile) {
-          name = profile.userProfile.name ?? 'N/A';
-          imageUrl = profile.imageUrls != null && profile.imageUrls!.isNotEmpty ? profile.imageUrls![0] : '';
-          subtitle = 'Flat Listing by ${profile.userProfile.gender?? 'N/A'}';
-        } else if (profile is SeekingFlatmateProfile) {
-          name = profile.userProfile.name ?? 'N/A';
-          imageUrl = profile.imageUrls != null && profile.imageUrls!.isNotEmpty ? profile.imageUrls![0] : '';
-          subtitle = 'Seeking Flatmate, ${profile.userProfile.gender ?? 'N/A'}';
-        }
-
-        return Card(
-          margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-          elevation: 4,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
-          child: ListTile(
-            contentPadding: const EdgeInsets.all(12),
-            leading: CircleAvatar(
-              radius: 30,
-              backgroundColor: Colors.grey[200],
-              backgroundImage: imageUrl.isNotEmpty ? NetworkImage(imageUrl) : null,
-              child: imageUrl.isEmpty
-                  ? Icon(Icons.person, size: 30, color: Colors.grey[600])
-                  : null,
-            ),
-            title: Text(name, style: const TextStyle(fontWeight: FontWeight.bold)),
-            subtitle: Text(subtitle),
-            trailing: FutureBuilder<DocumentSnapshot>(
-              future: _firestore.collection('matches').doc(_getMatchDocId(widget.currentUserId, profileId)).get(),
-              builder: (context, snapshot) {
-                if (snapshot.connectionState == ConnectionState.waiting) {
-                  return const SizedBox(
-                    width: 24,
-                    height: 24,
-                    child: CircularProgressIndicator(strokeWidth: 2, color: Colors.blueAccent),
-                  );
-                }
-                if (snapshot.hasData && snapshot.data!.exists) {
-                  return ElevatedButton.icon(
-                    onPressed: () {
-                      final chatRoomId = (snapshot.data!.data() as Map<String, dynamic>)['chatRoomId'];
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => ChatScreen(
-                            chatPartnerId: profileId,
-                            chatPartnerName: name,
-                            chatRoomId: chatRoomId, // Pass existing chat room ID
-                          ),
-                        ),
-                      );
-                    },
-                    icon: const Icon(Icons.message, size: 18),
-                    label: const Text('Chat'),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.blueAccent,
-                      foregroundColor: Colors.white,
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                    ),
-                  );
-                } else {
-                  return ElevatedButton.icon(
-                    onPressed: () async {
-                      // Logic to "like back" and potentially create a match
-                      await _processLikeBack(profileId);
-                      // After liking back, refresh the list to reflect potential match status
-                      _fetchWhoLikedMeProfiles();
-                    },
-                    icon: const Icon(Icons.favorite, size: 18),
-                    label: const Text('Like Back'),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.redAccent,
-                      foregroundColor: Colors.white,
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                    ),
-                  );
-                }
-              },
-            ),
-            onTap: () {
-              // NEW: Navigate to ViewProfileScreen for the tapped user
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => ViewProfileScreen(userId: profileId),
-                ),
-              );
-            },
-          ),
-        );
-      },
+ @override
+Widget build(BuildContext context) {
+  if (_isLoading) {
+    return const Center(
+      child: CircularProgressIndicator(
+        color: Color(0xFF7C3AED),
+      ),
     );
   }
 
+  if (_likingProfiles.isEmpty) {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(30),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Container(
+              width: 120,
+              height: 120,
+              decoration: const BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [
+                    Color(0xFF7C3AED),
+                    Color(0xFF9333EA),
+                    Color(0xFFEC4899),
+                  ],
+                ),
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(
+                Icons.favorite_rounded,
+                color: Colors.white,
+                size: 55,
+              ),
+            ),
+
+            const SizedBox(height: 24),
+
+            const Text(
+              "No Likes Yet",
+              style: TextStyle(
+                fontSize: 24,
+                fontWeight: FontWeight.w800,
+                color: Color(0xFF111827),
+              ),
+            ),
+
+            const SizedBox(height: 10),
+
+            const Text(
+              "When someone likes your profile,\nyou'll see them here.",
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: 15,
+                color: Color(0xFF64748B),
+                height: 1.5,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  return ListView.builder(
+    padding: const EdgeInsets.only(
+      top: 16,
+      bottom: 30,
+    ),
+    itemCount: _likingProfiles.length,
+    itemBuilder: (context, index) {
+      final profile = _likingProfiles[index];
+
+      String name = '';
+      String imageUrl = '';
+      String subtitle = '';
+      String profileId = profile.documentId;
+
+      if (profile is FlatListingProfile) {
+        name = profile.userProfile.name ?? '';
+        imageUrl = profile.imageUrls != null &&
+                profile.imageUrls!.isNotEmpty
+            ? profile.imageUrls!.first
+            : '';
+        subtitle =
+            "Flat Listing • ${profile.userProfile.gender ?? ''}";
+      } else if (profile is SeekingFlatmateProfile) {
+        name = profile.userProfile.name ?? '';
+        imageUrl = profile.imageUrls != null &&
+                profile.imageUrls!.isNotEmpty
+            ? profile.imageUrls!.first
+            : '';
+        subtitle =
+            "Seeking Flatmate • ${profile.userProfile.gender ?? ''}";
+      }
+
+      return GestureDetector(
+        onTap: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (_) => ViewProfileScreen(
+                userId: profileId,
+              ),
+            ),
+          );
+        },
+        child: Container(
+          margin: const EdgeInsets.symmetric(
+            horizontal: 16,
+            vertical: 8,
+          ),
+          decoration: BoxDecoration(
+            borderRadius:
+                BorderRadius.circular(28),
+            gradient: const LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [
+                Color(0xFF7C3AED),
+                Color(0xFF9333EA),
+                Color(0xFFEC4899),
+              ],
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: const Color(
+                  0xFF7C3AED,
+                ).withOpacity(.25),
+                blurRadius: 24,
+                offset: const Offset(0, 12),
+              ),
+            ],
+          ),
+          child: Padding(
+            padding: const EdgeInsets.all(20),
+            child: Column(
+              children: [
+                Row(
+                  children: [
+                    CircleAvatar(
+                      radius: 32,
+                      backgroundColor:
+                          Colors.white24,
+                      backgroundImage:
+                          imageUrl.isNotEmpty
+                              ? NetworkImage(
+                                  imageUrl,
+                                )
+                              : null,
+                      child: imageUrl.isEmpty
+                          ? Text(
+                              name.isNotEmpty
+                                  ? name[0]
+                                      .toUpperCase()
+                                  : "U",
+                              style:
+                                  const TextStyle(
+                                color:
+                                    Colors.white,
+                                fontSize:
+                                    22,
+                                fontWeight:
+                                    FontWeight
+                                        .bold,
+                              ),
+                            )
+                          : null,
+                    ),
+
+                    const SizedBox(width: 14),
+
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment:
+                            CrossAxisAlignment
+                                .start,
+                        children: [
+                          Text(
+                            name,
+                            style:
+                                const TextStyle(
+                              color:
+                                  Colors.white,
+                              fontSize:
+                                  20,
+                              fontWeight:
+                                  FontWeight
+                                      .w700,
+                            ),
+                          ),
+
+                          const SizedBox(
+                              height: 4),
+
+                          Text(
+                            subtitle,
+                            style:
+                                const TextStyle(
+                              color:
+                                  Colors.white70,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+
+                    Container(
+                      padding:
+                          const EdgeInsets
+                              .symmetric(
+                        horizontal: 12,
+                        vertical: 6,
+                      ),
+                      decoration:
+                          BoxDecoration(
+                        color: Colors.white
+                            .withOpacity(.15),
+                        borderRadius:
+                            BorderRadius
+                                .circular(30),
+                      ),
+                      child: const Row(
+                        mainAxisSize:
+                            MainAxisSize.min,
+                        children: [
+                          Icon(
+                            Icons.favorite,
+                            size: 14,
+                            color:
+                                Colors.white,
+                          ),
+                          SizedBox(width: 4),
+                          Text(
+                            "Liked You",
+                            style:
+                                TextStyle(
+                              color:
+                                  Colors.white,
+                              fontWeight:
+                                  FontWeight
+                                      .w600,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+
+                const SizedBox(height: 20),
+
+                FutureBuilder<DocumentSnapshot>(
+                  future: _firestore
+                      .collection('matches')
+                      .doc(
+                        _getMatchDocId(
+                          widget.currentUserId,
+                          profileId,
+                        ),
+                      )
+                      .get(),
+                  builder:
+                      (context, snapshot) {
+                    bool matched =
+                        snapshot.hasData &&
+                            snapshot
+                                .data!
+                                .exists;
+
+                    return Row(
+                      children: [
+                        Expanded(
+                          child:
+                              ElevatedButton
+                                  .icon(
+                            onPressed: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder:
+                                      (_) =>
+                                          ViewProfileScreen(
+                                    userId:
+                                        profileId,
+                                  ),
+                                ),
+                              );
+                            },
+                            icon:
+                                const Icon(
+                              Icons
+                                  .visibility_rounded,
+                            ),
+                            label:
+                                const Text(
+                              "View Profile",
+                            ),
+                            style:
+                                ElevatedButton
+                                    .styleFrom(
+                              backgroundColor:
+                                  Colors.white,
+                              foregroundColor:
+                                  const Color(
+                                0xFF7C3AED,
+                              ),
+                              minimumSize:
+                                  const Size(
+                                0,
+                                52,
+                              ),
+                              shape:
+                                  RoundedRectangleBorder(
+                                borderRadius:
+                                    BorderRadius.circular(
+                                  16,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+
+                        const SizedBox(width: 10),
+
+                        Expanded(
+                          child: matched
+                              ? ElevatedButton.icon(
+                                  onPressed: () {
+                                    final matchData =
+                                        snapshot.data!
+                                                .data()
+                                            as Map<String,
+                                                dynamic>;
+
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (_) =>
+                                            ChatScreen(
+                                          chatPartnerId:
+                                              profileId,
+                                          chatPartnerName:
+                                              name,
+                                          chatRoomId:
+                                              matchData[
+                                                  'chatRoomId'],
+                                        ),
+                                      ),
+                                    );
+                                  },
+                                  icon: const Icon(
+                                    Icons
+                                        .chat_bubble_rounded,
+                                  ),
+                                  label:
+                                      const Text(
+                                    "Chat",
+                                  ),
+                                  style:
+                                      ElevatedButton
+                                          .styleFrom(
+                                    backgroundColor:
+                                        Colors
+                                            .white24,
+                                    foregroundColor:
+                                        Colors
+                                            .white,
+                                    minimumSize:
+                                        const Size(
+                                      0,
+                                      52,
+                                    ),
+                                    shape:
+                                        RoundedRectangleBorder(
+                                      borderRadius:
+                                          BorderRadius.circular(
+                                        16,
+                                      ),
+                                    ),
+                                  ),
+                                )
+                              : ElevatedButton.icon(
+                                  onPressed:
+                                      () async {
+                                    await _processLikeBack(
+                                      profileId,
+                                    );
+
+                                    _fetchWhoLikedMeProfiles();
+                                  },
+                                  icon: const Icon(
+                                    Icons.favorite,
+                                  ),
+                                  label:
+                                      const Text(
+                                    "Like Back",
+                                  ),
+                                  style:
+                                      ElevatedButton
+                                          .styleFrom(
+                                    backgroundColor:
+                                        Colors
+                                            .white24,
+                                    foregroundColor:
+                                        Colors
+                                            .white,
+                                    minimumSize:
+                                        const Size(
+                                      0,
+                                      52,
+                                    ),
+                                    shape:
+                                        RoundedRectangleBorder(
+                                      borderRadius:
+                                          BorderRadius.circular(
+                                        16,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                        ),
+                      ],
+                    );
+                  },
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+    },
+  );
+}
   Future<void> _processLikeBack(String likedUserId) async {
     final currentUserId = widget.currentUserId;
     try {
