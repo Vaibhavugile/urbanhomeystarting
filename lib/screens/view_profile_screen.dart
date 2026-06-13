@@ -236,109 +236,292 @@ class _ViewProfileScreenState extends State<ViewProfileScreen> {
   @override
   Widget build(BuildContext context) {
     print('[build] Rebuilding ViewProfileScreen. IsLoading: $_isLoading, Error: $_errorMessage, UserType: $_userType');
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(widget.userId == null ? 'My Profile' : 'User Profile', style: const TextStyle(color: Colors.white)),
-        backgroundColor: Colors.redAccent,
-        elevation: 0,
-        iconTheme: const IconThemeData(color: Colors.white),
-        actions: [
-          if (widget.userId == null && (_flatListingProfiles.isNotEmpty || _seekingFlatmateProfiles.isNotEmpty))
-            PopupMenuButton<String>(
-              onSelected: _switchProfile,
-              itemBuilder: (BuildContext context) {
-                List<PopupMenuEntry<String>> items = [];
+   
+return Scaffold(
+  backgroundColor: kBackgroundColor,
 
-                if (_flatListingProfiles.isNotEmpty) {
-                  items.add(
-                    const PopupMenuItem<String>(
-                      enabled: false,
-                      child: Text('Flat Listing Profiles', style: TextStyle(fontWeight: FontWeight.bold)),
-                    ),
-                  );
-                  for (var profile in _flatListingProfiles) {
-                    final String displayName = (profile.userProfile.name != null && profile.userProfile.name.isNotEmpty)
-                        ? profile.userProfile.name
-                        : 'Flat Listing (${profile.documentId.substring(0, 4)}...)';
-                    items.add(
-                      PopupMenuItem<String>(
-                        value: 'flat_listing_${profile.documentId}',
-                        child: Text(displayName),
-                      ),
-                    );
-                  }
-                }
+  appBar: AppBar(
+    automaticallyImplyLeading: true,
+    elevation: 0,
+    scrolledUnderElevation: 0,
+    centerTitle: true,
+    backgroundColor: Colors.transparent,
 
-                if (_seekingFlatmateProfiles.isNotEmpty) {
-                  items.add(
-                    const PopupMenuItem<String>(
-                      enabled: false,
-                      child: Text('Seeking Flatmate Profiles', style: TextStyle(fontWeight: FontWeight.bold)),
-                    ),
-                  );
-                  for (var profile in _seekingFlatmateProfiles) {
-                    final String displayName = (profile.userProfile.name != null && profile.userProfile.name.isNotEmpty)
-                        ? profile.userProfile.name
-                        : 'Seeking Flatmate (${profile.documentId.substring(0, 4)}...)';
-                    items.add(
-                      PopupMenuItem<String>(
-                        value: 'seeking_flatmate_${profile.documentId}',
-                        child: Text(displayName),
-                      ),
-                    );
-                  }
-                }
-                print('[build] PopupMenuButton items generated. Total items: ${items.length}');
-                return items;
-              },
-              icon: const Icon(Icons.swap_horiz, color: Colors.white),
-            ),
-        ],
+    flexibleSpace: Container(
+      decoration: const BoxDecoration(
+        gradient: kPrimaryGradient,
       ),
-      body: _isLoading
-          ? const Center(
-        child: CircularProgressIndicator(color: Colors.redAccent),
-      )
-          : _errorMessage != null
-          ? Center(
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              const Icon(Icons.error_outline, color: Colors.red, size: 50),
-              const SizedBox(height: 10),
-              Text(
-                _errorMessage!,
-                textAlign: TextAlign.center,
-                style: const TextStyle(fontSize: 18, color: Colors.black87),
-              ),
-              const SizedBox(height: 20),
-              ElevatedButton(
-                onPressed: _fetchUserProfile,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.redAccent,
-                  foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                ),
-                child: const Text('Retry'),
-              ),
-            ],
+    ),
+
+    iconTheme: const IconThemeData(
+      color: Colors.white,
+      size: 24,
+    ),
+
+    title: Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Text(
+          widget.userId == null
+              ? 'My Profile'
+              : 'User Profile',
+          style: const TextStyle(
+            color: Colors.white,
+            fontSize: 22,
+            fontWeight: FontWeight.w800,
+            letterSpacing: -.5,
           ),
         ),
-      )
-          : _userProfile == null
-          ? const Center(
-        child: Text(
-          'No profile data available. This user might not have completed their profile.',
-          textAlign: TextAlign.center,
-          style: TextStyle(fontSize: 18, color: Colors.grey),
+
+        Text(
+          widget.userId == null
+              ? 'Manage your profiles'
+              : 'Explore profile',
+          style: TextStyle(
+            color: Colors.white.withOpacity(.85),
+            fontSize: 11,
+            fontWeight: FontWeight.w500,
+          ),
         ),
-      )
-          : _userType == 'seeking_flatmate'
-          ? SeekingFlatmateProfileDisplay(profile: _userProfile as SeekingFlatmateProfile)
-          : FlatListingProfileDisplay(profile: _userProfile as FlatListingProfile),
-    );
+      ],
+    ),
+
+    actions: [
+      if (widget.userId == null &&
+          (_flatListingProfiles.isNotEmpty ||
+              _seekingFlatmateProfiles.isNotEmpty))
+        Container(
+          margin: const EdgeInsets.only(
+            right: 12,
+          ),
+          decoration: BoxDecoration(
+            color: Colors.white.withOpacity(.15),
+            borderRadius: BorderRadius.circular(14),
+          ),
+          child: PopupMenuButton<String>(
+            tooltip: "Switch Profile",
+            offset: const Offset(0, 50),
+            color: Colors.white,
+
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(20),
+            ),
+
+            icon: const Icon(
+              Icons.swap_horiz_rounded,
+              color: Colors.white,
+            ),
+
+            onSelected: _switchProfile,
+
+            itemBuilder: (BuildContext context) {
+              List<PopupMenuEntry<String>> items = [];
+
+              if (_flatListingProfiles.isNotEmpty) {
+                items.add(
+                  const PopupMenuItem<String>(
+                    enabled: false,
+                    child: Text(
+                      'Flat Listings',
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                );
+
+                for (var profile
+                    in _flatListingProfiles) {
+                  final displayName =
+                      (profile.userProfile.name != null &&
+                              profile.userProfile.name
+                                  .isNotEmpty)
+                          ? profile.userProfile.name
+                          : 'Flat Listing';
+
+                  items.add(
+                    PopupMenuItem<String>(
+                      value:
+                          'flat_listing_${profile.documentId}',
+                      child: Row(
+                        children: [
+                          const Icon(
+                            Icons.home_rounded,
+                            color: kPrimaryColor,
+                            size: 18,
+                          ),
+                          const SizedBox(width: 10),
+                          Expanded(
+                            child: Text(displayName),
+                          ),
+                        ],
+                      ),
+                    ),
+                  );
+                }
+              }
+
+              if (_seekingFlatmateProfiles
+                  .isNotEmpty) {
+                items.add(
+                  const PopupMenuDivider(),
+                );
+
+                items.add(
+                  const PopupMenuItem<String>(
+                    enabled: false,
+                    child: Text(
+                      'Seeking Flatmates',
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                );
+
+                for (var profile
+                    in _seekingFlatmateProfiles) {
+                  final displayName =
+                      (profile.userProfile.name != null &&
+                              profile.userProfile.name
+                                  .isNotEmpty)
+                          ? profile.userProfile.name
+                          : 'Seeking Flatmate';
+
+                  items.add(
+                    PopupMenuItem<String>(
+                      value:
+                          'seeking_flatmate_${profile.documentId}',
+                      child: Row(
+                        children: [
+                          const Icon(
+                            Icons.people_alt_rounded,
+                            color: kAccentColor,
+                            size: 18,
+                          ),
+                          const SizedBox(width: 10),
+                          Expanded(
+                            child: Text(displayName),
+                          ),
+                        ],
+                      ),
+                    ),
+                  );
+                }
+              }
+
+              return items;
+            },
+          ),
+        ),
+    ],
+  ),
+
+  body: _isLoading
+      ? const Center(
+          child: CircularProgressIndicator(
+            color: kPrimaryColor,
+          ),
+        )
+      : _errorMessage != null
+          ? Center(
+              child: Padding(
+                padding: const EdgeInsets.all(24),
+                child: Column(
+                  mainAxisAlignment:
+                      MainAxisAlignment.center,
+                  children: [
+                    Container(
+                      width: 90,
+                      height: 90,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: kErrorColor
+                            .withOpacity(.1),
+                      ),
+                      child: const Icon(
+                        Icons.error_outline_rounded,
+                        size: 45,
+                        color: kErrorColor,
+                      ),
+                    ),
+
+                    const SizedBox(height: 20),
+
+                    Text(
+                      _errorMessage!,
+                      textAlign: TextAlign.center,
+                      style: const TextStyle(
+                        fontSize: 16,
+                        fontWeight:
+                            FontWeight.w600,
+                        color: kDarkText,
+                      ),
+                    ),
+
+                    const SizedBox(height: 24),
+
+                    ElevatedButton.icon(
+                      onPressed:
+                          _fetchUserProfile,
+                      icon: const Icon(
+                        Icons.refresh_rounded,
+                      ),
+                      label:
+                          const Text('Retry'),
+                      style:
+                          ElevatedButton.styleFrom(
+                        backgroundColor:
+                            kPrimaryColor,
+                        foregroundColor:
+                            Colors.white,
+                        elevation: 0,
+                        padding:
+                            const EdgeInsets
+                                .symmetric(
+                          horizontal: 28,
+                          vertical: 14,
+                        ),
+                        shape:
+                            RoundedRectangleBorder(
+                          borderRadius:
+                              BorderRadius.circular(
+                            14,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            )
+          : _userProfile == null
+              ? const Center(
+                  child: Padding(
+                    padding: EdgeInsets.all(24),
+                    child: Text(
+                      'No profile data available.\nThis user may not have completed their profile yet.',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontSize: 16,
+                        color: kMediumText,
+                        fontWeight:
+                            FontWeight.w500,
+                      ),
+                    ),
+                  ),
+                )
+              : _userType == 'seeking_flatmate'
+                  ? SeekingFlatmateProfileDisplay(
+                      profile: _userProfile
+                          as SeekingFlatmateProfile,
+                    )
+                  : FlatListingProfileDisplay(
+                      profile: _userProfile
+                          as FlatListingProfile,
+                    ),
+);
+
+
   }
 }

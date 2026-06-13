@@ -11,78 +11,116 @@ import 'package:lottie/lottie.dart'; // Import Lottie
 
 final List<MapEntry<Color, Color>> _vibrantColorPalettes = [
 
-  // Royal Purple
-  MapEntry(
-    const Color(0xFF22163A),
-    const Color(0xFF9B6DFF),
+  // MyTennat Primary Purple
+  const MapEntry(
+    Color(0xFF5B21B6),
+    Color(0xFF7C3AED),
   ),
 
-  // Neon Pink
-  MapEntry(
-    const Color(0xFF2A1624),
-    const Color(0xFFFF5DA8),
+  // Primary → Secondary
+  const MapEntry(
+    Color(0xFF7C3AED),
+    Color(0xFF9333EA),
   ),
 
-  // Indigo
-  MapEntry(
-    const Color(0xFF17203B),
-    const Color(0xFF7A8DFF),
+  // Secondary → Accent
+  const MapEntry(
+    Color(0xFF9333EA),
+    Color(0xFFEC4899),
   ),
 
-  // Electric Blue
-  MapEntry(
-    const Color(0xFF13283E),
-    const Color(0xFF3EA6FF),
+  // Deep Purple → Pink
+  const MapEntry(
+    Color(0xFF6D28D9),
+    Color(0xFFEC4899),
   ),
 
-  // Emerald
-  MapEntry(
-    const Color(0xFF132B25),
-    const Color(0xFF2DD4A7),
+  // Royal Violet
+  const MapEntry(
+    Color(0xFF4C1D95),
+    Color(0xFFC084FC),
   ),
 
-  // Gold
-  MapEntry(
-    const Color(0xFF302615),
-    const Color(0xFFFFC857),
+  // Soft Purple
+  const MapEntry(
+    Color(0xFF7C3AED),
+    Color(0xFFD8B4FE),
   ),
 
-  // Orange
-  MapEntry(
-    const Color(0xFF311E16),
-    const Color(0xFFFF8A4C),
+  // Luxury Magenta
+  const MapEntry(
+    Color(0xFF86198F),
+    Color(0xFFF472B6),
   ),
 
-  // Ruby Red
-  MapEntry(
-    const Color(0xFF311A1E),
-    const Color(0xFFFF5B6E),
+  // Premium Indigo
+  const MapEntry(
+    Color(0xFF4338CA),
+    Color(0xFF8B5CF6),
   ),
 
-  // Cyan
-  MapEntry(
-    const Color(0xFF132A30),
-    const Color(0xFF4DE2FF),
+  // Glass Purple
+  const MapEntry(
+    Color(0xFF581C87),
+    Color(0xFFA855F7),
   ),
 
-  // Lime
-  MapEntry(
-    const Color(0xFF212D19),
-    const Color(0xFFA3E635),
+  // Dark Premium
+  const MapEntry(
+    Color(0xFF312E81),
+    Color(0xFF9333EA),
   ),
 
-  // Platinum
-  MapEntry(
-    const Color(0xFF24262D),
-    const Color(0xFFE5E7EB),
-  ),
-
-  // Premium Gradient Purple
-  MapEntry(
-    const Color(0xFF24173F),
-    const Color(0xFFC084FC),
+  // Signature MyTennat
+  const MapEntry(
+    Color(0xFF7C3AED),
+    Color(0xFFEC4899),
   ),
 ];
+const Color kPrimaryColor = Color(0xFF7C3AED);
+const Color kSecondaryColor = Color(0xFF9333EA);
+const Color kAccentColor = Color(0xFFEC4899);
+
+const Color kBackgroundColor = Color(0xFFF8FAFC);
+
+const Color kCardColor = Colors.white;
+
+const Color kLightGrey = Color(0xFFF1F5F9);
+
+const Color kBorderColor = Color(0xFFE2E8F0);
+
+const Color kDarkText = Color(0xFF111827);
+
+const Color kMediumText = Color(0xFF64748B);
+
+const Color kLightText = Color(0xFF94A3B8);
+
+const Color kOnlineColor = Color(0xFF22C55E);
+
+const Color kReadTickColor = Color(0xFF3B82F6);
+
+const Color kErrorColor = Color(0xFFEF4444);
+
+const LinearGradient kPrimaryGradient =
+    LinearGradient(
+  begin: Alignment.topLeft,
+  end: Alignment.bottomRight,
+  colors: [
+    Color(0xFF7C3AED),
+    Color(0xFF9333EA),
+    Color(0xFFEC4899),
+  ],
+);
+
+const LinearGradient kMessageGradient =
+    LinearGradient(
+  begin: Alignment.topLeft,
+  end: Alignment.bottomRight,
+  colors: [
+    Color(0xFF7C3AED),
+    Color(0xFF8B5CF6),
+  ],
+);
 // Helper widget to build consistent sections (Cards)
 Widget _buildSection({
   required String title,
@@ -93,33 +131,25 @@ Widget _buildSection({
   return Container(
     margin: margin ??
         const EdgeInsets.symmetric(
-          horizontal: 18,
+          horizontal: 20,
           vertical: 10,
         ),
 
     decoration: BoxDecoration(
-      borderRadius: BorderRadius.circular(32),
+      color: kCardColor,
 
-      gradient: const LinearGradient(
-        begin: Alignment.topLeft,
-        end: Alignment.bottomRight,
-        colors: [
-          Color(0xFF1A2238),
-          Color(0xFF111827),
-        ],
-      ),
+      borderRadius: BorderRadius.circular(28),
 
       border: Border.all(
-        color: const Color(0xFF2A3448),
-        width: 1.2,
+        color: kBorderColor,
+        width: 1,
       ),
 
       boxShadow: [
         BoxShadow(
-          color: Colors.black.withOpacity(.35),
-          blurRadius: 40,
-          spreadRadius: -8,
-          offset: const Offset(0, 18),
+          color: Colors.black.withOpacity(.04),
+          blurRadius: 30,
+          offset: const Offset(0, 12),
         ),
       ],
     ),
@@ -141,25 +171,17 @@ Widget _buildSection({
           Row(
             children: [
 
-              /// PREMIUM ACCENT DOT
               Container(
-                width: 12,
-                height: 12,
+                width: 14,
+                height: 14,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-
-                  gradient: const LinearGradient(
-                    colors: [
-                      Color(0xFF9B6DFF),
-                      Color(0xFFFF5DA8),
-                    ],
-                  ),
+                  gradient: kPrimaryGradient,
 
                   boxShadow: [
                     BoxShadow(
-                      color: const Color(
-                        0xFF9B6DFF,
-                      ).withOpacity(.45),
+                      color: kPrimaryColor
+                          .withOpacity(.30),
                       blurRadius: 12,
                       spreadRadius: 1,
                     ),
@@ -175,25 +197,23 @@ Widget _buildSection({
                   style: const TextStyle(
                     fontSize: 22,
                     fontWeight: FontWeight.w800,
-                    color: Colors.white,
-                    letterSpacing: -0.4,
-                    height: 1.1,
+                    color: kDarkText,
+                    letterSpacing: -.5,
                   ),
                 ),
               ),
             ],
           ),
 
-          const SizedBox(height: 22),
+          const SizedBox(height: 18),
 
-          /// SUBTLE DIVIDER
           Container(
             height: 1,
             decoration: BoxDecoration(
               gradient: LinearGradient(
                 colors: [
-                  Colors.white.withOpacity(.08),
-                  Colors.white.withOpacity(.02),
+                  kPrimaryColor.withOpacity(.15),
+                  kAccentColor.withOpacity(.08),
                   Colors.transparent,
                 ],
               ),
@@ -202,7 +222,6 @@ Widget _buildSection({
 
           const SizedBox(height: 22),
 
-          /// CONTENT
           ...children,
         ],
       ),
@@ -223,78 +242,57 @@ Widget _buildProfileField(
     return const SizedBox.shrink();
   }
 
-  final palette =
-      _vibrantColorPalettes[
-          iconColorIndex %
-              _vibrantColorPalettes.length];
-
   return Container(
     margin: const EdgeInsets.only(
       bottom: 14,
     ),
-    padding: const EdgeInsets.all(16),
+    padding: const EdgeInsets.all(18),
 
     decoration: BoxDecoration(
-      borderRadius:
-          BorderRadius.circular(24),
+      color: kCardColor,
 
-      gradient: LinearGradient(
-        begin: Alignment.topLeft,
-        end: Alignment.bottomRight,
-        colors: [
-          palette.key.withOpacity(.45),
-          const Color(0xFF111827),
-        ],
-      ),
+      borderRadius:
+          BorderRadius.circular(22),
 
       border: Border.all(
-        color: Colors.white.withOpacity(.06),
+        color: kBorderColor,
       ),
 
       boxShadow: [
         BoxShadow(
-          color: Colors.black.withOpacity(.20),
+          color: Colors.black.withOpacity(
+            .04,
+          ),
           blurRadius: 20,
-          offset: const Offset(0, 10),
+          offset: const Offset(0, 8),
         ),
       ],
     ),
 
     child: Row(
+      crossAxisAlignment:
+          CrossAxisAlignment.start,
       children: [
 
-        /// ICON CONTAINER
+        /// ICON
         if (icon != null)
           Container(
-            width: 54,
-            height: 54,
+            width: 52,
+            height: 52,
 
             decoration: BoxDecoration(
               borderRadius:
                   BorderRadius.circular(
-                18,
+                16,
               ),
 
-              gradient: LinearGradient(
-                colors: [
-                  palette.value.withOpacity(
-                    .25,
-                  ),
-                  palette.value.withOpacity(
-                    .12,
-                  ),
-                ],
-              ),
-
-              border: Border.all(
-                color: palette.value
-                    .withOpacity(.20),
-              ),
+              gradient:
+                  kPrimaryGradient,
             ),
 
             child: Icon(
               icon,
-              color: palette.value,
+              color: Colors.white,
               size: 24,
             ),
           ),
@@ -302,61 +300,51 @@ Widget _buildProfileField(
         if (icon != null)
           const SizedBox(width: 16),
 
-        /// CONTENT
+        /// TEXT
         Expanded(
           child: Column(
             crossAxisAlignment:
                 CrossAxisAlignment.start,
             children: [
 
-              /// LABEL
               Text(
-                label,
-                style: TextStyle(
-                  color: Colors.white
-                      .withOpacity(.55),
-                  fontSize: 12,
+                label.toUpperCase(),
+                style: const TextStyle(
+                  color: kLightText,
+                  fontSize: 11,
                   fontWeight:
-                      FontWeight.w500,
-                  letterSpacing: .5,
+                      FontWeight.w700,
+                  letterSpacing: 1.1,
                 ),
               ),
 
-              const SizedBox(height: 6),
+              const SizedBox(height: 8),
 
-              /// VALUE
               Text(
                 value,
-                maxLines: 3,
-                overflow:
-                    TextOverflow.ellipsis,
                 style: const TextStyle(
-                  color: Colors.white,
+                  color: kDarkText,
                   fontSize: 16,
                   fontWeight:
                       FontWeight.w700,
-                  height: 1.3,
+                  height: 1.4,
                 ),
               ),
             ],
           ),
         ),
 
-        /// CHEVRON
+        /// STATUS DOT
         Container(
-          width: 32,
-          height: 32,
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            color:
-                Colors.white.withOpacity(
-              .04,
-            ),
+          width: 10,
+          height: 10,
+          margin:
+              const EdgeInsets.only(
+            top: 8,
           ),
-          child: const Icon(
-            Icons.arrow_forward_ios_rounded,
-            size: 14,
-            color: Colors.white38,
+          decoration: const BoxDecoration(
+            shape: BoxShape.circle,
+            color: kOnlineColor,
           ),
         ),
       ],
@@ -374,28 +362,29 @@ Widget _buildProfileListField(
       children: [
         Container(
           width: double.infinity,
-          padding: const EdgeInsets.all(20),
+          padding: const EdgeInsets.all(18),
           decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(24),
-            color: const Color(0xFF171F33),
+            color: kLightGrey,
+            borderRadius:
+                BorderRadius.circular(20),
             border: Border.all(
-              color: Colors.white.withOpacity(.06),
+              color: kBorderColor,
             ),
           ),
-          child: Row(
+          child: const Row(
             children: [
               Icon(
                 Icons.info_outline_rounded,
-                color: Colors.white.withOpacity(.5),
+                color: kMediumText,
                 size: 18,
               ),
-              const SizedBox(width: 10),
+              SizedBox(width: 10),
               Text(
-                "No preferences added yet",
+                "No information added yet",
                 style: TextStyle(
-                  color: Colors.white.withOpacity(.65),
+                  color: kMediumText,
                   fontSize: 14,
-                  fontWeight: FontWeight.w500,
+                  fontWeight: FontWeight.w600,
                 ),
               ),
             ],
@@ -409,67 +398,52 @@ Widget _buildProfileListField(
     title: title,
     children: [
       Wrap(
-        spacing: 12,
-        runSpacing: 12,
-        children: values.asMap().entries.map((entry) {
-          final index = entry.key;
-          final item = entry.value;
-
-          final palette =
-              _vibrantColorPalettes[
-                  index %
-                      _vibrantColorPalettes.length];
-
+        spacing: 10,
+        runSpacing: 10,
+        children: values.map((item) {
           return Container(
-            padding: const EdgeInsets.symmetric(
+            padding:
+                const EdgeInsets.symmetric(
               horizontal: 16,
               vertical: 12,
             ),
             decoration: BoxDecoration(
               borderRadius:
-                  BorderRadius.circular(100),
+                  BorderRadius.circular(30),
 
-              gradient: LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: [
-                  palette.key.withOpacity(.85),
-                  palette.key.withOpacity(.55),
-                ],
-              ),
-
-              border: Border.all(
-                color: palette.value.withOpacity(
-                  .25,
-                ),
-              ),
+              gradient:
+                  kPrimaryGradient,
 
               boxShadow: [
                 BoxShadow(
-                  color: palette.value
+                  color: kPrimaryColor
                       .withOpacity(.15),
-                  blurRadius: 14,
-                  offset: const Offset(0, 6),
+                  blurRadius: 12,
+                  offset:
+                      const Offset(0, 6),
                 ),
               ],
             ),
 
             child: Row(
-              mainAxisSize: MainAxisSize.min,
+              mainAxisSize:
+                  MainAxisSize.min,
               children: [
 
                 Container(
                   width: 22,
                   height: 22,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: palette.value
-                        .withOpacity(.18),
+                  decoration:
+                      BoxDecoration(
+                    shape:
+                        BoxShape.circle,
+                    color: Colors.white
+                        .withOpacity(.20),
                   ),
-                  child: Icon(
-                    Icons.auto_awesome_rounded,
-                    size: 12,
-                    color: palette.value,
+                  child: const Icon(
+                    Icons.check_rounded,
+                    size: 14,
+                    color: Colors.white,
                   ),
                 ),
 
@@ -477,12 +451,13 @@ Widget _buildProfileListField(
 
                 Text(
                   item,
-                  style: TextStyle(
+                  style:
+                      const TextStyle(
                     fontSize: 13,
                     fontWeight:
                         FontWeight.w700,
-                    color: palette.value,
-                    letterSpacing: .2,
+                    color:
+                        Colors.white,
                   ),
                 ),
               ],
@@ -661,43 +636,31 @@ Widget _buildIconValueCard(
     return const SizedBox.shrink();
   }
 
-  final palette =
-      _vibrantColorPalettes[
-          (label.hashCode.abs()) %
-              _vibrantColorPalettes.length];
-
-  final bgColor =
-      backgroundColor ?? palette.key;
-
-  final fgColor =
-      iconColor ?? palette.value;
-
   dynamic iconData =
       _characteristicIcons[label] ??
-          _characteristicIcons[value];
+      _characteristicIcons[value];
 
   Widget iconWidget;
 
   if (iconData is IconData) {
     iconWidget = Icon(
       iconData,
-      size: 28,
-      color: fgColor,
+      size: 24,
+      color: Colors.white,
     );
   } else if (iconData is String &&
       iconData.endsWith('.json')) {
     iconWidget = Lottie.asset(
       iconData,
-      width: 42,
-      height: 42,
-      fit: BoxFit.contain,
+      width: 36,
+      height: 36,
       repeat: true,
     );
   } else {
-    iconWidget = Icon(
+    iconWidget = const Icon(
       Icons.auto_awesome_rounded,
-      size: 28,
-      color: fgColor,
+      size: 24,
+      color: Colors.white,
     );
   }
 
@@ -705,27 +668,22 @@ Widget _buildIconValueCard(
     padding: const EdgeInsets.all(18),
 
     decoration: BoxDecoration(
-      borderRadius:
-          BorderRadius.circular(28),
+      color: kCardColor,
 
-      gradient: LinearGradient(
-        begin: Alignment.topLeft,
-        end: Alignment.bottomRight,
-        colors: [
-          bgColor.withOpacity(.90),
-          const Color(0xFF111827),
-        ],
-      ),
+      borderRadius:
+          BorderRadius.circular(24),
 
       border: Border.all(
-        color: Colors.white.withOpacity(.06),
+        color: kBorderColor,
       ),
 
       boxShadow: [
         BoxShadow(
-          color: fgColor.withOpacity(.12),
-          blurRadius: 24,
-          offset: const Offset(0, 10),
+          color: Colors.black.withOpacity(
+            .04,
+          ),
+          blurRadius: 18,
+          offset: const Offset(0, 8),
         ),
       ],
     ),
@@ -749,17 +707,8 @@ Widget _buildIconValueCard(
                   16,
                 ),
 
-                gradient: LinearGradient(
-                  colors: [
-                    fgColor.withOpacity(.20),
-                    fgColor.withOpacity(.08),
-                  ],
-                ),
-
-                border: Border.all(
-                  color: fgColor
-                      .withOpacity(.15),
-                ),
+                gradient:
+                    kPrimaryGradient,
               ),
 
               child: Center(
@@ -775,22 +724,22 @@ Widget _buildIconValueCard(
                 horizontal: 10,
                 vertical: 6,
               ),
+
               decoration: BoxDecoration(
+                color: kLightGrey,
                 borderRadius:
                     BorderRadius.circular(
-                  100,
+                  30,
                 ),
-                color: Colors.white
-                    .withOpacity(.05),
               ),
+
               child: Text(
-                label,
-                style: TextStyle(
+                label.toUpperCase(),
+                style: const TextStyle(
+                  color: kMediumText,
                   fontSize: 10,
                   fontWeight:
                       FontWeight.w700,
-                  color: Colors.white
-                      .withOpacity(.65),
                   letterSpacing: .8,
                 ),
               ),
@@ -798,37 +747,391 @@ Widget _buildIconValueCard(
           ],
         ),
 
-        const Spacer(),
+        const SizedBox(height: 18),
 
-        /// VALUE
         Text(
           value,
           maxLines: 2,
-          overflow: TextOverflow.ellipsis,
+          overflow:
+              TextOverflow.ellipsis,
           style: const TextStyle(
-            fontSize: 16,
-            fontWeight: FontWeight.w800,
-            color: Colors.white,
+            fontSize: 17,
+            fontWeight:
+                FontWeight.w800,
+            color: kDarkText,
             height: 1.3,
           ),
         ),
 
-        const SizedBox(height: 6),
+        const SizedBox(height: 12),
 
         Container(
-          width: 40,
-          height: 4,
+          width: 50,
+          height: 5,
           decoration: BoxDecoration(
             borderRadius:
-                BorderRadius.circular(20),
-            color: fgColor,
+                BorderRadius.circular(
+              100,
+            ),
+            gradient:
+                kPrimaryGradient,
           ),
         ),
       ],
     ),
   );
 }
+Widget _buildPremiumHeroSection(
+  FlatListingProfile profile,
+) {
+  final imageUrls = profile.imageUrls ?? [];
 
+  return Container(
+    height: 420,
+    margin: const EdgeInsets.only(
+      bottom: 20,
+    ),
+
+    child: Stack(
+      children: [
+
+        /// PROPERTY IMAGE
+        ClipRRect(
+          borderRadius: const BorderRadius.only(
+            bottomLeft: Radius.circular(35),
+            bottomRight: Radius.circular(35),
+          ),
+          child: imageUrls.isNotEmpty
+              ? PageView.builder(
+                  itemCount: imageUrls.length,
+                  itemBuilder: (context, index) {
+                    return Image.network(
+                      imageUrls[index],
+                      width: double.infinity,
+                      height: 420,
+                      fit: BoxFit.cover,
+                    );
+                  },
+                )
+              : Container(
+                  height: 420,
+                  color: kLightGrey,
+                  child: const Center(
+                    child: Icon(
+                      Icons.home_rounded,
+                      size: 80,
+                      color: kMediumText,
+                    ),
+                  ),
+                ),
+        ),
+
+        /// DARK OVERLAY
+        Container(
+          decoration: BoxDecoration(
+            borderRadius: const BorderRadius.only(
+              bottomLeft: Radius.circular(35),
+              bottomRight: Radius.circular(35),
+            ),
+            gradient: LinearGradient(
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+              colors: [
+                Colors.black.withOpacity(.10),
+                Colors.black.withOpacity(.25),
+                Colors.black.withOpacity(.75),
+              ],
+            ),
+          ),
+        ),
+
+        /// BACK BUTTON
+        SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: CircleAvatar(
+              backgroundColor:
+                  Colors.black.withOpacity(.30),
+              child: IconButton(
+                icon: const Icon(
+                  Icons.arrow_back_ios_new,
+                  color: Colors.white,
+                ),
+                onPressed: () {},
+              ),
+            ),
+          ),
+        ),
+
+        /// CONTENT
+        Positioned(
+          left: 20,
+          right: 20,
+          bottom: 25,
+          child: Column(
+            crossAxisAlignment:
+                CrossAxisAlignment.start,
+            children: [
+
+              /// RENT BADGE
+              Container(
+                padding:
+                    const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 10,
+                ),
+                decoration: BoxDecoration(
+                  gradient: kPrimaryGradient,
+                  borderRadius:
+                      BorderRadius.circular(30),
+                ),
+                child: Text(
+                  profile.rentPrice != null
+                      ? '₹${profile.rentPrice}/month'
+                      : 'Rent Not Available',
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 16,
+                    fontWeight:
+                        FontWeight.w700,
+                  ),
+                ),
+              ),
+
+              const SizedBox(height: 16),
+
+              /// FLAT TYPE
+              Text(
+                '${profile.flatType} • ${profile.roomType}',
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 28,
+                  fontWeight:
+                      FontWeight.w800,
+                ),
+              ),
+
+              const SizedBox(height: 8),
+
+              /// LOCATION
+              Row(
+                children: [
+                  const Icon(
+                    Icons.location_on,
+                    color: Colors.white70,
+                    size: 18,
+                  ),
+                  const SizedBox(width: 6),
+                  Expanded(
+                    child: Text(
+                      profile.address.isNotEmpty
+                          ? profile.address
+                          : profile.userProfile.city ??
+                              'Location not specified',
+                      maxLines: 2,
+                      overflow:
+                          TextOverflow.ellipsis,
+                      style: const TextStyle(
+                        color:
+                            Colors.white70,
+                        fontSize: 15,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+
+              const SizedBox(height: 20),
+
+              /// OWNER CARD
+              Container(
+                padding:
+                    const EdgeInsets.all(14),
+                decoration: BoxDecoration(
+                  color: Colors.white
+                      .withOpacity(.12),
+                  borderRadius:
+                      BorderRadius.circular(
+                    20,
+                  ),
+                ),
+                child: Row(
+                  children: [
+
+                    CircleAvatar(
+                      radius: 24,
+                      backgroundColor:
+                          Colors.white,
+                      backgroundImage:
+                          profile.userProfile
+                                      .profilePhotoUrl !=
+                                  null
+                              ? NetworkImage(
+                                  profile
+                                      .userProfile
+                                      .profilePhotoUrl!,
+                                )
+                              : null,
+                      child: profile
+                                  .userProfile
+                                  .profilePhotoUrl ==
+                              null
+                          ? const Icon(
+                              Icons.person,
+                            )
+                          : null,
+                    ),
+
+                    const SizedBox(width: 12),
+
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment:
+                            CrossAxisAlignment
+                                .start,
+                        children: [
+                          Text(
+                            profile.userProfile
+                                    .name ??
+                                'Owner',
+                            style:
+                                const TextStyle(
+                              color:
+                                  Colors.white,
+                              fontSize: 16,
+                              fontWeight:
+                                  FontWeight
+                                      .w700,
+                            ),
+                          ),
+
+                          Text(
+                            profile.userProfile
+                                    .occupation ??
+                                '',
+                            style:
+                                const TextStyle(
+                              color: Colors
+                                  .white70,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+
+                    Container(
+                      padding:
+                          const EdgeInsets
+                              .symmetric(
+                        horizontal: 10,
+                        vertical: 5,
+                      ),
+                      decoration:
+                          BoxDecoration(
+                        color:
+                            kOnlineColor,
+                        borderRadius:
+                            BorderRadius
+                                .circular(
+                          30,
+                        ),
+                      ),
+                      child: const Text(
+                        'Verified',
+                        style: TextStyle(
+                          color:
+                              Colors.white,
+                          fontSize: 12,
+                          fontWeight:
+                              FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+
+              const SizedBox(height: 14),
+
+              /// ACTION BUTTONS
+              Row(
+                children: [
+
+                  Expanded(
+                    child: ElevatedButton.icon(
+                      onPressed: () {
+                        // Open Chat
+                      },
+                      icon:
+                          const Icon(Icons.chat),
+                      label:
+                          const Text("Chat"),
+                      style:
+                          ElevatedButton.styleFrom(
+                        backgroundColor:
+                            kPrimaryColor,
+                        foregroundColor:
+                            Colors.white,
+                        minimumSize:
+                            const Size(
+                          double.infinity,
+                          52,
+                        ),
+                        shape:
+                            RoundedRectangleBorder(
+                          borderRadius:
+                              BorderRadius.circular(
+                            18,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+
+                  const SizedBox(width: 12),
+
+                  Expanded(
+                    child: OutlinedButton.icon(
+                      onPressed: () {
+                        // Call Owner
+                      },
+                      icon:
+                          const Icon(Icons.call),
+                      label:
+                          const Text("Call"),
+                      style:
+                          OutlinedButton.styleFrom(
+                        foregroundColor:
+                            Colors.white,
+                        side:
+                            const BorderSide(
+                          color:
+                              Colors.white,
+                        ),
+                        minimumSize:
+                            const Size(
+                          double.infinity,
+                          52,
+                        ),
+                        shape:
+                            RoundedRectangleBorder(
+                          borderRadius:
+                              BorderRadius.circular(
+                            18,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ],
+    ),
+  );
+}
 // Helper for displaying a grid of characteristics, like "Habits & Lifestyle"
 Widget _buildCharacteristicGrid(
   String title,
@@ -850,28 +1153,34 @@ Widget _buildCharacteristicGrid(
         Container(
           width: double.infinity,
           padding: const EdgeInsets.all(20),
+
           decoration: BoxDecoration(
+            color: kLightGrey,
+
             borderRadius:
-                BorderRadius.circular(24),
-            color: const Color(0xFF171F33),
+                BorderRadius.circular(20),
+
             border: Border.all(
-              color: Colors.white.withOpacity(.06),
+              color: kBorderColor,
             ),
           ),
-          child: Row(
+
+          child: const Row(
             children: [
               Icon(
                 Icons.info_outline_rounded,
-                color: Colors.white.withOpacity(.5),
+                color: kMediumText,
                 size: 18,
               ),
-              const SizedBox(width: 10),
+
+              SizedBox(width: 10),
+
               Text(
                 'No details available yet',
                 style: TextStyle(
-                  color: Colors.white.withOpacity(.65),
+                  color: kMediumText,
                   fontSize: 14,
-                  fontWeight: FontWeight.w500,
+                  fontWeight: FontWeight.w600,
                 ),
               ),
             ],
@@ -884,8 +1193,10 @@ Widget _buildCharacteristicGrid(
   return _buildSection(
     title: title,
     children: [
+
       GridView.builder(
         shrinkWrap: true,
+
         physics:
             const NeverScrollableScrollPhysics(),
 
@@ -898,19 +1209,21 @@ Widget _buildCharacteristicGrid(
           crossAxisSpacing: 14,
           mainAxisSpacing: 14,
 
-          childAspectRatio: 0.78,
+          childAspectRatio: 1.05,
         ),
 
         itemBuilder: (context, index) {
-          final entry = validItems[index];
+          final entry =
+              validItems[index];
 
           return TweenAnimationBuilder<double>(
             duration: Duration(
               milliseconds:
-                  300 + (index * 80),
+                  250 + (index * 60),
             ),
 
-            curve: Curves.easeOutCubic,
+            curve:
+                Curves.easeOutCubic,
 
             tween: Tween(
               begin: 0,
@@ -937,6 +1250,39 @@ Widget _buildCharacteristicGrid(
             ),
           );
         },
+      ),
+
+      const SizedBox(height: 8),
+
+      Align(
+        alignment: Alignment.centerRight,
+        child: Container(
+          padding:
+              const EdgeInsets.symmetric(
+            horizontal: 12,
+            vertical: 6,
+          ),
+
+          decoration: BoxDecoration(
+            color: kPrimaryColor
+                .withOpacity(.08),
+
+            borderRadius:
+                BorderRadius.circular(
+              30,
+            ),
+          ),
+
+          child: Text(
+            '${validItems.length} Details',
+            style: const TextStyle(
+              color: kPrimaryColor,
+              fontWeight:
+                  FontWeight.w700,
+              fontSize: 12,
+            ),
+          ),
+        ),
       ),
     ],
   );
@@ -968,32 +1314,29 @@ Widget _buildPreferenceGrid(
       children: [
         Container(
           width: double.infinity,
-          padding: const EdgeInsets.all(20),
+          padding: const EdgeInsets.all(18),
           decoration: BoxDecoration(
+            color: kLightGrey,
             borderRadius:
-                BorderRadius.circular(24),
-            color: const Color(0xFF171F33),
+                BorderRadius.circular(20),
             border: Border.all(
-              color: Colors.white.withOpacity(.06),
+              color: kBorderColor,
             ),
           ),
-          child: Row(
+          child: const Row(
             children: [
               Icon(
-                Icons.auto_awesome_rounded,
-                color:
-                    Colors.white.withOpacity(.5),
+                Icons.info_outline_rounded,
+                color: kMediumText,
                 size: 18,
               ),
-              const SizedBox(width: 10),
+              SizedBox(width: 10),
               Text(
                 'No preferences added yet',
                 style: TextStyle(
-                  color:
-                      Colors.white.withOpacity(.65),
+                  color: kMediumText,
                   fontSize: 14,
-                  fontWeight:
-                      FontWeight.w500,
+                  fontWeight: FontWeight.w600,
                 ),
               ),
             ],
@@ -1018,18 +1361,12 @@ Widget _buildPreferenceGrid(
           crossAxisCount: 2,
           crossAxisSpacing: 14,
           mainAxisSpacing: 14,
-          childAspectRatio: 0.80,
+          childAspectRatio: 1.0,
         ),
 
         itemBuilder: (context, index) {
           final preference =
               preferences[index];
-
-          final palette =
-              _vibrantColorPalettes[
-                  index %
-                      _vibrantColorPalettes
-                          .length];
 
           dynamic iconData =
               _preferenceIcons[
@@ -1040,45 +1377,42 @@ Widget _buildPreferenceGrid(
           if (iconData is IconData) {
             iconWidget = Icon(
               iconData,
-              size: 26,
-              color: palette.value,
+              size: 24,
+              color: Colors.white,
             );
           } else if (iconData is String &&
               iconData.endsWith('.json')) {
             iconWidget = Lottie.asset(
               iconData,
-              width: 42,
-              height: 42,
-              fit: BoxFit.contain,
+              width: 36,
+              height: 36,
               repeat: true,
             );
           } else {
-            iconWidget = Icon(
+            iconWidget = const Icon(
               Icons.auto_awesome_rounded,
-              size: 26,
-              color: palette.value,
+              size: 24,
+              color: Colors.white,
             );
           }
 
           return TweenAnimationBuilder<double>(
             duration: Duration(
               milliseconds:
-                  300 + (index * 80),
+                  250 + (index * 60),
             ),
-
-            curve: Curves.easeOutCubic,
-
+            curve:
+                Curves.easeOutCubic,
             tween: Tween(
               begin: 0,
               end: 1,
             ),
-
             builder:
                 (context, value, child) {
               return Transform.translate(
                 offset: Offset(
                   0,
-                  20 * (1 - value),
+                  15 * (1 - value),
                 ),
                 child: Opacity(
                   opacity: value,
@@ -1092,40 +1426,26 @@ Widget _buildPreferenceGrid(
                   const EdgeInsets.all(18),
 
               decoration: BoxDecoration(
+                color: kCardColor,
+
                 borderRadius:
                     BorderRadius.circular(
-                  28,
-                ),
-
-                gradient:
-                    LinearGradient(
-                  begin:
-                      Alignment.topLeft,
-                  end: Alignment
-                      .bottomRight,
-                  colors: [
-                    palette.key
-                        .withOpacity(.90),
-                    const Color(
-                      0xFF111827,
-                    ),
-                  ],
+                  24,
                 ),
 
                 border: Border.all(
-                  color: Colors.white
-                      .withOpacity(.06),
+                  color: kBorderColor,
                 ),
 
                 boxShadow: [
                   BoxShadow(
-                    color: palette.value
-                        .withOpacity(.12),
-                    blurRadius: 24,
+                    color: Colors.black
+                        .withOpacity(.04),
+                    blurRadius: 18,
                     offset:
                         const Offset(
                       0,
-                      10,
+                      8,
                     ),
                   ),
                 ],
@@ -1133,41 +1453,21 @@ Widget _buildPreferenceGrid(
 
               child: Column(
                 crossAxisAlignment:
-                    CrossAxisAlignment
-                        .start,
+                    CrossAxisAlignment.start,
                 children: [
 
-                  /// ICON
                   Container(
-                    width: 54,
-                    height: 54,
+                    width: 52,
+                    height: 52,
 
-                    decoration:
-                        BoxDecoration(
+                    decoration: BoxDecoration(
+                      gradient:
+                          kPrimaryGradient,
+
                       borderRadius:
                           BorderRadius
                               .circular(
-                        18,
-                      ),
-
-                      gradient:
-                          LinearGradient(
-                        colors: [
-                          palette.value
-                              .withOpacity(
-                                  .20),
-                          palette.value
-                              .withOpacity(
-                                  .08),
-                        ],
-                      ),
-
-                      border:
-                          Border.all(
-                        color: palette
-                            .value
-                            .withOpacity(
-                                .15),
+                        16,
                       ),
                     ),
 
@@ -1190,19 +1490,19 @@ Widget _buildPreferenceGrid(
                       fontSize: 15,
                       fontWeight:
                           FontWeight
-                              .w800,
+                              .w700,
                       color:
-                          Colors.white,
+                          kDarkText,
                       height: 1.3,
                     ),
                   ),
 
                   const SizedBox(
-                    height: 8,
+                    height: 10,
                   ),
 
                   Container(
-                    width: 40,
+                    width: 45,
                     height: 4,
                     decoration:
                         BoxDecoration(
@@ -1211,8 +1511,8 @@ Widget _buildPreferenceGrid(
                               .circular(
                         20,
                       ),
-                      color:
-                          palette.value,
+                      gradient:
+                          kPrimaryGradient,
                     ),
                   ),
                 ],
@@ -1220,6 +1520,37 @@ Widget _buildPreferenceGrid(
             ),
           );
         },
+      ),
+
+      const SizedBox(height: 8),
+
+      Align(
+        alignment:
+            Alignment.centerRight,
+        child: Container(
+          padding:
+              const EdgeInsets.symmetric(
+            horizontal: 12,
+            vertical: 6,
+          ),
+          decoration: BoxDecoration(
+            color: kPrimaryColor
+                .withOpacity(.08),
+            borderRadius:
+                BorderRadius.circular(
+              30,
+            ),
+          ),
+          child: Text(
+            '${preferences.length} Selected',
+            style: const TextStyle(
+              color: kPrimaryColor,
+              fontWeight:
+                  FontWeight.w700,
+              fontSize: 12,
+            ),
+          ),
+        ),
       ),
     ],
   );
@@ -1486,205 +1817,205 @@ class SeekingFlatmateProfileDisplay extends StatelessWidget {
       ),
     ],
   ),
-),
-
-
-          // Basic Info - NOW AS A GRID
-/// 👤 ABOUT ME
-_buildSection(
-  title: '👤 About Me',
-  children: [
-    _buildProfileField(
-      'Gender',
-      profile.userProfile.gender,
-      icon: Icons.person_outline,
-    ),
-    _buildProfileField(
-      'Age',
-      profile.userProfile.age?.toString(),
-      icon: Icons.cake_outlined,
-    ),
-    _buildProfileField(
-      'Occupation',
-      profile.userProfile.occupation,
-      icon: Icons.work_outline,
-    ),
-    _buildProfileField(
-      'Religion',
-      profile.userProfile.religion,
-      icon: Icons.temple_hindu_outlined,
-    ),
-    _buildProfileField(
-      'Current Location',
-      profile.userProfile.city,
-      icon: Icons.location_on_outlined,
-    ),
-    _buildProfileField(
-      'Move-in Date',
-      profile.moveInDate != null
-          ? DateFormat('dd/MM/yyyy')
-              .format(profile.moveInDate!)
-          : null,
-      icon: Icons.calendar_month_outlined,
-    ),
-  ],
-),
-
-/// 📝 BIO
-if (profile.userProfile.bio != null &&
-    profile.userProfile.bio!.isNotEmpty)
-  _buildSection(
-    title: '📝 About Me',
-    children: [
-      Container(
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          borderRadius:
-              BorderRadius.circular(18),
-          color: Colors.white.withOpacity(.05),
-        ),
-        child: Text(
-          profile.userProfile.bio!,
-          style: const TextStyle(
-            color: Colors.white,
-            fontSize: 15,
-            height: 1.6,
-          ),
-        ),
       ),
-    ],
-  ),
 
-/// 🏠 HOUSING PREFERENCES
-_buildSection(
-  title: '🏠 Housing Preferences',
-  children: [
-    _buildProfileField(
-      'Budget',
-      '₹${profile.budgetMin ?? 'N/A'} - ₹${profile.budgetMax ?? 'N/A'}',
-      icon: Icons.currency_rupee,
-    ),
-    _buildProfileField(
-      'Desired City',
-      profile.userProfile.city,
-      icon: Icons.location_city,
-    ),
-    _buildProfileField(
-      'Flat Type',
-      profile.preferredFlatType,
-      icon: Icons.apartment,
-    ),
-    _buildProfileField(
-      'Room Type',
-      profile.preferredRoomType,
-      icon: Icons.bed_outlined,
-    ),
-    _buildProfileField(
-      'Furnished',
-      profile.preferredFurnishedStatus,
-      icon: Icons.chair_outlined,
-    ),
-  ],
-),
 
-/// ✨ LIFESTYLE
-_buildProfileListField(
-  '✨ Lifestyle',
-  [
-    profile.userProfile.cleanlinessLevel ?? '',
-    profile.userProfile.socialPreferences ?? '',
-    profile.userProfile.smokingHabit ?? '',
-    profile.userProfile.drinkingHabit ?? '',
-    profile.userProfile.foodPreference ?? '',
-    profile.userProfile.petOwnership ?? '',
-    profile.userProfile.petTolerance ?? '',
-  ].where((e) => e.isNotEmpty).toList(),
-),
-
-/// 🏡 DESIRED AMENITIES
-_buildProfileListField(
-  '🏡 Desired Amenities',
-  profile.amenitiesDesired,
-),
-
-/// 🤝 IDEAL FLATMATE
-_buildSection(
-  title: '🤝 Ideal Flatmate',
-  children: [
-    _buildProfileField(
-      'Gender',
-      profile.preferredFlatmateGender,
-      icon: Icons.people_outline,
-    ),
-    _buildProfileField(
-      'Age Group',
-      profile.preferredFlatmateAge,
-      icon: Icons.cake_outlined,
-    ),
-    _buildProfileField(
-      'Occupation',
-      profile.preferredOccupation,
-      icon: Icons.work_outline,
-    ),
-  ],
-),
-
-/// ⭐ PREFERRED HABITS
-_buildProfileListField(
-  '⭐ Preferred Habits',
-  profile.preferredHabits,
-),
-
-/// 💎 IDEAL QUALITIES
-_buildProfileListField(
-  '💎 Ideal Qualities',
-  profile.idealQualities,
-),
-
-/// 🚫 DEAL BREAKERS
-_buildProfileListField(
-  '🚫 Deal Breakers',
-  profile.dealBreakers,
-),
-          // Profile Images (using the existing implementation)
-          if (profile.imageUrls != null && profile.imageUrls!.isNotEmpty)
-            _buildSection(
-              title: 'Profile Images',
-              children: [
-                SizedBox(
-                  height: 150,
-                  child: ListView.builder(
-                    scrollDirection: Axis.horizontal,
-                    itemCount: profile.imageUrls!.length,
-                    itemBuilder: (context, index) {
-                      return Padding(
-                        padding: const EdgeInsets.only(right: 8.0),
-                        child: ClipRRect(
-                          borderRadius: BorderRadius.circular(10),
-                          child: Image.network(
-                            profile.imageUrls![index],
-                            width: 150,
-                            height: 150,
-                            fit: BoxFit.cover,
-                            errorBuilder: (context, error, stackTrace) => Container(
-                              width: 150,
-                              height: 150,
-                              color: Colors.grey[300],
-                              child: const Icon(Icons.broken_image, color: Colors.grey, size: 40),
+                // Basic Info - NOW AS A GRID
+                        /// 👤 ABOUT ME
+                        _buildSection(
+                          title: '👤 About Me',
+                          children: [
+                            _buildProfileField(
+                              'Gender',
+                              profile.userProfile.gender,
+                              icon: Icons.person_outline,
                             ),
-                          ),
+                            _buildProfileField(
+                              'Age',
+                              profile.userProfile.age?.toString(),
+                              icon: Icons.cake_outlined,
+                            ),
+                            _buildProfileField(
+                              'Occupation',
+                              profile.userProfile.occupation,
+                              icon: Icons.work_outline,
+                            ),
+                            _buildProfileField(
+                              'Religion',
+                              profile.userProfile.religion,
+                              icon: Icons.temple_hindu_outlined,
+                            ),
+                            _buildProfileField(
+                              'Current Location',
+                              profile.userProfile.city,
+                              icon: Icons.location_on_outlined,
+                            ),
+                            _buildProfileField(
+                              'Move-in Date',
+                              profile.moveInDate != null
+                                  ? DateFormat('dd/MM/yyyy')
+                                      .format(profile.moveInDate!)
+                                  : null,
+                              icon: Icons.calendar_month_outlined,
+                            ),
+                          ],
                         ),
-                      );
-                    },
+
+                        /// 📝 BIO
+                        if (profile.userProfile.bio != null &&
+                            profile.userProfile.bio!.isNotEmpty)
+                          _buildSection(
+                            title: '📝 About Me',
+                            children: [
+                              Container(
+                                padding: const EdgeInsets.all(16),
+                                decoration: BoxDecoration(
+                                  borderRadius:
+                                      BorderRadius.circular(18),
+                                  color: Colors.white.withOpacity(.05),
+                                ),
+                                child: Text(
+                                  profile.userProfile.bio!,
+                                  style: const TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 15,
+                                    height: 1.6,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+
+                        /// 🏠 HOUSING PREFERENCES
+                        _buildSection(
+                          title: '🏠 Housing Preferences',
+                          children: [
+                            _buildProfileField(
+                              'Budget',
+                              '₹${profile.budgetMin ?? 'N/A'} - ₹${profile.budgetMax ?? 'N/A'}',
+                              icon: Icons.currency_rupee,
+                            ),
+                            _buildProfileField(
+                              'Desired City',
+                              profile.userProfile.city,
+                              icon: Icons.location_city,
+                            ),
+                            _buildProfileField(
+                              'Flat Type',
+                              profile.preferredFlatType,
+                              icon: Icons.apartment,
+                            ),
+                            _buildProfileField(
+                              'Room Type',
+                              profile.preferredRoomType,
+                              icon: Icons.bed_outlined,
+                            ),
+                            _buildProfileField(
+                              'Furnished',
+                              profile.preferredFurnishedStatus,
+                              icon: Icons.chair_outlined,
+                            ),
+                          ],
+                        ),
+
+                        /// ✨ LIFESTYLE
+                        _buildProfileListField(
+                          '✨ Lifestyle',
+                          [
+                            profile.userProfile.cleanlinessLevel ?? '',
+                            profile.userProfile.socialPreferences ?? '',
+                            profile.userProfile.smokingHabit ?? '',
+                            profile.userProfile.drinkingHabit ?? '',
+                            profile.userProfile.foodPreference ?? '',
+                            profile.userProfile.petOwnership ?? '',
+                            profile.userProfile.petTolerance ?? '',
+                          ].where((e) => e.isNotEmpty).toList(),
+                        ),
+
+                        /// 🏡 DESIRED AMENITIES
+                        _buildProfileListField(
+                          '🏡 Desired Amenities',
+                          profile.amenitiesDesired,
+                        ),
+
+                        /// 🤝 IDEAL FLATMATE
+                        _buildSection(
+                          title: '🤝 Ideal Flatmate',
+                          children: [
+                            _buildProfileField(
+                              'Gender',
+                              profile.preferredFlatmateGender,
+                              icon: Icons.people_outline,
+                            ),
+                            _buildProfileField(
+                              'Age Group',
+                              profile.preferredFlatmateAge,
+                              icon: Icons.cake_outlined,
+                            ),
+                            _buildProfileField(
+                              'Occupation',
+                              profile.preferredOccupation,
+                              icon: Icons.work_outline,
+                            ),
+                          ],
+                        ),
+
+                        /// ⭐ PREFERRED HABITS
+                        _buildProfileListField(
+                          '⭐ Preferred Habits',
+                          profile.preferredHabits,
+                        ),
+
+                        /// 💎 IDEAL QUALITIES
+                        _buildProfileListField(
+                          '💎 Ideal Qualities',
+                          profile.idealQualities,
+                        ),
+
+                        /// 🚫 DEAL BREAKERS
+                        _buildProfileListField(
+                          '🚫 Deal Breakers',
+                          profile.dealBreakers,
+                        ),
+                // Profile Images (using the existing implementation)
+                if (profile.imageUrls != null && profile.imageUrls!.isNotEmpty)
+                  _buildSection(
+                    title: 'Profile Images',
+                    children: [
+                      SizedBox(
+                        height: 150,
+                        child: ListView.builder(
+                          scrollDirection: Axis.horizontal,
+                          itemCount: profile.imageUrls!.length,
+                          itemBuilder: (context, index) {
+                            return Padding(
+                              padding: const EdgeInsets.only(right: 8.0),
+                              child: ClipRRect(
+                                borderRadius: BorderRadius.circular(10),
+                                child: Image.network(
+                                  profile.imageUrls![index],
+                                  width: 150,
+                                  height: 150,
+                                  fit: BoxFit.cover,
+                                  errorBuilder: (context, error, stackTrace) => Container(
+                                    width: 150,
+                                    height: 150,
+                                    color: Colors.grey[300],
+                                    child: const Icon(Icons.broken_image, color: Colors.grey, size: 40),
+                                  ),
+                                ),
+                              ),
+                            );
+                          },
+                        ),
+                      ),
+                    ],
                   ),
-                ),
+                const SizedBox(height: 20),
               ],
             ),
-          const SizedBox(height: 20),
-        ],
-      ),
-    );
-  }
+          );
+        }
 }
 
 class FlatListingProfileDisplay extends StatelessWidget {
@@ -1693,183 +2024,255 @@ class FlatListingProfileDisplay extends StatelessWidget {
   const FlatListingProfileDisplay({super.key, required this.profile});
 
   @override
-  Widget build(BuildContext context) {
-    return Scaffold(
+Widget build(BuildContext context) {
+  return Scaffold(
+    backgroundColor: kBackgroundColor,
 
-      body: ListView(
-        children: [
-          // Profile Header (Owner Info)
-          Padding(
-            padding: const EdgeInsets.all(10.0),
-            child: Column(
-              children: [
-                CircleAvatar(
-                  radius: 50,
-                  backgroundColor: Colors.grey[200],
-                  backgroundImage: profile.imageUrls != null && profile.imageUrls!.isNotEmpty
-                      ? NetworkImage(profile.imageUrls![0])
-                      : null,
-                  child: profile.imageUrls == null || profile.imageUrls!.isEmpty
-                      ? Icon(Icons.person, size: 50, color: Colors.grey[600])
-                      : null,
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  profile.userProfile.name ?? 'N/A',
-                  style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
-                ),
-                Text(
-                  '${profile.userProfile.age?.toString() ?? 'N/A'} years old, ${profile.userProfile.occupation ?? 'N/A'}',
-                  style: TextStyle(fontSize: 14, color: Colors.grey[700]),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  'Flat in ${profile.userProfile.city ?? 'N/A'}, ${profile.userProfile.city ?? 'N/A'}',
-                  style: TextStyle(fontSize: 14, color: Colors.grey[700]),
-                ),
-                const SizedBox(height: 8),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    ElevatedButton.icon(
-                      onPressed: () { /* Handle chat */ },
-                      icon: const Icon(Icons.chat, size: 20),
-                      label: const Text('Chat', style: TextStyle(fontSize: 14)),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.green,
-                        foregroundColor: Colors.white,
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    ElevatedButton.icon(
-                      onPressed: () { /* Handle call */ },
-                      icon: const Icon(Icons.call, size: 20),
-                      label: const Text('Call', style: TextStyle(fontSize: 14)),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.blueAccent,
-                        foregroundColor: Colors.white,
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 12),
-              ],
+    body: ListView(
+      children: [
+
+        /// HERO HEADER
+        _buildPremiumHeroSection(profile),
+
+        /// QUICK OVERVIEW
+        _buildCharacteristicGrid(
+          'Quick Overview',
+          [
+            MapEntry('Flat Type', profile.flatType),
+            MapEntry('Room Type', profile.roomType),
+            MapEntry('Bathroom', profile.bathroomType),
+            MapEntry('Furnished', profile.furnishedStatus),
+
+            MapEntry(
+              'Occupants',
+              profile.currentOccupants,
             ),
-          ),
 
-          // Basic Info (Owner's Info) - NOW AS A GRID
-          _buildCharacteristicGrid(
-            'About The Current Flatmate',
-            [
-              MapEntry('Name', profile.userProfile.name),
-              MapEntry('Age', profile.userProfile.age?.toString()),
-              MapEntry('Gender', profile.userProfile.gender),
-              MapEntry('Occupation', profile.userProfile.occupation),
-              MapEntry('Religion', profile.userProfile.religion),
-              MapEntry('Bio', profile.userProfile.bio),
-            ],
-          ),
-
-          // Habits (Owner's Habits)
-          _buildCharacteristicGrid(
-            'Owner\'s Habits & Lifestyle',
-            [
-              MapEntry('Smoking Habits', profile.userProfile.smokingHabit),
-              MapEntry('Drinking Habits', profile.userProfile.drinkingHabit),
-              MapEntry('Food Preference', profile.userProfile.foodPreference),
-              MapEntry('Cleanliness', profile.userProfile.cleanlinessLevel),
-
-              MapEntry('Social Preferences', profile.userProfile.socialPreferences),
-
-              MapEntry('Pet Ownership', profile.userProfile.petOwnership),
-              MapEntry('Pet Tolerance', profile.userProfile.petTolerance),
-
-            ],
-          ),
-
-          // Flat Details - NOW CONTAINS GRID FOR SOME FIELDS
-          _buildCharacteristicGrid(
-            'Flat Details',
-            [
-              MapEntry('City', profile.userProfile.city),
-              MapEntry('Area', profile.userProfile.city),
-              MapEntry('Address', profile.address),
-              MapEntry('Landmark', profile.landmark),
-              MapEntry('Description', profile.flatDescription),
-              MapEntry('Flat Type', profile.flatType),
-              MapEntry('Room Type', profile.roomType),
-              MapEntry('Furnished Status', profile.furnishedStatus),
-              MapEntry('Available For', profile.availableFor),
-              MapEntry('Availability Date', profile.availabilityDate != null
-                  ? DateFormat('dd/MM/yyyy').format(profile.availabilityDate!)
-                  : null),
-              MapEntry('Rent Price', '₹${profile.rentPrice ?? 'N/A'}'),
-              MapEntry('Deposit Amt.', '₹${profile.depositAmount ?? 'N/A'}'),
-              MapEntry('Bathroom Type', profile.bathroomType),
-
-            ],
-          ),
-          // Amenities - NOW AS A GRID
-          _buildCharacteristicGrid('Amenities', _convertStringListToCharacteristicEntries(profile.amenities)),
-
-
-          // Flatmate Preferences
-          _buildCharacteristicGrid(
-            'Flatmate Preferences',
-            [
-              MapEntry('Preferred Gender', profile.preferredGender),
-              MapEntry('Preferred Age', profile.preferredAgeGroup),
-              MapEntry('Preferred Occupation', profile.preferredOccupation),
-            ],
-          ),
-          // Preferred Habits - NOW AS A GRID
-          _buildCharacteristicGrid('Preferred Habits', _convertStringListToCharacteristicEntries(profile.preferredHabits)),
-          // Ideal Qualities - NOW AS A GRID
-          _buildCharacteristicGrid('Ideal Qualities', _convertStringListToCharacteristicEntries(profile.flatmateIdealQualities)),
-          // Deal Breakers - NOW AS A GRID
-          _buildCharacteristicGrid('Deal Breakers', _convertStringListToCharacteristicEntries(profile.flatmateDealBreakers)),
-
-          // Flat Images (using the existing implementation)
-          if (profile.imageUrls != null && profile.imageUrls!.isNotEmpty)
-            _buildSection(
-              title: 'Flat Images',
-              children: [
-                SizedBox(
-                  height: 150,
-                  child: ListView.builder(
-                    scrollDirection: Axis.horizontal,
-                    itemCount: profile.imageUrls!.length,
-                    itemBuilder: (context, index) {
-                      return Padding(
-                        padding: const EdgeInsets.only(right: 8.0),
-                        child: ClipRRect(
-                          borderRadius: BorderRadius.circular(10),
-                          child: Image.network(
-                            profile.imageUrls![index],
-                            width: 150,
-                            height: 150,
-                            fit: BoxFit.cover,
-                            errorBuilder: (context, error, stackTrace) => Container(
-                              width: 150,
-                              height: 150,
-                              color: Colors.grey[300],
-                              child: const Icon(Icons.broken_image, color: Colors.grey, size: 40),
-                            ),
-                          ),
-                        ),
-                      );
-                    },
-                  ),
-                ),
-              ],
+            MapEntry(
+              'Lease',
+              profile.leaseDuration != null
+                  ? '${profile.leaseDuration} Months'
+                  : null,
             ),
-          const SizedBox(height: 20),
-        ],
-      ),
-    );
-  }
+          ],
+        ),
+
+        /// RENT DETAILS
+        _buildCharacteristicGrid(
+          'Rent Details',
+          [
+            MapEntry(
+              'Rent',
+              profile.rentPrice != null
+                  ? '₹${profile.rentPrice}'
+                  : null,
+            ),
+
+            MapEntry(
+              'Deposit',
+              profile.depositAmount != null
+                  ? '₹${profile.depositAmount}'
+                  : null,
+            ),
+
+            MapEntry(
+              'Available For',
+              profile.availableFor,
+            ),
+
+            MapEntry(
+              'Available From',
+              profile.availabilityDate != null
+                  ? DateFormat(
+                      'dd MMM yyyy',
+                    ).format(
+                      profile.availabilityDate!,
+                    )
+                  : null,
+            ),
+          ],
+        ),
+
+        /// AMENITIES
+        _buildPreferenceGrid(
+          'Amenities',
+          profile.amenities,
+        ),
+
+        /// ABOUT THE FLAT
+        _buildSection(
+          title: 'About The Flat',
+          children: [
+            _buildProfileField(
+              'Address',
+              profile.address,
+              icon: Icons.location_on,
+            ),
+
+            _buildProfileField(
+              'Landmark',
+              profile.landmark,
+              icon: Icons.place,
+            ),
+
+            _buildProfileField(
+              'Description',
+              profile.flatDescription,
+              icon: Icons.description,
+            ),
+          ],
+        ),
+
+        /// CURRENT FLATMATE
+        _buildCharacteristicGrid(
+          'Current Flatmate',
+          [
+            MapEntry(
+              'Name',
+              profile.userProfile.name,
+            ),
+
+            MapEntry(
+              'Age',
+              profile.userProfile.age?.toString(),
+            ),
+
+            MapEntry(
+              'Gender',
+              profile.userProfile.gender,
+            ),
+
+            MapEntry(
+              'Occupation',
+              profile.userProfile.occupation,
+            ),
+
+            MapEntry(
+              'Religion',
+              profile.userProfile.religion,
+            ),
+          ],
+        ),
+
+        /// LIFESTYLE
+        _buildCharacteristicGrid(
+          'Lifestyle & Habits',
+          [
+            MapEntry(
+              'Smoking',
+              profile.userProfile.smokingHabit,
+            ),
+
+            MapEntry(
+              'Drinking',
+              profile.userProfile.drinkingHabit,
+            ),
+
+            MapEntry(
+              'Food',
+              profile.userProfile.foodPreference,
+            ),
+
+            MapEntry(
+              'Cleanliness',
+              profile.userProfile.cleanlinessLevel,
+            ),
+
+            MapEntry(
+              'Social',
+              profile.userProfile.socialPreferences,
+            ),
+
+            MapEntry(
+              'Pets',
+              profile.userProfile.petOwnership,
+            ),
+
+            MapEntry(
+              'Pet Tolerance',
+              profile.userProfile.petTolerance,
+            ),
+          ],
+        ),
+
+        /// FLATMATE PREFERENCES
+        _buildCharacteristicGrid(
+          'Flatmate Preferences',
+          [
+            MapEntry(
+              'Gender',
+              profile.preferredGender,
+            ),
+
+            MapEntry(
+              'Age',
+              profile.preferredAgeGroup,
+            ),
+
+            MapEntry(
+              'Occupation',
+              profile.preferredOccupation,
+            ),
+          ],
+        ),
+
+        _buildPreferenceGrid(
+          'Preferred Habits',
+          profile.preferredHabits,
+        ),
+
+        _buildPreferenceGrid(
+          'Ideal Qualities',
+          profile.flatmateIdealQualities,
+        ),
+
+        _buildPreferenceGrid(
+          'Deal Breakers',
+          profile.flatmateDealBreakers,
+        ),
+
+        /// PHOTO GALLERY
+        if (profile.imageUrls != null &&
+            profile.imageUrls!.isNotEmpty)
+          _buildSection(
+            title: 'Photo Gallery',
+            children: [
+              GridView.builder(
+                shrinkWrap: true,
+                physics:
+                    const NeverScrollableScrollPhysics(),
+
+                itemCount:
+                    profile.imageUrls!.length,
+
+                gridDelegate:
+                    const SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: 2,
+                  crossAxisSpacing: 12,
+                  mainAxisSpacing: 12,
+                  childAspectRatio: 1,
+                ),
+
+                itemBuilder:
+                    (context, index) {
+                  return ClipRRect(
+                    borderRadius:
+                        BorderRadius.circular(
+                      20,
+                    ),
+                    child: Image.network(
+                      profile.imageUrls![index],
+                      fit: BoxFit.cover,
+                    ),
+                  );
+                },
+              ),
+            ],
+          ),
+
+        const SizedBox(height: 40),
+      ],
+    ),
+  );
+}
 }
