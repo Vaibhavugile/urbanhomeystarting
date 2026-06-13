@@ -516,14 +516,14 @@ final List<String> _guestsFrequencyOptions = [
   );
 }
 
-  @override
+@override
 Widget build(BuildContext context) {
   return Scaffold(
     backgroundColor: const Color(0xFFF8F9FC),
     body: Stack(
       children: [
         Container(
-          height: 320,
+          height: 180,
           decoration: const BoxDecoration(
             gradient: LinearGradient(
               begin: Alignment.topLeft,
@@ -534,8 +534,8 @@ Widget build(BuildContext context) {
               ],
             ),
             borderRadius: BorderRadius.only(
-              bottomLeft: Radius.circular(40),
-              bottomRight: Radius.circular(40),
+              bottomLeft: Radius.circular(30),
+              bottomRight: Radius.circular(30),
             ),
           ),
         ),
@@ -549,14 +549,13 @@ Widget build(BuildContext context) {
                 )
               : SingleChildScrollView(
                   padding: const EdgeInsets.symmetric(
-                    horizontal: 24,
+                    horizontal: 20,
                     vertical: 12,
                   ),
                   child: Column(
-                    crossAxisAlignment:
-                        CrossAxisAlignment.start,
                     children: [
 
+                      /// HEADER
                       Row(
                         children: [
                           IconButton(
@@ -568,118 +567,59 @@ Widget build(BuildContext context) {
                               color: Colors.white,
                             ),
                           ),
+
+                          const Spacer(),
+
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 14,
+                              vertical: 8,
+                            ),
+                            decoration: BoxDecoration(
+                              color: Colors.white.withOpacity(.15),
+                              borderRadius:
+                                  BorderRadius.circular(30),
+                            ),
+                            child: Text(
+                              "${_completionPercentage.toStringAsFixed(0)}%",
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                          ),
                         ],
                       ),
 
                       const SizedBox(height: 10),
 
-                      const Text(
-                        "Almost There 🚀",
-                        style: TextStyle(
-                          color: Colors.white70,
-                          fontSize: 18,
-                        ),
-                      ),
-
-                      const SizedBox(height: 6),
-
-                      const Text(
-                        "Complete Your Profile",
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 34,
-                          fontWeight: FontWeight.w800,
-                        ),
-                      ),
-
-                      const SizedBox(height: 10),
-
-                      const Text(
-                        "Tell us more about your lifestyle preferences to improve your matches.",
-                        style: TextStyle(
-                          color: Colors.white70,
-                          fontSize: 15,
-                          height: 1.5,
+                      const Align(
+                        alignment: Alignment.centerLeft,
+                        child: Text(
+                          "Complete Profile",
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 30,
+                            fontWeight: FontWeight.w800,
+                          ),
                         ),
                       ),
 
                       const SizedBox(height: 24),
 
+                      /// MAIN FORM CARD
                       Container(
-                        padding: const EdgeInsets.all(18),
-                        decoration: BoxDecoration(
-                          color: Colors.white.withOpacity(.15),
-                          borderRadius:
-                              BorderRadius.circular(18),
-                        ),
-                        child: Column(
-                          crossAxisAlignment:
-                              CrossAxisAlignment.start,
-                          children: [
-
-                            Row(
-                              children: [
-                                const Icon(
-                                  Icons.auto_graph,
-                                  color: Colors.white,
-                                ),
-
-                                const SizedBox(width: 10),
-
-                                Text(
-                                  "Profile Completion ${_completionPercentage.toStringAsFixed(0)}%",
-                                  style:
-                                      const TextStyle(
-                                    color:
-                                        Colors.white,
-                                    fontWeight:
-                                        FontWeight.w700,
-                                  ),
-                                ),
-                              ],
-                            ),
-
-                            const SizedBox(height: 12),
-
-                            ClipRRect(
-                              borderRadius:
-                                  BorderRadius.circular(
-                                      20),
-                              child:
-                                  LinearProgressIndicator(
-                                value:
-                                    _completionPercentage /
-                                        100,
-                                minHeight: 8,
-                                backgroundColor:
-                                    Colors.white24,
-                                valueColor:
-                                    const AlwaysStoppedAnimation(
-                                  Colors.white,
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-
-                      const SizedBox(height: 30),
-
-                      Container(
-                        padding:
-                            const EdgeInsets.all(24),
+                        padding: const EdgeInsets.all(24),
                         decoration: BoxDecoration(
                           color: Colors.white,
                           borderRadius:
-                              BorderRadius.circular(
-                                  28),
+                              BorderRadius.circular(28),
                           boxShadow: [
                             BoxShadow(
                               color: Colors.black
                                   .withOpacity(.08),
-                              blurRadius: 30,
-                              offset:
-                                  const Offset(0, 10),
+                              blurRadius: 25,
+                              offset: const Offset(0, 10),
                             ),
                           ],
                         ),
@@ -688,258 +628,200 @@ Widget build(BuildContext context) {
                           key: _formKey,
                           child: Column(
                             crossAxisAlignment:
-                                CrossAxisAlignment
-                                    .start,
+                                CrossAxisAlignment.start,
                             children: [
 
-                             _buildSectionHeader(
-  "Lifestyle Preferences",
-  Icons.favorite_rounded,
-),
+                              _buildSectionHeader(
+                                "Lifestyle Preferences",
+                                Icons.favorite_rounded,
+                              ),
 
                               const SizedBox(height: 20),
 
                               _buildDropdownField(
-                                labelText:
-                                    'Occupation',
-                                value:
-                                    _occupation,
-                                items:
-                                    _occupationOptions,
+                                labelText: 'Occupation',
+                                value: _occupation,
+                                items: _occupationOptions,
                                 onChanged: (val) {
-                                  setState(() =>
-                                      _occupation =
-                                          val);
+                                  setState(() {
+                                    _occupation = val;
+                                  });
                                   _calculateAndSetCompletionPercentage();
                                 },
-                                icon:
-                                    Icons.work,
+                                icon: Icons.work,
                               ),
 
-                              const SizedBox(
-                                  height: 18),
+                              const SizedBox(height: 18),
 
                               _buildDropdownField(
-                                labelText:
-                                    'Religion',
-                                value:
-                                    _religion,
-                                items:
-                                    _religionOptions,
+                                labelText: 'Religion',
+                                value: _religion,
+                                items: _religionOptions,
                                 onChanged: (val) {
-                                  setState(() =>
-                                      _religion =
-                                          val);
+                                  setState(() {
+                                    _religion = val;
+                                  });
                                   _calculateAndSetCompletionPercentage();
                                 },
-                                icon:
-                                    Icons.favorite,
+                                icon: Icons.favorite,
                               ),
 
-                              const SizedBox(
-                                  height: 30),
-
-                             _buildSectionHeader(
-  "Habits & Lifestyle",
-  Icons.self_improvement_rounded,
-),
-
-                              const SizedBox(
-                                  height: 20),
-
-                              _buildDropdownField(
-  labelText: 'Smoking Habit',
-  value: _smokingHabit,
-  items: _smokingHabitOptions,
-  onChanged: (val) {
-    setState(() => _smokingHabit = val);
-    _calculateAndSetCompletionPercentage();
-  },
-  icon: Icons.smoking_rooms,
-),
-
-_buildDropdownField(
-  labelText: 'Drinking Habit',
-  value: _drinkingHabit,
-  items: _drinkingHabitOptions,
-  onChanged: (val) {
-    setState(() => _drinkingHabit = val);
-    _calculateAndSetCompletionPercentage();
-  },
-  icon: Icons.local_bar,
-),
-
-_buildDropdownField(
-  labelText: 'Food Preference',
-  value: _foodPreference,
-  items: _foodPreferenceOptions,
-  onChanged: (val) {
-    setState(() => _foodPreference = val);
-    _calculateAndSetCompletionPercentage();
-  },
-  icon: Icons.restaurant,
-),
-
-_buildDropdownField(
-  labelText: 'Cleanliness Level',
-  value: _cleanlinessLevel,
-  items: _cleanlinessLevelOptions,
-  onChanged: (val) {
-    setState(() => _cleanlinessLevel = val);
-    _calculateAndSetCompletionPercentage();
-  },
-  icon: Icons.cleaning_services,
-),
-
-_buildDropdownField(
-  labelText: 'Social Preferences',
-  value: _socialPreferences,
-  items: _socialPreferenceOptions,
-  onChanged: (val) {
-    setState(() => _socialPreferences = val);
-    _calculateAndSetCompletionPercentage();
-  },
-  icon: Icons.groups,
-),
-
-_buildDropdownField(
-  labelText: 'Pet Ownership',
-  value: _petOwnership,
-  items: _petOwnershipOptions,
-  onChanged: (val) {
-    setState(() => _petOwnership = val);
-    _calculateAndSetCompletionPercentage();
-  },
-  icon: Icons.pets,
-),
-
-_buildDropdownField(
-  labelText: 'Pet Tolerance',
-  value: _petTolerance,
-  items: _petToleranceOptions,
-  onChanged: (val) {
-    setState(() => _petTolerance = val);
-    _calculateAndSetCompletionPercentage();
-  },
-  icon: Icons.favorite_border,
-),
-
-_buildDropdownField(
-  labelText: 'Guests Frequency',
-  value: _guestsFrequency,
-  items: _guestsFrequencyOptions,
-  onChanged: (val) {
-    setState(() => _guestsFrequency = val);
-    _calculateAndSetCompletionPercentage();
-  },
-  icon: Icons.people_alt,
-),
-
-                              const SizedBox(
-                                  height: 30),
+                              const SizedBox(height: 30),
 
                               _buildSectionHeader(
-  "About You",
-  Icons.person_rounded,
-),
+                                "Habits & Lifestyle",
+                                Icons.self_improvement_rounded,
+                              ),
 
-                              const SizedBox(
-                                  height: 20),
+                              const SizedBox(height: 20),
+
+                              _buildDropdownField(
+                                labelText: 'Smoking Habit',
+                                value: _smokingHabit,
+                                items: _smokingHabitOptions,
+                                onChanged: (val) {
+                                  setState(() {
+                                    _smokingHabit = val;
+                                  });
+                                  _calculateAndSetCompletionPercentage();
+                                },
+                                icon: Icons.smoking_rooms,
+                              ),
+
+                              const SizedBox(height: 18),
+
+                              _buildDropdownField(
+                                labelText: 'Drinking Habit',
+                                value: _drinkingHabit,
+                                items: _drinkingHabitOptions,
+                                onChanged: (val) {
+                                  setState(() {
+                                    _drinkingHabit = val;
+                                  });
+                                  _calculateAndSetCompletionPercentage();
+                                },
+                                icon: Icons.local_bar,
+                              ),
+
+                              const SizedBox(height: 18),
+
+                              _buildDropdownField(
+                                labelText: 'Food Preference',
+                                value: _foodPreference,
+                                items: _foodPreferenceOptions,
+                                onChanged: (val) {
+                                  setState(() {
+                                    _foodPreference = val;
+                                  });
+                                  _calculateAndSetCompletionPercentage();
+                                },
+                                icon: Icons.restaurant,
+                              ),
+
+                              const SizedBox(height: 18),
+
+                              _buildDropdownField(
+                                labelText: 'Cleanliness Level',
+                                value: _cleanlinessLevel,
+                                items: _cleanlinessLevelOptions,
+                                onChanged: (val) {
+                                  setState(() {
+                                    _cleanlinessLevel = val;
+                                  });
+                                  _calculateAndSetCompletionPercentage();
+                                },
+                                icon: Icons.cleaning_services,
+                              ),
+
+                              const SizedBox(height: 18),
+
+                              _buildDropdownField(
+                                labelText: 'Social Preferences',
+                                value: _socialPreferences,
+                                items: _socialPreferenceOptions,
+                                onChanged: (val) {
+                                  setState(() {
+                                    _socialPreferences = val;
+                                  });
+                                  _calculateAndSetCompletionPercentage();
+                                },
+                                icon: Icons.groups,
+                              ),
+
+                              const SizedBox(height: 18),
+
+                              _buildDropdownField(
+                                labelText: 'Pet Ownership',
+                                value: _petOwnership,
+                                items: _petOwnershipOptions,
+                                onChanged: (val) {
+                                  setState(() {
+                                    _petOwnership = val;
+                                  });
+                                  _calculateAndSetCompletionPercentage();
+                                },
+                                icon: Icons.pets,
+                              ),
+
+                              const SizedBox(height: 18),
+
+                              _buildDropdownField(
+                                labelText: 'Pet Tolerance',
+                                value: _petTolerance,
+                                items: _petToleranceOptions,
+                                onChanged: (val) {
+                                  setState(() {
+                                    _petTolerance = val;
+                                  });
+                                  _calculateAndSetCompletionPercentage();
+                                },
+                                icon: Icons.favorite_border,
+                              ),
+
+                              const SizedBox(height: 18),
+
+                              _buildDropdownField(
+                                labelText: 'Guests Frequency',
+                                value: _guestsFrequency,
+                                items: _guestsFrequencyOptions,
+                                onChanged: (val) {
+                                  setState(() {
+                                    _guestsFrequency = val;
+                                  });
+                                  _calculateAndSetCompletionPercentage();
+                                },
+                                icon: Icons.people_alt,
+                              ),
+
+                              const SizedBox(height: 30),
+
+                              _buildSectionHeader(
+                                "About You",
+                                Icons.person_rounded,
+                              ),
+
+                              const SizedBox(height: 20),
 
                               _buildTextFormField(
-                                label:
-                                    'Short Bio',
-                                icon: Icons
-                                    .description,
-                                initialValue:
-                                    _bio,
+                                label: 'Short Bio',
+                                icon: Icons.description,
+                                initialValue: _bio,
                                 maxLines: 5,
-                                onSaved:
-                                    (value) {
+                                onSaved: (value) {
                                   _bio = value;
                                 },
                               ),
 
-                              const SizedBox(
-                                  height: 30),
-
-                              Container(
-                                padding:
-                                    const EdgeInsets
-                                        .all(16),
-                                decoration:
-                                    BoxDecoration(
-                                  color:
-                                      Colors.green
-                                          .withOpacity(
-                                              .08),
-                                  borderRadius:
-                                      BorderRadius
-                                          .circular(
-                                              16),
-                                ),
-                                child:
-                                    const Column(
-                                  children: [
-                                    Row(
-                                      children: [
-                                        Icon(
-                                          Icons
-                                              .check_circle,
-                                          color: Colors
-                                              .green,
-                                        ),
-                                        SizedBox(
-                                            width:
-                                                10),
-                                        Expanded(
-                                          child:
-                                              Text(
-                                            "Improve match quality",
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                    SizedBox(
-                                        height:
-                                            10),
-                                    Row(
-                                      children: [
-                                        Icon(
-                                          Icons
-                                              .check_circle,
-                                          color: Colors
-                                              .green,
-                                        ),
-                                        SizedBox(
-                                            width:
-                                                10),
-                                        Expanded(
-                                          child:
-                                              Text(
-                                            "Increase profile visibility",
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ],
-                                ),
-                              ),
-
-                              const SizedBox(
-                                  height: 30),
+                              const SizedBox(height: 35),
 
                               SizedBox(
-                                width:
-                                    double.infinity,
-                                height: 58,
-                                child:
-                                    ElevatedButton(
+                                width: double.infinity,
+                                height: 60,
+                                child: ElevatedButton(
                                   onPressed:
                                       _saveCompleteProfile,
                                   style:
-                                      ElevatedButton
-                                          .styleFrom(
+                                      ElevatedButton.styleFrom(
                                     backgroundColor:
                                         const Color(
                                       0xFFAD1457,
@@ -952,32 +834,23 @@ _buildDropdownField(
                                               18),
                                     ),
                                   ),
-                                  child:
-                                      const Row(
+                                  child: const Row(
                                     mainAxisAlignment:
-                                        MainAxisAlignment
-                                            .center,
+                                        MainAxisAlignment.center,
                                     children: [
+                                      Icon(
+                                        Icons.check_circle_rounded,
+                                        color: Colors.white,
+                                      ),
+                                      SizedBox(width: 10),
                                       Text(
-                                        "Save & Continue",
-                                        style:
-                                            TextStyle(
-                                          color:
-                                              Colors.white,
-                                          fontSize:
-                                              18,
+                                        "Complete Profile",
+                                        style: TextStyle(
+                                          color: Colors.white,
+                                          fontSize: 18,
                                           fontWeight:
                                               FontWeight.bold,
                                         ),
-                                      ),
-                                      SizedBox(
-                                          width:
-                                              8),
-                                      Icon(
-                                        Icons
-                                            .arrow_forward_rounded,
-                                        color:
-                                            Colors.white,
                                       ),
                                     ],
                                   ),

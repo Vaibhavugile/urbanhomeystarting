@@ -399,14 +399,14 @@ class _InitialProfileScreenState extends State<InitialProfileScreen> {
     },
   );
 }
- @override
+@override
 Widget build(BuildContext context) {
   return Scaffold(
     backgroundColor: const Color(0xFFF8F9FC),
     body: Stack(
       children: [
         Container(
-          height: 320,
+          height: 180,
           decoration: const BoxDecoration(
             gradient: LinearGradient(
               begin: Alignment.topLeft,
@@ -417,8 +417,8 @@ Widget build(BuildContext context) {
               ],
             ),
             borderRadius: BorderRadius.only(
-              bottomLeft: Radius.circular(40),
-              bottomRight: Radius.circular(40),
+              bottomLeft: Radius.circular(32),
+              bottomRight: Radius.circular(32),
             ),
           ),
         ),
@@ -453,103 +453,48 @@ Widget build(BuildContext context) {
                         ],
                       ),
 
-                      const SizedBox(height: 10),
+                      const SizedBox(height: 8),
 
-                      const Text(
-                        "Welcome 👋",
-                        style: TextStyle(
-                          color: Colors.white70,
-                          fontSize: 18,
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
+                      Row(
+                        children: [
+                          const Expanded(
+                            child: Text(
+                              "Create Profile",
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 28,
+                                fontWeight:
+                                    FontWeight.w800,
+                              ),
+                            ),
+                          ),
 
-                      const SizedBox(height: 6),
-
-                      const Text(
-                        "Create Your Profile",
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 34,
-                          fontWeight: FontWeight.w800,
-                        ),
-                      ),
-
-                      const SizedBox(height: 12),
-
-                      const Text(
-                        "Let's get you set up so we can find your perfect flatmate match.",
-                        style: TextStyle(
-                          color: Colors.white70,
-                          fontSize: 15,
-                          height: 1.5,
-                        ),
+                          Container(
+                            padding:
+                                const EdgeInsets.symmetric(
+                              horizontal: 14,
+                              vertical: 8,
+                            ),
+                            decoration: BoxDecoration(
+                              color: Colors.white
+                                  .withOpacity(.15),
+                              borderRadius:
+                                  BorderRadius.circular(
+                                      30),
+                            ),
+                            child: const Text(
+                              "Step 1 of 3",
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontWeight:
+                                    FontWeight.w600,
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
 
                       const SizedBox(height: 24),
-
-                      Container(
-                        padding: const EdgeInsets.all(16),
-                        decoration: BoxDecoration(
-                          color: Colors.white.withOpacity(.15),
-                          borderRadius:
-                              BorderRadius.circular(18),
-                        ),
-                        child: Column(
-                          crossAxisAlignment:
-                              CrossAxisAlignment.start,
-                          children: [
-                            const Row(
-                              children: [
-                                Icon(
-                                  Icons.auto_graph,
-                                  color: Colors.white,
-                                  size: 18,
-                                ),
-                                SizedBox(width: 8),
-                                Text(
-                                  "Profile Completion",
-                                  style: TextStyle(
-                                    color: Colors.white,
-                                    fontWeight:
-                                        FontWeight.w600,
-                                  ),
-                                ),
-                              ],
-                            ),
-
-                            const SizedBox(height: 12),
-
-                            ClipRRect(
-                              borderRadius:
-                                  BorderRadius.circular(
-                                      20),
-                              child:
-                                  LinearProgressIndicator(
-                                value: 0.25,
-                                minHeight: 8,
-                                backgroundColor:
-                                    Colors.white24,
-                                valueColor:
-                                    const AlwaysStoppedAnimation(
-                                  Colors.white,
-                                ),
-                              ),
-                            ),
-
-                            const SizedBox(height: 8),
-
-                            const Text(
-                              "25% Complete",
-                              style: TextStyle(
-                                color: Colors.white,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-
-                      const SizedBox(height: 30),
 
                       Container(
                         padding:
@@ -651,94 +596,7 @@ Widget build(BuildContext context) {
                               ),
 
                               const SizedBox(
-                                  height: 28),
-
-                              Container(
-                                padding:
-                                    const EdgeInsets
-                                        .all(16),
-                                decoration:
-                                    BoxDecoration(
-                                  color: const Color(
-                                          0xFF6A1B9A)
-                                      .withOpacity(
-                                          .06),
-                                  borderRadius:
-                                      BorderRadius
-                                          .circular(
-                                              16),
-                                ),
-                                child: const Column(
-                                  children: [
-                                    Row(
-                                      children: [
-                                        Icon(
-                                          Icons
-                                              .check_circle,
-                                          color: Colors
-                                              .green,
-                                        ),
-                                        SizedBox(
-                                            width:
-                                                10),
-                                        Expanded(
-                                          child:
-                                              Text(
-                                            "Get better flatmate matches",
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                    SizedBox(
-                                        height:
-                                            10),
-                                    Row(
-                                      children: [
-                                        Icon(
-                                          Icons
-                                              .check_circle,
-                                          color: Colors
-                                              .green,
-                                        ),
-                                        SizedBox(
-                                            width:
-                                                10),
-                                        Expanded(
-                                          child:
-                                              Text(
-                                            "Increase profile visibility",
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                    SizedBox(
-                                        height:
-                                            10),
-                                    Row(
-                                      children: [
-                                        Icon(
-                                          Icons
-                                              .check_circle,
-                                          color: Colors
-                                              .green,
-                                        ),
-                                        SizedBox(
-                                            width:
-                                                10),
-                                        Expanded(
-                                          child:
-                                              Text(
-                                            "Connect faster with compatible people",
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ],
-                                ),
-                              ),
-
-                              const SizedBox(
-                                  height: 28),
+                                  height: 30),
 
                               SizedBox(
                                 width:
