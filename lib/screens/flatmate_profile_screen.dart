@@ -25,10 +25,11 @@ class FlatListingProfile {
   // String balconyAvailability;
   // String parkingAvailability;
   List<String> amenities;
+ String? leaseDuration;
   String address;
   String landmark;
   String flatDescription;
-
+String? currentOccupants;
   // Flatmate Preferences
   String preferredGender;
   String preferredAgeGroup;
@@ -46,12 +47,14 @@ class FlatListingProfile {
     required this.userProfile,
     this.flatType = '',
     this.roomType = '',
+    this.currentOccupants,
     this.furnishedStatus = '',
     this.availableFor = '',
     this.availabilityDate,
     this.rentPrice,
     this.depositAmount,
     this.bathroomType = '',
+    this.leaseDuration,
     List<String>? amenities,
     this.address = '',
     this.landmark = '',
@@ -99,7 +102,9 @@ class FlatListingProfile {
 roomType: data['roomType'] ?? '',
 furnishedStatus: data['furnishedStatus'] ?? '',
 availableFor: data['availableFor'] ?? '',
-
+currentOccupants: data['currentOccupants'] ?? '',
+leaseDurationMonths:
+    data['leaseDurationMonths'],
 availabilityDate: data['availabilityDate'] is Timestamp
     ? (data['availabilityDate'] as Timestamp).toDate()
     : null,
@@ -146,12 +151,15 @@ flatDescription: data['flatDescription'] ?? '',
       'roomType': roomType,
       'furnishedStatus': furnishedStatus,
       'availableFor': availableFor,
+      'leaseDurationMonths':
+    leaseDurationMonths,
       'availabilityDate': availabilityDate != null ? Timestamp.fromDate(availabilityDate!) : null,
       'amenities': amenities,
+      'currentOccupants': currentOccupants,
       'address': address,
       'landmark': landmark,
       'flatDescription': flatDescription,
-
+'imageUrls': imageUrls,
       // Flatmate preferences
       'preferredFlatmateGender': preferredGender,
       'preferredFlatmateAge': preferredAgeGroup,
@@ -2063,6 +2071,44 @@ Widget _buildAreaSelectionQuestion({
         },
         initialValue: _flatListingProfile.furnishedStatus,
       ),
+      SingleChoiceQuestionWidget(
+  title: "How many people are currently staying in the flat?",
+  subtitle: "Exclude the new tenant you're looking for.",
+  options: [
+    'Just Me',
+    '2 People',
+    '3 People',
+    '4 People',
+    '5+ People',
+  ],
+  onSelected: (value) {
+    setState(() {
+      _flatListingProfile.currentOccupants = value;
+    });
+  },
+  initialValue: _flatListingProfile.currentOccupants,
+),
+SingleChoiceQuestionWidget(
+  title: "What is the minimum lease duration?",
+  subtitle: "Select how long a tenant is expected to stay.",
+  options: [
+    '1 Month',
+    '2 Months',
+    '3 Months',
+    '6 Months',
+    '11 Months',
+    '1 Year',
+    'More than 1 Year',
+    'Flexible',
+  ],
+  onSelected: (value) {
+    setState(() {
+      _flatListingProfile.leaseDuration = value;
+    });
+  },
+  initialValue: _flatListingProfile.leaseDuration,
+),
+
 
       // Page 23: Available For
       SingleChoiceQuestionWidget(
