@@ -36,6 +36,61 @@ class _CompleteUserProfileScreenState extends State<CompleteUserProfileScreen> {
   final List<String> _religionOptions = [
     'Hindu', 'Muslim', 'Christian','Sikh','Buddhism','Prefer not to say'
   ];
+  final List<String> _smokingHabitOptions = [
+  'Never',
+  'Occasionally',
+  'Socially',
+  'Regularly',
+];
+
+final List<String> _drinkingHabitOptions = [
+  'Never',
+  'Occasionally',
+  'Socially',
+  'Regularly',
+];
+
+final List<String> _foodPreferenceOptions = [
+  'Vegetarian',
+  'Non-Vegetarian',
+  'Vegan',
+  'Eggetarian',
+  'Jain',
+  'Other',
+];
+
+final List<String> _cleanlinessLevelOptions = [
+  'Very clean',
+  'Moderately clean',
+  'Not so clean',
+];
+
+final List<String> _socialPreferenceOptions = [
+  'Value personal space highly',
+  'Enjoy a balance',
+  'Prefer more socialization',
+  'Flexible',
+];
+
+final List<String> _petOwnershipOptions = [
+  'Yes',
+  'No',
+  'Planning to get one',
+];
+
+final List<String> _petToleranceOptions = [
+  'Comfortable with pets',
+  'Tolerant of pets',
+  'Prefer no pets',
+  'Allergic to pets',
+];
+
+final List<String> _guestsFrequencyOptions = [
+  'Never',
+  'Rarely',
+  'Sometimes',
+  'Frequently',
+];
 
   bool _isLoading = false;
   UserProfile? _currentUserProfile;
@@ -183,508 +238,1023 @@ class _CompleteUserProfileScreenState extends State<CompleteUserProfileScreen> {
   // Part of the _CompleteUserProfileScreenState class
 
   void _showVerificationDialog() {
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (BuildContext context) {
-        return Dialog(
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(25)),
-          elevation: 15,
-          child: Container(
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(25),
-              gradient: LinearGradient(
-                colors: [Colors.white, Colors.grey[50]!],
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
+  showDialog(
+    context: context,
+    barrierDismissible: false,
+    builder: (context) {
+      return Dialog(
+        backgroundColor: Colors.transparent,
+        insetPadding: const EdgeInsets.symmetric(
+          horizontal: 24,
+        ),
+        child: Container(
+          padding: const EdgeInsets.all(28),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(32),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(.12),
+                blurRadius: 30,
+                offset: const Offset(0, 12),
               ),
-            ),
-            padding: const EdgeInsets.all(24.0),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Container(
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: Colors.deepPurple.withOpacity(0.1),
+            ],
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                height: 90,
+                width: 90,
+                decoration: BoxDecoration(
+                  gradient: const LinearGradient(
+                    colors: [
+                      Color(0xFF6A1B9A),
+                      Color(0xFFAD1457),
+                    ],
                   ),
-                  padding: const EdgeInsets.all(12),
-                  child: Icon(
-                    Icons.verified_user_rounded,
-                    size: 60,
-                    color: Color(0xFFAD1457),
-                  ),
+                  borderRadius:
+                      BorderRadius.circular(30),
                 ),
-                SizedBox(height: 20),
-                Text(
-                  "Profile Almost Complete!",
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 22,
-                    color: Color(0xFF6A1B9A),
-                  ),
+                child: const Icon(
+                  Icons.verified_user_rounded,
+                  color: Colors.white,
+                  size: 48,
                 ),
-                SizedBox(height: 10),
-                Text(
-                  "Your profile is ${_completionPercentage.toStringAsFixed(0)}% complete.",
-                  style: TextStyle(fontSize: 16, color: Colors.grey[800]),
+              ),
+
+              const SizedBox(height: 24),
+
+              const Text(
+                "🛡️ Verify Your Profile",
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 28,
+                  fontWeight: FontWeight.w800,
+                  color: Color(0xFF111827),
                 ),
-                SizedBox(height: 10),
-                LinearProgressIndicator(
-                  value: _completionPercentage / 100,
-                  backgroundColor: Colors.grey[200],
-                  valueColor: AlwaysStoppedAnimation<Color>(Colors.green),
-                  minHeight: 8,
+              ),
+
+              const SizedBox(height: 10),
+
+              Text(
+                "Your profile is ${_completionPercentage.toStringAsFixed(0)}% complete. Verification helps build trust and unlocks more opportunities.",
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  color: Colors.grey.shade600,
+                  fontSize: 15,
+                  height: 1.5,
                 ),
-                SizedBox(height: 20),
-                Text(
-                  "Verify your identity to unlock all features and increase your trust score.",
-                  textAlign: TextAlign.center,
-                  style: TextStyle(fontSize: 15, color: Colors.grey[600]),
+              ),
+
+              const SizedBox(height: 24),
+
+              Container(
+                padding: const EdgeInsets.all(18),
+                decoration: BoxDecoration(
+                  color: const Color(
+                    0xFF6A1B9A,
+                  ).withOpacity(.06),
+                  borderRadius:
+                      BorderRadius.circular(18),
                 ),
-                SizedBox(height: 30),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceAround,
+                child: Column(
                   children: [
-                    Expanded(
-                      child: ElevatedButton(
-                        onPressed: () {
-                          Navigator.of(context).pop();
-                          Navigator.pushReplacement(
-                            context,
-                            MaterialPageRoute(builder: (context) => HomePage()),
-                          );
-                        },
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.transparent,
-                          foregroundColor: Color(0xFFAD1457),
-                          elevation: 0,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(15),
-                            side: BorderSide(color: Color(0xFFAD1457), width: 1),
-                          ),
-                          padding: EdgeInsets.symmetric(vertical: 16),
+                    const Row(
+                      children: [
+                        Icon(
+                          Icons.auto_graph,
+                          color: Color(0xFF6A1B9A),
                         ),
-                        child: Text(
-                          "Skip",
-                          style: TextStyle(fontSize: 16),
+                        SizedBox(width: 10),
+                        Text(
+                          "Profile Completion",
+                          style: TextStyle(
+                            fontWeight:
+                                FontWeight.w700,
+                          ),
+                        ),
+                      ],
+                    ),
+
+                    const SizedBox(height: 14),
+
+                    ClipRRect(
+                      borderRadius:
+                          BorderRadius.circular(
+                              20),
+                      child:
+                          LinearProgressIndicator(
+                        value:
+                            _completionPercentage /
+                                100,
+                        minHeight: 10,
+                        backgroundColor:
+                            const Color(
+                          0xFFE5E7EB,
+                        ),
+                        valueColor:
+                            const AlwaysStoppedAnimation(
+                          Color(0xFFAD1457),
                         ),
                       ),
                     ),
-                    SizedBox(width: 15),
-                    Expanded(
-                      child: Container(
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(15),
-                          gradient: LinearGradient(
-                            colors: [Color(0xFFAD1457), Color(0xFF6A1B9A)],
-                            begin: Alignment.centerLeft,
-                            end: Alignment.centerRight,
-                          ),
-                        ),
-                        child: ElevatedButton(
-                          onPressed: () {
-                            Navigator.of(context).pop();
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(builder: (context) => VerificationScreen()),
-                            );
-                          },
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.transparent,
-                            shadowColor: Colors.transparent,
-                            padding: EdgeInsets.symmetric(vertical: 16),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(15),
-                            ),
-                          ),
-                          child: Text(
-                            "Verify Now",
-                            style: TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.white,
-                            ),
-                          ),
-                        ),
+
+                    const SizedBox(height: 10),
+
+                    Text(
+                      "${_completionPercentage.toStringAsFixed(0)}% Complete",
+                      style: const TextStyle(
+                        fontWeight:
+                            FontWeight.w600,
+                        color:
+                            Color(0xFF6B7280),
                       ),
                     ),
                   ],
                 ),
-              ],
-            ),
-          ),
-        );
-      },
-    );
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text(
-          'Complete Your Profile',
-          style: TextStyle(
-            color: Colors.white,
-            fontWeight: FontWeight.bold,
-            fontSize: 22,
-          ),
-        ),
-        centerTitle: true,
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        iconTheme: const IconThemeData(color: Colors.white),
-      ),
-      extendBodyBehindAppBar: true,
-      body: Stack(
-        children: [
-          Container(
-            decoration: const BoxDecoration(
-              gradient: LinearGradient(
-                colors: [Color(0xFF6A1B9A), Color(0xFFAD1457)],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
               ),
-            ),
-          ),
-          _isLoading
-              ? const Center(child: CircularProgressIndicator(color: Colors.white))
-              : SingleChildScrollView(
-            padding: const EdgeInsets.all(20.0),
-            child: Column(
-              children: [
-                SizedBox(height: MediaQuery.of(context).padding.top + kToolbarHeight),
-                const Text(
-                  'A Little More About You!',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    fontSize: 26,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
-                    shadows: [
-                      Shadow(
-                        blurRadius: 10.0,
-                        color: Colors.black38,
-                        offset: Offset(2.0, 2.0),
-                      ),
-                    ],
-                  ),
+
+              const SizedBox(height: 24),
+
+              Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color:
+                      Colors.green.withOpacity(.08),
+                  borderRadius:
+                      BorderRadius.circular(16),
                 ),
-                const SizedBox(height: 10),
-                const Text(
-                  'These details will help you find the best match for your lifestyle.',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    fontSize: 17,
-                    color: Colors.white70,
-                  ),
-                ),
-                const SizedBox(height: 30),
-                TweenAnimationBuilder(
-                  tween: Tween<double>(begin: _completionPercentage, end: _completionPercentage),
-                  duration: const Duration(milliseconds: 500),
-                  builder: (context, double value, child) {
-                    return Column(
+                child: const Column(
+                  children: [
+                    Row(
                       children: [
-                        Text(
-                          'Profile Completion: ${value.toStringAsFixed(0)}%',
-                          style: const TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.white,
-                          ),
+                        Icon(
+                          Icons.check_circle,
+                          color: Colors.green,
                         ),
-                        const SizedBox(height: 8),
-                        LinearProgressIndicator(
-                          value: value / 100,
-                          backgroundColor: Colors.white38,
-                          valueColor: const AlwaysStoppedAnimation<Color>(Colors.greenAccent),
-                          minHeight: 10,
-                        ),
-                      ],
-                    );
-                  },
-                ),
-                const SizedBox(height: 30),
-                Container(
-                  padding: const EdgeInsets.all(25.0),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(20),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(0.1),
-                        spreadRadius: 2,
-                        blurRadius: 15,
-                        offset: const Offset(0, 8),
-                      ),
-                    ],
-                  ),
-                  child: Form(
-                    key: _formKey,
-                    child: Column(
-                      children: [
-                        _buildDropdownField(
-                          labelText: 'Occupation',
-                          value: _occupation,
-                          items: _occupationOptions,
-                          onChanged: (val) {
-                            setState(() => _occupation = val);
-                            _calculateAndSetCompletionPercentage();
-                          },
-                          icon: Icons.work,
-                        ),
-                        const SizedBox(height: 16),
-                        _buildDropdownField(
-                          labelText: 'Religion',
-                          value: _religion,
-                          items: _religionOptions,
-                          onChanged: (val) {
-                            setState(() => _religion = val);
-                            _calculateAndSetCompletionPercentage();
-                          },
-                          icon: Icons.favorite,
-                        ),
-                        const SizedBox(height: 16),
-                        _buildDropdownField(
-                          labelText: 'Smoking Habit',
-                          value: _smokingHabit,
-                          items: ['Never', 'Occasionally', 'Socially', 'Regularly'],
-                          onChanged: (val) {
-                            setState(() => _smokingHabit = val);
-                            _calculateAndSetCompletionPercentage();
-                          },
-                          icon: Icons.smoke_free,
-                        ),
-                        const SizedBox(height: 16),
-                        _buildDropdownField(
-                          labelText: 'Drinking Habit',
-                          value: _drinkingHabit,
-                          items: ['Never', 'Occasionally', 'Socially', 'Regularly'],
-                          onChanged: (val) {
-                            setState(() => _drinkingHabit = val);
-                            _calculateAndSetCompletionPercentage();
-                          },
-                          icon: Icons.local_bar,
-                        ),
-                        const SizedBox(height: 16),
-                        _buildDropdownField(
-                          labelText: 'Food Preference',
-                          value: _foodPreference,
-                          items: ['Vegetarian','Non-Vegetarian', 'Vegan','Eggetarian', 'Jain', 'Other'],
-                          onChanged: (val) {
-                            setState(() => _foodPreference = val);
-                            _calculateAndSetCompletionPercentage();
-                          },
-                          icon: Icons.fastfood,
-                        ),
-                        const SizedBox(height: 16),
-                        _buildDropdownField(
-                          labelText: 'Cleanliness Level',
-                          value: _cleanlinessLevel,
-                          items: ['Very clean', 'Moderately clean', 'Not so clean'],
-                          onChanged: (val) {
-                            setState(() => _cleanlinessLevel = val);
-                            _calculateAndSetCompletionPercentage();
-                          },
-                          icon: Icons.cleaning_services,
-                        ),
-                        const SizedBox(height: 16),
-                        _buildDropdownField(
-                          labelText: 'Social Preferences',
-                          value: _socialPreferences,
-                          items: ['Value personal space highly',
-                               'Enjoy a balance',
-                              'Prefer more socialization',
-                           'Flexible'],
-                          onChanged: (val) {
-                            setState(() => _socialPreferences = val);
-                            _calculateAndSetCompletionPercentage();
-                          },
-                          icon: Icons.people,
-                        ),
-                        const SizedBox(height: 16),
-                        _buildDropdownField(
-                          labelText: 'Pet Ownership',
-                          value: _petOwnership,
-                          items: ['Yes', 'No', 'Planning to get one'],
-                          onChanged: (val) {
-                            setState(() => _petOwnership = val);
-                            _calculateAndSetCompletionPercentage();
-                          },
-                          icon: Icons.pets,
-                        ),
-                        const SizedBox(height: 16),
-                        _buildDropdownField(
-                          labelText: 'Pet Tolerance',
-                          value: _petTolerance,
-                          items: [ 'Comfortable with pets', 'Tolerant of pets', 'Prefer no pets', 'Allergic to pets'],
-                          onChanged: (val) {
-                            setState(() => _petTolerance = val);
-                            _calculateAndSetCompletionPercentage();
-                          },
-                          icon: Icons.pets_outlined,
-                        ),
-                        const SizedBox(height: 16),
-                        _buildDropdownField(
-                          labelText: 'Guests Frequency',
-                          value: _guestsFrequency,
-                          items: ['Never', 'Rarely', 'Sometimes', 'Frequently'],
-                          onChanged: (val) {
-                            setState(() => _guestsFrequency = val);
-                            _calculateAndSetCompletionPercentage();
-                          },
-                          icon: Icons.group,
-                        ),
-                        const SizedBox(height: 16),
-                        _buildTextFormField(
-                          label: 'Short Bio',
-                          icon: Icons.description,
-                          initialValue: _bio,
-                          maxLines: 4,
-                          onSaved: (value) {
-                            _bio = value;
-                          },
-                        ),
-                        const SizedBox(height: 30),
-                        SizedBox(
-                          width: double.infinity,
-                          child: ElevatedButton(
-                            onPressed: _saveCompleteProfile,
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: const Color(0xFFAD1457),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                              padding: const EdgeInsets.symmetric(vertical: 18),
-                              elevation: 8,
-                              shadowColor: const Color(0xFFAD1457).withOpacity(0.6),
-                            ),
-                            child: const Text(
-                              'Save & Continue',
-                              style: TextStyle(
-                                fontSize: 19,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.white,
-                              ),
-                            ),
+                        SizedBox(width: 10),
+                        Expanded(
+                          child: Text(
+                            "Verified profiles receive more responses",
                           ),
                         ),
                       ],
                     ),
+                    SizedBox(height: 10),
+                    Row(
+                      children: [
+                        Icon(
+                          Icons.check_circle,
+                          color: Colors.green,
+                        ),
+                        SizedBox(width: 10),
+                        Expanded(
+                          child: Text(
+                            "Increase trust and credibility",
+                          ),
+                        ),
+                      ],
+                    ),
+                    SizedBox(height: 10),
+                    Row(
+                      children: [
+                        Icon(
+                          Icons.check_circle,
+                          color: Colors.green,
+                        ),
+                        SizedBox(width: 10),
+                        Expanded(
+                          child: Text(
+                            "Unlock premium verification badge",
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+
+              const SizedBox(height: 28),
+
+              SizedBox(
+                width: double.infinity,
+                height: 56,
+                child: ElevatedButton(
+                  onPressed: () {
+                    Navigator.pop(context);
+
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) =>
+                            VerificationScreen(),
+                      ),
+                    );
+                  },
+                  style: ElevatedButton.styleFrom(
+                    elevation: 0,
+                    backgroundColor:
+                        const Color(0xFFAD1457),
+                    shape:
+                        RoundedRectangleBorder(
+                      borderRadius:
+                          BorderRadius.circular(
+                              18),
+                    ),
+                  ),
+                  child: const Row(
+                    mainAxisAlignment:
+                        MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        "Verify Now",
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 17,
+                          fontWeight:
+                              FontWeight.bold,
+                        ),
+                      ),
+                      SizedBox(width: 8),
+                      Icon(
+                        Icons.arrow_forward,
+                        color: Colors.white,
+                      ),
+                    ],
                   ),
                 ),
+              ),
+
+              const SizedBox(height: 12),
+
+              TextButton(
+                onPressed: () {
+                  Navigator.pop(context);
+
+                  Navigator.pushReplacement(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) =>
+                          HomePage(),
+                    ),
+                  );
+                },
+                child: const Text(
+                  "Skip For Now",
+                  style: TextStyle(
+                    color: Color(0xFF6B7280),
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    },
+  );
+}
+
+  @override
+Widget build(BuildContext context) {
+  return Scaffold(
+    backgroundColor: const Color(0xFFF8F9FC),
+    body: Stack(
+      children: [
+        Container(
+          height: 320,
+          decoration: const BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [
+                Color(0xFF6A1B9A),
+                Color(0xFFAD1457),
               ],
+            ),
+            borderRadius: BorderRadius.only(
+              bottomLeft: Radius.circular(40),
+              bottomRight: Radius.circular(40),
+            ),
+          ),
+        ),
+
+        SafeArea(
+          child: _isLoading
+              ? const Center(
+                  child: CircularProgressIndicator(
+                    color: Color(0xFFAD1457),
+                  ),
+                )
+              : SingleChildScrollView(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 24,
+                    vertical: 12,
+                  ),
+                  child: Column(
+                    crossAxisAlignment:
+                        CrossAxisAlignment.start,
+                    children: [
+
+                      Row(
+                        children: [
+                          IconButton(
+                            onPressed: () {
+                              Navigator.pop(context);
+                            },
+                            icon: const Icon(
+                              Icons.arrow_back_ios_new_rounded,
+                              color: Colors.white,
+                            ),
+                          ),
+                        ],
+                      ),
+
+                      const SizedBox(height: 10),
+
+                      const Text(
+                        "Almost There 🚀",
+                        style: TextStyle(
+                          color: Colors.white70,
+                          fontSize: 18,
+                        ),
+                      ),
+
+                      const SizedBox(height: 6),
+
+                      const Text(
+                        "Complete Your Profile",
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 34,
+                          fontWeight: FontWeight.w800,
+                        ),
+                      ),
+
+                      const SizedBox(height: 10),
+
+                      const Text(
+                        "Tell us more about your lifestyle preferences to improve your matches.",
+                        style: TextStyle(
+                          color: Colors.white70,
+                          fontSize: 15,
+                          height: 1.5,
+                        ),
+                      ),
+
+                      const SizedBox(height: 24),
+
+                      Container(
+                        padding: const EdgeInsets.all(18),
+                        decoration: BoxDecoration(
+                          color: Colors.white.withOpacity(.15),
+                          borderRadius:
+                              BorderRadius.circular(18),
+                        ),
+                        child: Column(
+                          crossAxisAlignment:
+                              CrossAxisAlignment.start,
+                          children: [
+
+                            Row(
+                              children: [
+                                const Icon(
+                                  Icons.auto_graph,
+                                  color: Colors.white,
+                                ),
+
+                                const SizedBox(width: 10),
+
+                                Text(
+                                  "Profile Completion ${_completionPercentage.toStringAsFixed(0)}%",
+                                  style:
+                                      const TextStyle(
+                                    color:
+                                        Colors.white,
+                                    fontWeight:
+                                        FontWeight.w700,
+                                  ),
+                                ),
+                              ],
+                            ),
+
+                            const SizedBox(height: 12),
+
+                            ClipRRect(
+                              borderRadius:
+                                  BorderRadius.circular(
+                                      20),
+                              child:
+                                  LinearProgressIndicator(
+                                value:
+                                    _completionPercentage /
+                                        100,
+                                minHeight: 8,
+                                backgroundColor:
+                                    Colors.white24,
+                                valueColor:
+                                    const AlwaysStoppedAnimation(
+                                  Colors.white,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+
+                      const SizedBox(height: 30),
+
+                      Container(
+                        padding:
+                            const EdgeInsets.all(24),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius:
+                              BorderRadius.circular(
+                                  28),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black
+                                  .withOpacity(.08),
+                              blurRadius: 30,
+                              offset:
+                                  const Offset(0, 10),
+                            ),
+                          ],
+                        ),
+
+                        child: Form(
+                          key: _formKey,
+                          child: Column(
+                            crossAxisAlignment:
+                                CrossAxisAlignment
+                                    .start,
+                            children: [
+
+                             _buildSectionHeader(
+  "Lifestyle Preferences",
+  Icons.favorite_rounded,
+),
+
+                              const SizedBox(height: 20),
+
+                              _buildDropdownField(
+                                labelText:
+                                    'Occupation',
+                                value:
+                                    _occupation,
+                                items:
+                                    _occupationOptions,
+                                onChanged: (val) {
+                                  setState(() =>
+                                      _occupation =
+                                          val);
+                                  _calculateAndSetCompletionPercentage();
+                                },
+                                icon:
+                                    Icons.work,
+                              ),
+
+                              const SizedBox(
+                                  height: 18),
+
+                              _buildDropdownField(
+                                labelText:
+                                    'Religion',
+                                value:
+                                    _religion,
+                                items:
+                                    _religionOptions,
+                                onChanged: (val) {
+                                  setState(() =>
+                                      _religion =
+                                          val);
+                                  _calculateAndSetCompletionPercentage();
+                                },
+                                icon:
+                                    Icons.favorite,
+                              ),
+
+                              const SizedBox(
+                                  height: 30),
+
+                             _buildSectionHeader(
+  "Habits & Lifestyle",
+  Icons.self_improvement_rounded,
+),
+
+                              const SizedBox(
+                                  height: 20),
+
+                              _buildDropdownField(
+  labelText: 'Smoking Habit',
+  value: _smokingHabit,
+  items: _smokingHabitOptions,
+  onChanged: (val) {
+    setState(() => _smokingHabit = val);
+    _calculateAndSetCompletionPercentage();
+  },
+  icon: Icons.smoking_rooms,
+),
+
+_buildDropdownField(
+  labelText: 'Drinking Habit',
+  value: _drinkingHabit,
+  items: _drinkingHabitOptions,
+  onChanged: (val) {
+    setState(() => _drinkingHabit = val);
+    _calculateAndSetCompletionPercentage();
+  },
+  icon: Icons.local_bar,
+),
+
+_buildDropdownField(
+  labelText: 'Food Preference',
+  value: _foodPreference,
+  items: _foodPreferenceOptions,
+  onChanged: (val) {
+    setState(() => _foodPreference = val);
+    _calculateAndSetCompletionPercentage();
+  },
+  icon: Icons.restaurant,
+),
+
+_buildDropdownField(
+  labelText: 'Cleanliness Level',
+  value: _cleanlinessLevel,
+  items: _cleanlinessLevelOptions,
+  onChanged: (val) {
+    setState(() => _cleanlinessLevel = val);
+    _calculateAndSetCompletionPercentage();
+  },
+  icon: Icons.cleaning_services,
+),
+
+_buildDropdownField(
+  labelText: 'Social Preferences',
+  value: _socialPreferences,
+  items: _socialPreferenceOptions,
+  onChanged: (val) {
+    setState(() => _socialPreferences = val);
+    _calculateAndSetCompletionPercentage();
+  },
+  icon: Icons.groups,
+),
+
+_buildDropdownField(
+  labelText: 'Pet Ownership',
+  value: _petOwnership,
+  items: _petOwnershipOptions,
+  onChanged: (val) {
+    setState(() => _petOwnership = val);
+    _calculateAndSetCompletionPercentage();
+  },
+  icon: Icons.pets,
+),
+
+_buildDropdownField(
+  labelText: 'Pet Tolerance',
+  value: _petTolerance,
+  items: _petToleranceOptions,
+  onChanged: (val) {
+    setState(() => _petTolerance = val);
+    _calculateAndSetCompletionPercentage();
+  },
+  icon: Icons.favorite_border,
+),
+
+_buildDropdownField(
+  labelText: 'Guests Frequency',
+  value: _guestsFrequency,
+  items: _guestsFrequencyOptions,
+  onChanged: (val) {
+    setState(() => _guestsFrequency = val);
+    _calculateAndSetCompletionPercentage();
+  },
+  icon: Icons.people_alt,
+),
+
+                              const SizedBox(
+                                  height: 30),
+
+                              _buildSectionHeader(
+  "About You",
+  Icons.person_rounded,
+),
+
+                              const SizedBox(
+                                  height: 20),
+
+                              _buildTextFormField(
+                                label:
+                                    'Short Bio',
+                                icon: Icons
+                                    .description,
+                                initialValue:
+                                    _bio,
+                                maxLines: 5,
+                                onSaved:
+                                    (value) {
+                                  _bio = value;
+                                },
+                              ),
+
+                              const SizedBox(
+                                  height: 30),
+
+                              Container(
+                                padding:
+                                    const EdgeInsets
+                                        .all(16),
+                                decoration:
+                                    BoxDecoration(
+                                  color:
+                                      Colors.green
+                                          .withOpacity(
+                                              .08),
+                                  borderRadius:
+                                      BorderRadius
+                                          .circular(
+                                              16),
+                                ),
+                                child:
+                                    const Column(
+                                  children: [
+                                    Row(
+                                      children: [
+                                        Icon(
+                                          Icons
+                                              .check_circle,
+                                          color: Colors
+                                              .green,
+                                        ),
+                                        SizedBox(
+                                            width:
+                                                10),
+                                        Expanded(
+                                          child:
+                                              Text(
+                                            "Improve match quality",
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                    SizedBox(
+                                        height:
+                                            10),
+                                    Row(
+                                      children: [
+                                        Icon(
+                                          Icons
+                                              .check_circle,
+                                          color: Colors
+                                              .green,
+                                        ),
+                                        SizedBox(
+                                            width:
+                                                10),
+                                        Expanded(
+                                          child:
+                                              Text(
+                                            "Increase profile visibility",
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ],
+                                ),
+                              ),
+
+                              const SizedBox(
+                                  height: 30),
+
+                              SizedBox(
+                                width:
+                                    double.infinity,
+                                height: 58,
+                                child:
+                                    ElevatedButton(
+                                  onPressed:
+                                      _saveCompleteProfile,
+                                  style:
+                                      ElevatedButton
+                                          .styleFrom(
+                                    backgroundColor:
+                                        const Color(
+                                      0xFFAD1457,
+                                    ),
+                                    elevation: 0,
+                                    shape:
+                                        RoundedRectangleBorder(
+                                      borderRadius:
+                                          BorderRadius.circular(
+                                              18),
+                                    ),
+                                  ),
+                                  child:
+                                      const Row(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment
+                                            .center,
+                                    children: [
+                                      Text(
+                                        "Save & Continue",
+                                        style:
+                                            TextStyle(
+                                          color:
+                                              Colors.white,
+                                          fontSize:
+                                              18,
+                                          fontWeight:
+                                              FontWeight.bold,
+                                        ),
+                                      ),
+                                      SizedBox(
+                                          width:
+                                              8),
+                                      Icon(
+                                        Icons
+                                            .arrow_forward_rounded,
+                                        color:
+                                            Colors.white,
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+
+                      const SizedBox(height: 30),
+                    ],
+                  ),
+                ),
+        ),
+      ],
+    ),
+  );
+}
+
+ Widget _buildTextFormField({
+  required String label,
+  required IconData icon,
+  String? initialValue,
+  int maxLines = 1,
+  required FormFieldSetter<String> onSaved,
+}) {
+  return TextFormField(
+    initialValue: initialValue,
+    maxLines: maxLines,
+    onSaved: onSaved,
+    style: const TextStyle(
+      fontSize: 16,
+      fontWeight: FontWeight.w500,
+      color: Color(0xFF1F2937),
+    ),
+    decoration: InputDecoration(
+      hintText: label,
+      hintStyle: TextStyle(
+        color: Colors.grey.shade500,
+        fontSize: 15,
+      ),
+
+      alignLabelWithHint: true,
+
+      prefixIcon: Container(
+        margin: const EdgeInsets.all(10),
+        decoration: BoxDecoration(
+          gradient: const LinearGradient(
+            colors: [
+              Color(0xFF6A1B9A),
+              Color(0xFFAD1457),
+            ],
+          ),
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Icon(
+          icon,
+          color: Colors.white,
+          size: 20,
+        ),
+      ),
+
+      filled: true,
+      fillColor: const Color(0xFFF8F9FC),
+
+      contentPadding: EdgeInsets.symmetric(
+        horizontal: 20,
+        vertical: maxLines > 1 ? 20 : 18,
+      ),
+
+      border: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(18),
+        borderSide: BorderSide.none,
+      ),
+
+      enabledBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(18),
+        borderSide: BorderSide(
+          color: Colors.grey.shade200,
+          width: 1.5,
+        ),
+      ),
+
+      focusedBorder: const OutlineInputBorder(
+        borderRadius: BorderRadius.all(
+          Radius.circular(18),
+        ),
+        borderSide: BorderSide(
+          color: Color(0xFFAD1457),
+          width: 2,
+        ),
+      ),
+
+      errorBorder: const OutlineInputBorder(
+        borderRadius: BorderRadius.all(
+          Radius.circular(18),
+        ),
+        borderSide: BorderSide(
+          color: Colors.red,
+          width: 2,
+        ),
+      ),
+
+      focusedErrorBorder: const OutlineInputBorder(
+        borderRadius: BorderRadius.all(
+          Radius.circular(18),
+        ),
+        borderSide: BorderSide(
+          color: Colors.red,
+          width: 2,
+        ),
+      ),
+    ),
+  );
+}
+
+  Widget _buildDropdownField({
+  required String labelText,
+  required String? value,
+  required List<String> items,
+  required ValueChanged<String?> onChanged,
+  required IconData icon,
+}) {
+  return Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(10),
+            decoration: BoxDecoration(
+              gradient: const LinearGradient(
+                colors: [
+                  Color(0xFF6A1B9A),
+                  Color(0xFFAD1457),
+                ],
+              ),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Icon(
+              icon,
+              color: Colors.white,
+              size: 18,
+            ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Text(
+              labelText,
+              style: const TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.w700,
+                color: Color(0xFF1F2937),
+              ),
             ),
           ),
         ],
       ),
-    );
-  }
 
-  Widget _buildTextFormField({
-    required String label,
-    required IconData icon,
-    String? initialValue,
-    int maxLines = 1,
-    required FormFieldSetter<String> onSaved,
-  }) {
-    return TextFormField(
-      initialValue: initialValue,
-      maxLines: maxLines,
-      decoration: InputDecoration(
-        labelText: label,
-        prefixIcon: Icon(icon, color: Colors.deepPurple[300]),
-        labelStyle: TextStyle(color: Colors.grey[700]),
-        filled: true,
-        fillColor: Colors.grey[50],
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide.none,
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: Colors.deepPurple, width: 2),
-        ),
-      ),
-      onSaved: onSaved,
-    );
-  }
+      const SizedBox(height: 14),
 
-  Widget _buildDropdownField({
-    required String labelText,
-    required String? value,
-    required List<String> items,
-    required ValueChanged<String?> onChanged,
-    required IconData icon,
-  }) {
-    return DropdownButtonFormField<String>(
-      value: value,
-      decoration: InputDecoration(
-        labelText: labelText,
-        prefixIcon: Icon(icon, color: Colors.deepPurple[300]),
-        labelStyle: TextStyle(color: Colors.grey[700]),
-        filled: true,
-        fillColor: Colors.grey[50],
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide.none,
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: Colors.deepPurple, width: 2),
-        ),
-        errorBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: Colors.red, width: 2),
-        ),
-      ),
-      items: [
-        DropdownMenuItem<String>(
-          value: null,
-          child: Text('Select an option'),
-        ),
-        ...items.map<DropdownMenuItem<String>>((String item) {
-          return DropdownMenuItem<String>(
-            value: item,
-            child: Text(item),
+      Wrap(
+        spacing: 10,
+        runSpacing: 10,
+        children: items.map((item) {
+          final bool isSelected = value == item;
+
+          return GestureDetector(
+            onTap: () {
+              onChanged(item);
+            },
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 250),
+              padding: const EdgeInsets.symmetric(
+                horizontal: 16,
+                vertical: 14,
+              ),
+              decoration: BoxDecoration(
+                gradient: isSelected
+                    ? const LinearGradient(
+                        colors: [
+                          Color(0xFF6A1B9A),
+                          Color(0xFFAD1457),
+                        ],
+                      )
+                    : null,
+                color: isSelected
+                    ? null
+                    : const Color(0xFFF8F9FC),
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(
+                  color: isSelected
+                      ? Colors.transparent
+                      : Colors.grey.shade300,
+                ),
+                boxShadow: isSelected
+                    ? [
+                        BoxShadow(
+                          color: const Color(
+                            0xFFAD1457,
+                          ).withOpacity(.20),
+                          blurRadius: 12,
+                          offset: const Offset(0, 4),
+                        ),
+                      ]
+                    : [],
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    item,
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                      color: isSelected
+                          ? Colors.white
+                          : const Color(0xFF374151),
+                    ),
+                  ),
+
+                  if (isSelected) ...[
+                    const SizedBox(width: 8),
+                    const Icon(
+                      Icons.check_circle,
+                      color: Colors.white,
+                      size: 18,
+                    ),
+                  ],
+                ],
+              ),
+            ),
           );
         }).toList(),
+      ),
+
+      const SizedBox(height: 20),
+    ],
+  );
+}
+Widget _buildSectionHeader(
+  String title,
+  IconData icon,
+) {
+  return Container(
+    padding: const EdgeInsets.symmetric(
+      horizontal: 16,
+      vertical: 14,
+    ),
+    decoration: BoxDecoration(
+      gradient: const LinearGradient(
+        colors: [
+          Color(0xFF6A1B9A),
+          Color(0xFFAD1457),
+        ],
+      ),
+      borderRadius: BorderRadius.circular(18),
+    ),
+    child: Row(
+      children: [
+        Icon(
+          icon,
+          color: Colors.white,
+          size: 22,
+        ),
+        const SizedBox(width: 12),
+        Text(
+          title,
+          style: const TextStyle(
+            color: Colors.white,
+            fontSize: 18,
+            fontWeight: FontWeight.w700,
+          ),
+        ),
       ],
-      onChanged: onChanged,
-      onSaved: (val) {
-        // This onSaved callback ensures the value is set before saving
-        if (labelText == 'Smoking Habit') {
-          _smokingHabit = val;
-        } else if (labelText == 'Drinking Habit') {
-          _drinkingHabit = val;
-        } else if (labelText == 'Food Preference') {
-          _foodPreference = val;
-        } else if (labelText == 'Cleanliness Level') {
-          _cleanlinessLevel = val;
-        } else if (labelText == 'Social Preferences') {
-          _socialPreferences = val;
-        } else if (labelText == 'Pet Ownership') {
-          _petOwnership = val;
-        } else if (labelText == 'Pet Tolerance') {
-          _petTolerance = val;
-        } else if (labelText == 'Guests Frequency') {
-          _guestsFrequency = val;
-        } else if (labelText == 'Occupation') {
-          _occupation = val;
-        } else if (labelText == 'Religion') {
-          _religion = val;
-        }
-        _calculateAndSetCompletionPercentage();
-      },
-      validator: (val) {
-        if (val == null || val.isEmpty) {
-          return 'Please select a $labelText';
-        }
-        return null;
-      },
-    );
-  }
+    ),
+  );
+}
 }

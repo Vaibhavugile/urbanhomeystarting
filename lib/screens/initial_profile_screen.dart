@@ -142,394 +142,995 @@ class _InitialProfileScreenState extends State<InitialProfileScreen> {
   }
 
   void _showProfileCompletionDialog() {
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (BuildContext context) {
-        return Dialog(
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(20.0),
-          ),
-          elevation: 0,
-          backgroundColor: Colors.transparent,
-          child: Container(
-            padding: const EdgeInsets.all(20.0),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(20.0),
-              boxShadow: const [
-                BoxShadow(
-                  color: Colors.black26,
-                  blurRadius: 10,
-                  offset: Offset(0, 5),
-                ),
-              ],
-            ),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Lottie.asset(
-                  'assets/congrats_animation.json', // Replace with your animation file path
-                  height: 150,
-                  repeat: false,
-                ),
-                const SizedBox(height: 20),
-                const Text(
-                  'Profile Created!',
-                  style: TextStyle(
-                    fontSize: 28,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.black,
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: 10),
-                const Text(
-                  'Your profile is 25% complete. Would you like to continue filling it out now?',
-                  style: TextStyle(
-                    fontSize: 16,
-                    color: Colors.black54,
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: 20),
-                SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton(
-                    onPressed: () {
-                      Navigator.of(context).pop();
-                      Navigator.pushReplacement(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => const CompleteUserProfileScreen(),
-                        ),
-                      );
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFFAD1457),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      padding: const EdgeInsets.symmetric(vertical: 12),
-                    ),
-                    child: const Text(
-                      'Complete Now',
-                      style: TextStyle(
-                        fontSize: 18,
-                        color: Colors.white,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 10),
-                SizedBox(
-                  width: double.infinity,
-                  child: TextButton(
-                    onPressed: () {
-                      Navigator.of(context).pop();
-                      Navigator.pushReplacement(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => const HomePage(),
-                        ),
-                      );
-                    },
-                    style: TextButton.styleFrom(
-                      foregroundColor: const Color(0xFFAD1457),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        side: const BorderSide(color: Color(0xFFAD1457)),
-                      ),
-                      padding: const EdgeInsets.symmetric(vertical: 12),
-                    ),
-                    child: const Text(
-                      'Skip for now',
-                      style: TextStyle(
-                        fontSize: 18,
-                      ),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        );
-      },
-    );
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text(
-          'Create Your Profile',
-          style: TextStyle(
-            color: Colors.white,
-            fontWeight: FontWeight.bold,
-            fontSize: 22,
-          ),
-        ),
-        centerTitle: true,
+  showDialog(
+    context: context,
+    barrierDismissible: false,
+    builder: (context) {
+      return Dialog(
         backgroundColor: Colors.transparent,
-        elevation: 0,
-        iconTheme: const IconThemeData(color: Colors.white),
-      ),
-      extendBodyBehindAppBar: true,
-      body: Stack(
-        children: [
-          Container(
-            decoration: const BoxDecoration(
-              gradient: LinearGradient(
-                colors: [Color(0xFF6A1B9A), Color(0xFFAD1457)],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
+        insetPadding: const EdgeInsets.symmetric(
+          horizontal: 24,
+        ),
+        child: Container(
+          padding: const EdgeInsets.all(28),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(32),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(.12),
+                blurRadius: 30,
+                offset: const Offset(0, 12),
               ),
-            ),
+            ],
           ),
-          _isLoading
-              ? const Center(child: CircularProgressIndicator(color: Colors.white))
-              : SingleChildScrollView(
-            padding: const EdgeInsets.all(20.0),
-            child: Column(
-              children: [
-                SizedBox(height: MediaQuery.of(context).padding.top + kToolbarHeight),
-                const Text(
-                  'Tell Us About Yourself!',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    fontSize: 26,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
-                    shadows: [
-                      Shadow(
-                        blurRadius: 10.0,
-                        color: Colors.black38,
-                        offset: Offset(2.0, 2.0),
-                      ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                height: 90,
+                width: 90,
+                decoration: BoxDecoration(
+                  gradient: const LinearGradient(
+                    colors: [
+                      Color(0xFF6A1B9A),
+                      Color(0xFFAD1457),
                     ],
                   ),
+                  borderRadius:
+                      BorderRadius.circular(30),
                 ),
-                const SizedBox(height: 10),
-                const Text(
-                  'Your profile helps you find the perfect match.',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    fontSize: 17,
-                    color: Colors.white70,
-                  ),
+                child: const Icon(
+                  Icons.celebration_rounded,
+                  color: Colors.white,
+                  size: 48,
                 ),
-                const SizedBox(height: 30),
-                Container(
-                  padding: const EdgeInsets.all(25.0),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(20),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(0.1),
-                        spreadRadius: 2,
-                        blurRadius: 15,
-                        offset: const Offset(0, 8),
-                      ),
-                    ],
-                  ),
-                  child: Form(
-                    key: _formKey,
-                    child: Column(
+              ),
+
+              const SizedBox(height: 24),
+
+              const Text(
+                "🎉 Profile Created",
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 28,
+                  fontWeight: FontWeight.w800,
+                  color: Color(0xFF111827),
+                ),
+              ),
+
+              const SizedBox(height: 10),
+
+              Text(
+                "Your profile is now live and ready to start matching with potential flatmates.",
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  color: Colors.grey.shade600,
+                  fontSize: 15,
+                  height: 1.5,
+                ),
+              ),
+
+              const SizedBox(height: 24),
+
+              Container(
+                padding: const EdgeInsets.all(18),
+                decoration: BoxDecoration(
+                  color: const Color(
+                    0xFF6A1B9A,
+                  ).withOpacity(.06),
+                  borderRadius:
+                      BorderRadius.circular(18),
+                ),
+                child: Column(
+                  children: [
+                    const Row(
                       children: [
-                        _buildProfileImagePicker(),
-                        const SizedBox(height: 20),
-                        _buildTextFormField(
-                          controller: _nameController,
-                          label: 'Name',
-                          icon: Icons.person,
-                          validator: (value) {
-                            if (value == null || value.isEmpty) {
-                              return 'Please enter your name';
-                            }
-                            return null;
-                          },
+                        Icon(
+                          Icons.auto_graph,
+                          color: Color(0xFF6A1B9A),
                         ),
-                        const SizedBox(height: 16),
-                        _buildTextFormField(
-                          controller: _ageController,
-                          label: 'Age',
-                          icon: Icons.cake,
-                          keyboardType: TextInputType.number,
-                          validator: (value) {
-                            if (value == null || value.isEmpty) {
-                              return 'Please enter your age';
-                            }
-                            if (int.tryParse(value) == null || int.parse(value) <= 0) {
-                              return 'Please enter a valid age';
-                            }
-                            return null;
-                          },
-                        ),
-                        const SizedBox(height: 16),
-                        _buildGenderDropdown(),
-                        const SizedBox(height: 16),
-                        _buildTextFormField(
-                          controller: _cityController,
-                          label: 'City',
-                          icon: Icons.location_city,
-                          validator: (value) {
-                            if (value == null || value.isEmpty) {
-                              return 'Please enter your city';
-                            }
-                            return null;
-                          },
-                        ),
-                        const SizedBox(height: 30),
-                        SizedBox(
-                          width: double.infinity,
-                          child: ElevatedButton(
-                            onPressed: _saveInitialProfile,
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: const Color(0xFFAD1457),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                              padding: const EdgeInsets.symmetric(vertical: 18),
-                              elevation: 8,
-                              shadowColor: const Color(0xFFAD1457).withOpacity(0.6),
-                            ),
-                            child: const Text(
-                              'Submit',
-                              style: TextStyle(
-                                fontSize: 19,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.white,
-                              ),
-                            ),
+                        SizedBox(width: 10),
+                        Text(
+                          "Profile Completion",
+                          style: TextStyle(
+                            fontWeight:
+                                FontWeight.w700,
                           ),
                         ),
                       ],
                     ),
+
+                    const SizedBox(height: 14),
+
+                    ClipRRect(
+                      borderRadius:
+                          BorderRadius.circular(
+                              20),
+                      child:
+                          const LinearProgressIndicator(
+                        value: 0.25,
+                        minHeight: 10,
+                        backgroundColor:
+                            Color(0xFFE5E7EB),
+                        valueColor:
+                            AlwaysStoppedAnimation(
+                          Color(0xFFAD1457),
+                        ),
+                      ),
+                    ),
+
+                    const SizedBox(height: 10),
+
+                    const Text(
+                      "25% Complete",
+                      style: TextStyle(
+                        fontWeight:
+                            FontWeight.w600,
+                        color: Color(0xFF6B7280),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+
+              const SizedBox(height: 24),
+
+              Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: Colors.green
+                      .withOpacity(.08),
+                  borderRadius:
+                      BorderRadius.circular(16),
+                ),
+                child: const Column(
+                  children: [
+                    Row(
+                      children: [
+                        Icon(
+                          Icons.check_circle,
+                          color: Colors.green,
+                        ),
+                        SizedBox(width: 10),
+                        Expanded(
+                          child: Text(
+                            "Get better flatmate recommendations",
+                          ),
+                        ),
+                      ],
+                    ),
+                    SizedBox(height: 10),
+                    Row(
+                      children: [
+                        Icon(
+                          Icons.check_circle,
+                          color: Colors.green,
+                        ),
+                        SizedBox(width: 10),
+                        Expanded(
+                          child: Text(
+                            "Increase your profile visibility",
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+
+              const SizedBox(height: 28),
+
+              SizedBox(
+                width: double.infinity,
+                height: 56,
+                child: ElevatedButton(
+                  onPressed: () {
+                    Navigator.pop(context);
+
+                    Navigator.pushReplacement(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) =>
+                            const CompleteUserProfileScreen(),
+                      ),
+                    );
+                  },
+                  style: ElevatedButton.styleFrom(
+                    elevation: 0,
+                    backgroundColor:
+                        const Color(0xFFAD1457),
+                    shape:
+                        RoundedRectangleBorder(
+                      borderRadius:
+                          BorderRadius.circular(
+                              18),
+                    ),
+                  ),
+                  child: const Row(
+                    mainAxisAlignment:
+                        MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        "Complete Profile",
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 17,
+                          fontWeight:
+                              FontWeight.bold,
+                        ),
+                      ),
+                      SizedBox(width: 8),
+                      Icon(
+                        Icons.arrow_forward,
+                        color: Colors.white,
+                      ),
+                    ],
                   ),
                 ),
+              ),
+
+              const SizedBox(height: 12),
+
+              TextButton(
+                onPressed: () {
+                  Navigator.pop(context);
+
+                  Navigator.pushReplacement(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) =>
+                          const HomePage(),
+                    ),
+                  );
+                },
+                child: const Text(
+                  "Skip For Now",
+                  style: TextStyle(
+                    color: Color(0xFF6B7280),
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    },
+  );
+}
+ @override
+Widget build(BuildContext context) {
+  return Scaffold(
+    backgroundColor: const Color(0xFFF8F9FC),
+    body: Stack(
+      children: [
+        Container(
+          height: 320,
+          decoration: const BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [
+                Color(0xFF6A1B9A),
+                Color(0xFFAD1457),
               ],
+            ),
+            borderRadius: BorderRadius.only(
+              bottomLeft: Radius.circular(40),
+              bottomRight: Radius.circular(40),
+            ),
+          ),
+        ),
+
+        SafeArea(
+          child: _isLoading
+              ? const Center(
+                  child: CircularProgressIndicator(
+                    color: Color(0xFFAD1457),
+                  ),
+                )
+              : SingleChildScrollView(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 24,
+                    vertical: 12,
+                  ),
+                  child: Column(
+                    crossAxisAlignment:
+                        CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          IconButton(
+                            onPressed: () {
+                              Navigator.pop(context);
+                            },
+                            icon: const Icon(
+                              Icons.arrow_back_ios_new_rounded,
+                              color: Colors.white,
+                            ),
+                          ),
+                        ],
+                      ),
+
+                      const SizedBox(height: 10),
+
+                      const Text(
+                        "Welcome 👋",
+                        style: TextStyle(
+                          color: Colors.white70,
+                          fontSize: 18,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+
+                      const SizedBox(height: 6),
+
+                      const Text(
+                        "Create Your Profile",
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 34,
+                          fontWeight: FontWeight.w800,
+                        ),
+                      ),
+
+                      const SizedBox(height: 12),
+
+                      const Text(
+                        "Let's get you set up so we can find your perfect flatmate match.",
+                        style: TextStyle(
+                          color: Colors.white70,
+                          fontSize: 15,
+                          height: 1.5,
+                        ),
+                      ),
+
+                      const SizedBox(height: 24),
+
+                      Container(
+                        padding: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          color: Colors.white.withOpacity(.15),
+                          borderRadius:
+                              BorderRadius.circular(18),
+                        ),
+                        child: Column(
+                          crossAxisAlignment:
+                              CrossAxisAlignment.start,
+                          children: [
+                            const Row(
+                              children: [
+                                Icon(
+                                  Icons.auto_graph,
+                                  color: Colors.white,
+                                  size: 18,
+                                ),
+                                SizedBox(width: 8),
+                                Text(
+                                  "Profile Completion",
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontWeight:
+                                        FontWeight.w600,
+                                  ),
+                                ),
+                              ],
+                            ),
+
+                            const SizedBox(height: 12),
+
+                            ClipRRect(
+                              borderRadius:
+                                  BorderRadius.circular(
+                                      20),
+                              child:
+                                  LinearProgressIndicator(
+                                value: 0.25,
+                                minHeight: 8,
+                                backgroundColor:
+                                    Colors.white24,
+                                valueColor:
+                                    const AlwaysStoppedAnimation(
+                                  Colors.white,
+                                ),
+                              ),
+                            ),
+
+                            const SizedBox(height: 8),
+
+                            const Text(
+                              "25% Complete",
+                              style: TextStyle(
+                                color: Colors.white,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+
+                      const SizedBox(height: 30),
+
+                      Container(
+                        padding:
+                            const EdgeInsets.all(24),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius:
+                              BorderRadius.circular(
+                                  28),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black
+                                  .withOpacity(.08),
+                              blurRadius: 30,
+                              offset:
+                                  const Offset(0, 10),
+                            ),
+                          ],
+                        ),
+                        child: Form(
+                          key: _formKey,
+                          child: Column(
+                            children: [
+                              _buildProfileImagePicker(),
+
+                              const SizedBox(height: 24),
+
+                              _buildTextFormField(
+                                controller:
+                                    _nameController,
+                                label: 'Full Name',
+                                icon: Icons.person,
+                                validator:
+                                    (value) {
+                                  if (value ==
+                                          null ||
+                                      value
+                                          .isEmpty) {
+                                    return 'Please enter your name';
+                                  }
+                                  return null;
+                                },
+                              ),
+
+                              const SizedBox(
+                                  height: 18),
+
+                              _buildTextFormField(
+                                controller:
+                                    _ageController,
+                                label: 'Age',
+                                icon: Icons.cake,
+                                keyboardType:
+                                    TextInputType
+                                        .number,
+                                validator:
+                                    (value) {
+                                  if (value ==
+                                          null ||
+                                      value
+                                          .isEmpty) {
+                                    return 'Please enter your age';
+                                  }
+
+                                  if (int.tryParse(
+                                          value) ==
+                                      null) {
+                                    return 'Enter valid age';
+                                  }
+
+                                  return null;
+                                },
+                              ),
+
+                              const SizedBox(
+                                  height: 18),
+
+                              _buildGenderDropdown(),
+
+                              const SizedBox(
+                                  height: 18),
+
+                              _buildTextFormField(
+                                controller:
+                                    _cityController,
+                                label: 'Location',
+                                icon: Icons
+                                    .location_on,
+                                validator:
+                                    (value) {
+                                  if (value ==
+                                          null ||
+                                      value
+                                          .isEmpty) {
+                                    return 'Please enter your city';
+                                  }
+                                  return null;
+                                },
+                              ),
+
+                              const SizedBox(
+                                  height: 28),
+
+                              Container(
+                                padding:
+                                    const EdgeInsets
+                                        .all(16),
+                                decoration:
+                                    BoxDecoration(
+                                  color: const Color(
+                                          0xFF6A1B9A)
+                                      .withOpacity(
+                                          .06),
+                                  borderRadius:
+                                      BorderRadius
+                                          .circular(
+                                              16),
+                                ),
+                                child: const Column(
+                                  children: [
+                                    Row(
+                                      children: [
+                                        Icon(
+                                          Icons
+                                              .check_circle,
+                                          color: Colors
+                                              .green,
+                                        ),
+                                        SizedBox(
+                                            width:
+                                                10),
+                                        Expanded(
+                                          child:
+                                              Text(
+                                            "Get better flatmate matches",
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                    SizedBox(
+                                        height:
+                                            10),
+                                    Row(
+                                      children: [
+                                        Icon(
+                                          Icons
+                                              .check_circle,
+                                          color: Colors
+                                              .green,
+                                        ),
+                                        SizedBox(
+                                            width:
+                                                10),
+                                        Expanded(
+                                          child:
+                                              Text(
+                                            "Increase profile visibility",
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                    SizedBox(
+                                        height:
+                                            10),
+                                    Row(
+                                      children: [
+                                        Icon(
+                                          Icons
+                                              .check_circle,
+                                          color: Colors
+                                              .green,
+                                        ),
+                                        SizedBox(
+                                            width:
+                                                10),
+                                        Expanded(
+                                          child:
+                                              Text(
+                                            "Connect faster with compatible people",
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ],
+                                ),
+                              ),
+
+                              const SizedBox(
+                                  height: 28),
+
+                              SizedBox(
+                                width:
+                                    double.infinity,
+                                height: 58,
+                                child:
+                                    ElevatedButton(
+                                  onPressed:
+                                      _saveInitialProfile,
+                                  style:
+                                      ElevatedButton
+                                          .styleFrom(
+                                    elevation: 0,
+                                    backgroundColor:
+                                        const Color(
+                                      0xFFAD1457,
+                                    ),
+                                    shape:
+                                        RoundedRectangleBorder(
+                                      borderRadius:
+                                          BorderRadius.circular(
+                                              18),
+                                    ),
+                                  ),
+                                  child:
+                                      const Row(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment
+                                            .center,
+                                    children: [
+                                      Text(
+                                        "Continue",
+                                        style:
+                                            TextStyle(
+                                          color:
+                                              Colors.white,
+                                          fontSize:
+                                              18,
+                                          fontWeight:
+                                              FontWeight.bold,
+                                        ),
+                                      ),
+                                      SizedBox(
+                                          width:
+                                              8),
+                                      Icon(
+                                        Icons
+                                            .arrow_forward_rounded,
+                                        color:
+                                            Colors.white,
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+
+                      const SizedBox(height: 30),
+                    ],
+                  ),
+                ),
+        ),
+      ],
+    ),
+  );
+}
+
+  Widget _buildProfileImagePicker() {
+  return Column(
+    children: [
+      Stack(
+        clipBehavior: Clip.none,
+        children: [
+          GestureDetector(
+            onTap: _pickImage,
+            child: Container(
+              height: 130,
+              width: 130,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                gradient: const LinearGradient(
+                  colors: [
+                    Color(0xFF6A1B9A),
+                    Color(0xFFAD1457),
+                  ],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: const Color(0xFFAD1457)
+                        .withOpacity(.25),
+                    blurRadius: 20,
+                    offset: const Offset(0, 10),
+                  ),
+                ],
+              ),
+              padding: const EdgeInsets.all(4),
+              child: Container(
+                decoration: const BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: Colors.white,
+                ),
+                child: ClipOval(
+                  child: _profileImageFile != null
+                      ? Image.file(
+                          _profileImageFile!,
+                          fit: BoxFit.cover,
+                          width: double.infinity,
+                          height: double.infinity,
+                        )
+                      : Container(
+                          color: const Color(0xFFF8F9FC),
+                          child: const Icon(
+                            Icons.person,
+                            size: 70,
+                            color: Color(0xFFBDBDBD),
+                          ),
+                        ),
+                ),
+              ),
+            ),
+          ),
+
+          Positioned(
+            bottom: 4,
+            right: -4,
+            child: GestureDetector(
+              onTap: _pickImage,
+              child: Container(
+                height: 42,
+                width: 42,
+                decoration: BoxDecoration(
+                  gradient: const LinearGradient(
+                    colors: [
+                      Color(0xFF6A1B9A),
+                      Color(0xFFAD1457),
+                    ],
+                  ),
+                  shape: BoxShape.circle,
+                  border: Border.all(
+                    color: Colors.white,
+                    width: 3,
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(.15),
+                      blurRadius: 10,
+                    ),
+                  ],
+                ),
+                child: const Icon(
+                  Icons.camera_alt_rounded,
+                  color: Colors.white,
+                  size: 20,
+                ),
+              ),
             ),
           ),
         ],
       ),
-    );
-  }
 
-  Widget _buildProfileImagePicker() {
-    return Center(
-      child: GestureDetector(
-        onTap: _pickImage,
-        child: Container(
-          width: 120,
-          height: 120,
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            color: Colors.grey[200],
-            border: Border.all(color: Colors.deepPurple.shade200, width: 3),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withOpacity(0.1),
-                spreadRadius: 1,
-                blurRadius: 5,
-                offset: const Offset(0, 3),
-              ),
+      const SizedBox(height: 14),
+
+      const Text(
+        "Upload Profile Photo",
+        style: TextStyle(
+          fontSize: 17,
+          fontWeight: FontWeight.w700,
+        ),
+      ),
+
+      const SizedBox(height: 4),
+
+      Text(
+        "Profiles with photos get more matches",
+        style: TextStyle(
+          fontSize: 13,
+          color: Colors.grey.shade600,
+        ),
+      ),
+    ],
+  );
+}
+
+ Widget _buildTextFormField({
+  required TextEditingController controller,
+  required String label,
+  required IconData icon,
+  required String? Function(String?) validator,
+  TextInputType keyboardType = TextInputType.text,
+}) {
+  return TextFormField(
+    controller: controller,
+    keyboardType: keyboardType,
+    validator: validator,
+    style: const TextStyle(
+      fontSize: 16,
+      fontWeight: FontWeight.w500,
+      color: Color(0xFF1F2937),
+    ),
+    decoration: InputDecoration(
+      hintText: label,
+      hintStyle: TextStyle(
+        color: Colors.grey.shade500,
+        fontSize: 15,
+      ),
+
+      prefixIcon: Container(
+        margin: const EdgeInsets.all(10),
+        decoration: BoxDecoration(
+          gradient: const LinearGradient(
+            colors: [
+              Color(0xFF6A1B9A),
+              Color(0xFFAD1457),
             ],
           ),
-          child: _profileImageFile != null
-              ? ClipOval(
-            child: Image.file(
-              _profileImageFile!,
-              fit: BoxFit.cover,
-              width: 120,
-              height: 120,
-            ),
-          )
-              : Icon(
-            Icons.camera_alt,
-            size: 50,
-            color: Colors.deepPurple[400],
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Icon(
+          icon,
+          color: Colors.white,
+          size: 20,
+        ),
+      ),
+
+      filled: true,
+      fillColor: const Color(0xFFF8F9FC),
+
+      contentPadding: const EdgeInsets.symmetric(
+        horizontal: 20,
+        vertical: 20,
+      ),
+
+      border: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(18),
+        borderSide: BorderSide.none,
+      ),
+
+      enabledBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(18),
+        borderSide: BorderSide(
+          color: Colors.grey.shade200,
+          width: 1.5,
+        ),
+      ),
+
+      focusedBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(18),
+        borderSide: const BorderSide(
+          color: Color(0xFFAD1457),
+          width: 2,
+        ),
+      ),
+
+      errorBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(18),
+        borderSide: const BorderSide(
+          color: Colors.red,
+          width: 2,
+        ),
+      ),
+
+      focusedErrorBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(18),
+        borderSide: const BorderSide(
+          color: Colors.red,
+          width: 2,
+        ),
+      ),
+    ),
+  );
+}
+
+  Widget _buildGenderDropdown() {
+  final genders = ['Male', 'Female', 'Other'];
+
+  return Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      const Padding(
+        padding: EdgeInsets.only(left: 4),
+        child: Text(
+          'Gender',
+          style: TextStyle(
+            fontSize: 15,
+            fontWeight: FontWeight.w600,
+            color: Color(0xFF374151),
           ),
         ),
       ),
-    );
-  }
 
-  Widget _buildTextFormField({
-    required TextEditingController controller,
-    required String label,
-    required IconData icon,
-    required String? Function(String?) validator,
-    TextInputType keyboardType = TextInputType.text,
-  }) {
-    return TextFormField(
-      controller: controller,
-      decoration: InputDecoration(
-        labelText: label,
-        prefixIcon: Icon(icon, color: Colors.deepPurple[300]),
-        labelStyle: TextStyle(color: Colors.grey[700]),
-        filled: true,
-        fillColor: Colors.grey[50],
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide.none,
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: Colors.deepPurple, width: 2),
-        ),
-        errorBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: Colors.red, width: 2),
-        ),
-      ),
-      keyboardType: keyboardType,
-      validator: validator,
-    );
-  }
+      const SizedBox(height: 12),
 
-  Widget _buildGenderDropdown() {
-    return DropdownButtonFormField<String>(
-      value: _selectedGender,
-      decoration: InputDecoration(
-        labelText: 'Gender',
-        prefixIcon: Icon(Icons.transgender, color: Colors.deepPurple[300]),
-        labelStyle: TextStyle(color: Colors.grey[700]),
-        filled: true,
-        fillColor: Colors.grey[50],
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide.none,
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: Colors.deepPurple, width: 2),
-        ),
-        errorBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: Colors.red, width: 2),
-        ),
+      Wrap(
+        spacing: 12,
+        runSpacing: 12,
+        children: genders.map((gender) {
+          final isSelected =
+              _selectedGender == gender;
+
+          return GestureDetector(
+            onTap: () {
+              setState(() {
+                _selectedGender = gender;
+              });
+            },
+            child: AnimatedContainer(
+              duration:
+                  const Duration(milliseconds: 250),
+              padding: const EdgeInsets.symmetric(
+                horizontal: 20,
+                vertical: 14,
+              ),
+              decoration: BoxDecoration(
+                gradient: isSelected
+                    ? const LinearGradient(
+                        colors: [
+                          Color(0xFF6A1B9A),
+                          Color(0xFFAD1457),
+                        ],
+                      )
+                    : null,
+                color: isSelected
+                    ? null
+                    : const Color(0xFFF8F9FC),
+                borderRadius:
+                    BorderRadius.circular(16),
+                border: Border.all(
+                  color: isSelected
+                      ? Colors.transparent
+                      : Colors.grey.shade300,
+                ),
+                boxShadow: isSelected
+                    ? [
+                        BoxShadow(
+                          color: const Color(
+                            0xFFAD1457,
+                          ).withOpacity(.25),
+                          blurRadius: 12,
+                          offset:
+                              const Offset(0, 4),
+                        ),
+                      ]
+                    : [],
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(
+                    gender == 'Male'
+                        ? Icons.male_rounded
+                        : gender == 'Female'
+                            ? Icons.female_rounded
+                            : Icons.transgender_rounded,
+                    size: 18,
+                    color: isSelected
+                        ? Colors.white
+                        : Colors.grey.shade700,
+                  ),
+
+                  const SizedBox(width: 8),
+
+                  Text(
+                    gender,
+                    style: TextStyle(
+                      fontWeight:
+                          FontWeight.w600,
+                      color: isSelected
+                          ? Colors.white
+                          : Colors.black87,
+                    ),
+                  ),
+
+                  if (isSelected) ...[
+                    const SizedBox(width: 8),
+                    const Icon(
+                      Icons.check_circle,
+                      size: 18,
+                      color: Colors.white,
+                    ),
+                  ],
+                ],
+              ),
+            ),
+          );
+        }).toList(),
       ),
-      items: <String>['Male', 'Female', 'Other']
-          .map<DropdownMenuItem<String>>((String value) {
-        return DropdownMenuItem<String>(
-          value: value,
-          child: Text(value),
-        );
-      }).toList(),
-      onChanged: (String? newValue) {
-        setState(() {
-          _selectedGender = newValue!;
-        });
-      },
-      validator: (value) {
-        if (value == null || value.isEmpty) {
-          return 'Please select your gender';
-        }
-        return null;
-      },
-    );
-  }
+    ],
+  );
+}
 }
