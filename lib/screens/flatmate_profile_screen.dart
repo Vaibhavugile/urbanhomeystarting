@@ -1,5 +1,7 @@
 // lib/screens/flatmate_profile_screen.dart
 import 'package:flutter/material.dart';
+import 'dart:io';
+import 'package:image_picker/image_picker.dart';
 import 'package:flutter/services.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -7,6 +9,7 @@ import 'package:intl/intl.dart';
 import 'package:mytennat/screens/home_page.dart';
 import 'package:mytennat/data/location_data.dart'; // Adjust path as needed
 import 'package:mytennat/data/user_profile.dart'; // Or the correct path to your UserProfile class
+import 'package:firebase_storage/firebase_storage.dart';
 // Data model to hold all the answers for the user listing a flat
 class FlatListingProfile {
   String documentId; // Added: To store the Firestore document ID
@@ -103,8 +106,8 @@ roomType: data['roomType'] ?? '',
 furnishedStatus: data['furnishedStatus'] ?? '',
 availableFor: data['availableFor'] ?? '',
 currentOccupants: data['currentOccupants'] ?? '',
-leaseDurationMonths:
-    data['leaseDurationMonths'],
+leaseDuration:
+    data['leaseDuration'],
 availabilityDate: data['availabilityDate'] is Timestamp
     ? (data['availabilityDate'] as Timestamp).toDate()
     : null,
@@ -151,8 +154,8 @@ flatDescription: data['flatDescription'] ?? '',
       'roomType': roomType,
       'furnishedStatus': furnishedStatus,
       'availableFor': availableFor,
-      'leaseDurationMonths':
-    leaseDurationMonths,
+      'leaseDuration':
+    leaseDuration,
       'availabilityDate': availabilityDate != null ? Timestamp.fromDate(availabilityDate!) : null,
       'amenities': amenities,
       'currentOccupants': currentOccupants,
@@ -798,6 +801,10 @@ class _FlatmateProfileScreenState extends State<FlatmateProfileScreen> {
   final PageController _pageController = PageController();
   final String? currentUserUid = FirebaseAuth.instance.currentUser?.uid;
   late final FlatListingProfile _flatListingProfile;
+  final ImagePicker _picker = ImagePicker();
+
+List<File> _selectedFlatImages = [];
+bool _isUploadingImages = false;
   int _currentPage = 0;
   bool _isSubmitting = false; // Added for loading indicator
 
@@ -1028,8 +1035,194 @@ class _FlatmateProfileScreenState extends State<FlatmateProfileScreen> {
     super.dispose();
   }
 
+Future<void> _pickFlatImages() async {
+  try {
+    final List<XFile> images =
+        await _picker.pickMultiImage(
+      imageQuality: 80,
+    );
+
+    if (images.isNotEmpty) {
+      setState(() {
+        _selectedFlatImages.addAll(
+          images.map(
+            (e) => File(e.path),
+          ),
+        );
+      });
+    }
+  } catch (e) {
+    debugPrint(
+      'Error selecting images: $e',
+    );
+  }
+}
+void _removeFlatImage(int index) {
+  setState(() {
+    _selectedFlatImages.removeAt(index);
+  });
+}
+Future<List<String>> _uploadFlatImages() async {
+  List<String> uploadedUrls = [];
+
+  try {
+    for (File image in _selectedFlatImages) {
+      final fileName =
+          '${DateTime.now().millisecondsSinceEpoch}_${image.path.split('/').last}';
+
+      final storageRef = FirebaseStorage.instance
+          .ref()
+          .child('flat_images')
+          .child(fileName);
+
+      await storageRef.putFile(image);
+
+      final downloadUrl =
+          await storageRef.getDownloadURL();
+
+      uploadedUrls.add(downloadUrl);
+    }
+
+    return uploadedUrls;
+  } catch (e) {
+    debugPrint(
+      'Image Upload Error: $e',
+    );
+
+    return [];
+  }
+}
   // --- Common Question Builders ---
 
+Widget _buildFlatImagesQuestion() {
+  return Padding(
+    padding: const EdgeInsets.all(24),
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text(
+          "Add Flat Photos",
+          style: TextStyle(
+            fontSize: 30,
+            fontWeight: FontWeight.w800,
+          ),
+        ),
+
+        const SizedBox(height: 10),
+
+        Text(
+          "Listings with photos receive significantly more interest from potential tenants.",
+          style: TextStyle(
+            fontSize: 16,
+            color: Colors.grey.shade600,
+          ),
+        ),
+
+        const SizedBox(height: 30),
+
+        GestureDetector(
+          onTap: _pickFlatImages,
+          child: Container(
+            height: 180,
+            width: double.infinity,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(24),
+              border: Border.all(
+                color: const Color(0xFF6A1B9A),
+                width: 2,
+              ),
+              color: const Color(0xFFF8F4FF),
+            ),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: const [
+                Icon(
+                  Icons.add_photo_alternate_rounded,
+                  size: 60,
+                  color: Color(0xFF6A1B9A),
+                ),
+
+                SizedBox(height: 12),
+
+                Text(
+                  "Upload Flat Photos",
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+
+                SizedBox(height: 6),
+
+                Text(
+                  "Tap to select multiple photos",
+                  style: TextStyle(
+                    color: Colors.grey,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+
+        const SizedBox(height: 24),
+
+        if (_selectedFlatImages.isNotEmpty)
+          Expanded(
+            child: GridView.builder(
+              itemCount: _selectedFlatImages.length,
+              gridDelegate:
+                  const SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 2,
+                crossAxisSpacing: 12,
+                mainAxisSpacing: 12,
+              ),
+              itemBuilder: (context, index) {
+                return Stack(
+                  children: [
+                    ClipRRect(
+                      borderRadius:
+                          BorderRadius.circular(18),
+                      child: Image.file(
+                        _selectedFlatImages[index],
+                        fit: BoxFit.cover,
+                        width: double.infinity,
+                        height: double.infinity,
+                      ),
+                    ),
+
+                    Positioned(
+                      top: 8,
+                      right: 8,
+                      child: GestureDetector(
+                        onTap: () {
+                          _removeFlatImage(index);
+                        },
+                        child: Container(
+                          padding:
+                              const EdgeInsets.all(6),
+                          decoration:
+                              const BoxDecoration(
+                            color: Colors.red,
+                            shape: BoxShape.circle,
+                          ),
+                          child: const Icon(
+                            Icons.close,
+                            size: 18,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                );
+              },
+            ),
+          ),
+      ],
+    ),
+  );
+}
 Widget _buildTextQuestion({
   required String title,
   required String subtitle,
@@ -2108,6 +2301,7 @@ SingleChoiceQuestionWidget(
   },
   initialValue: _flatListingProfile.leaseDuration,
 ),
+_buildFlatImagesQuestion(),
 
 
       // Page 23: Available For
@@ -2501,7 +2695,20 @@ SingleChoiceQuestionWidget(
         petTolerance: mainUserData['habits']?['petTolerance'] ?? '',
         guestsFrequency: mainUserData['habits']?['guestsFrequency'] ?? '',
       );
+setState(() {
+  _isUploadingImages = true;
+});
 
+List<String> uploadedImageUrls = [];
+
+if (_selectedFlatImages.isNotEmpty) {
+  uploadedImageUrls =
+      await _uploadFlatImages();
+}
+
+setState(() {
+  _isUploadingImages = false;
+});
       // 3. Create the FlatListingProfile object, combining the fetched userProfile
       // with the flat listing-specific data from the controllers
       final FlatListingProfile flatListingProfile = FlatListingProfile(
@@ -2514,6 +2721,12 @@ SingleChoiceQuestionWidget(
         flatDescription: _flatDescriptionController.text,
         flatType: _flatListingProfile.flatType,
         roomType: _flatListingProfile.roomType,
+        flatimageUrls: uploadedImageUrls,
+        currentOccupants:
+    _flatListingProfile.currentOccupants,
+
+leaseDuration:
+    _flatListingProfile.leaseDuration,
         bathroomType: _flatListingProfile.bathroomType,
         furnishedStatus: _flatListingProfile.furnishedStatus,
         availableFor: _flatListingProfile.availableFor,
