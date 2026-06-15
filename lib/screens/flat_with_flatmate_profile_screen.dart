@@ -7,6 +7,8 @@ import 'package:mytennat/screens/home_page.dart';
 import 'package:intl/intl.dart'; // For date formatting
 import 'package:mytennat/data/location_data.dart'; // Adjust path as needed
 import 'package:mytennat/data/user_profile.dart'; // Or the correct path to your UserProfile class
+import 'package:mytennat/widgets/location_selector_widget.dart';
+import '../constants/google_keys.dart';
 
 // Data model to hold all the answers for the user seeking a flat
 class SeekingFlatmateProfile {
@@ -36,7 +38,12 @@ class SeekingFlatmateProfile {
 
   // Added: List of image URLs for the profile
   List<String>? imageUrls;
+String city;
+String locationName;
+String placeId;
 
+double? latitude;
+double? longitude;
   SeekingFlatmateProfile({
     this.documentId = '',
     this.uid,
@@ -51,6 +58,11 @@ class SeekingFlatmateProfile {
     this.preferredFlatmateGender = '',
     this.preferredFlatmateAge = '',
     this.preferredOccupation = '',
+    this.city = '',
+this.locationName = '',
+this.placeId = '',
+this.latitude,
+this.longitude,
     List<String>? preferredHabits,
     List<String>? idealQualities,
     List<String>? dealBreakers,
@@ -101,6 +113,21 @@ class SeekingFlatmateProfile {
       idealQualities: List<String>.from(flatmatePreferencesData['idealQualities'] as List? ?? []),
       dealBreakers: List<String>.from(flatmatePreferencesData['dealBreakers'] as List? ?? []),
       imageUrls: (data['imageUrls'] as List<dynamic>?)?.map((e) => e.toString()).toList(),
+      city: data['city'] ?? '',
+
+locationName:
+    data['locationName'] ?? '',
+
+placeId:
+    data['placeId'] ?? '',
+
+latitude:
+    (data['latitude'] as num?)
+        ?.toDouble(),
+
+longitude:
+    (data['longitude'] as num?)
+        ?.toDouble(),
     );
   }
 
@@ -113,6 +140,15 @@ class SeekingFlatmateProfile {
       'moveInDate': moveInDate != null ? Timestamp.fromDate(moveInDate!) : null,
       'budgetMin': budgetMin,
       'budgetMax': budgetMax,
+      'city': city,
+
+'locationName': locationName,
+
+'placeId': placeId,
+
+'latitude': latitude,
+
+'longitude': longitude,
       'flatRequirements': {
         'preferredFlatType': preferredFlatType,
         'preferredRoomType': preferredRoomType,
@@ -1964,7 +2000,31 @@ Widget _buildTextQuestion({
       //   areas: maharashtraLocations[_seekingFlatmateProfile.desiredCity] ?? [], // Dynamically load areas
       //   selectedCity: _seekingFlatmateProfile.desiredCity, // Pass selected city to enable/disable
       // ),
+LocationSelectorWidget(
+  googleApiKey:'AIzaSyBK82kg-QdV1TdTrOoC3-jvbSstRhz1wZ0',
 
+  initialCity: _seekingFlatmateProfile.city,
+  initialAddress: _seekingFlatmateProfile.locationName,
+
+  onLocationSelected: (location) {
+    setState(() {
+      _seekingFlatmateProfile.city =
+          location.city ?? '';
+
+      _seekingFlatmateProfile.locationName =
+          location.address ?? '';
+
+      _seekingFlatmateProfile.placeId =
+          location.placeId ?? '';
+
+      _seekingFlatmateProfile.latitude =
+          location.latitude;
+
+      _seekingFlatmateProfile.longitude =
+          location.longitude;
+    });
+  },
+),
       // Page 6: Move-in Date
       _buildDateQuestion(
         title: "When are you looking to move in?",

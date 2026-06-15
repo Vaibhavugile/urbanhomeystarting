@@ -922,22 +922,22 @@ Widget _buildPremiumHeroSection(
                     size: 18,
                   ),
                   const SizedBox(width: 6),
-                  Expanded(
-                    child: Text(
-                      profile.address.isNotEmpty
-                          ? profile.address
-                          : profile.userProfile.city ??
-                              'Location not specified',
-                      maxLines: 2,
-                      overflow:
-                          TextOverflow.ellipsis,
-                      style: const TextStyle(
-                        color:
-                            Colors.white70,
-                        fontSize: 15,
-                      ),
-                    ),
-                  ),
+                  // Expanded(
+                  //   child: Text(
+                  //     profile.address.isNotEmpty
+                  //         ? profile.address
+                  //         : profile.userProfile.city ??
+                  //             'Location not specified',
+                  //     maxLines: 2,
+                  //     overflow:
+                  //         TextOverflow.ellipsis,
+                  //     style: const TextStyle(
+                  //       color:
+                  //           Colors.white70,
+                  //       fontSize: 15,
+                  //     ),
+                  //   ),
+                  // ),
                 ],
               ),
 
@@ -2103,17 +2103,17 @@ Widget build(BuildContext context) {
         _buildSection(
           title: 'About The Flat',
           children: [
-            _buildProfileField(
-              'Address',
-              profile.address,
-              icon: Icons.location_on,
-            ),
+            // _buildProfileField(
+            //   'Address',
+            //   profile.address,
+            //   icon: Icons.location_on,
+            // ),
 
-            _buildProfileField(
-              'Landmark',
-              profile.landmark,
-              icon: Icons.place,
-            ),
+            // _buildProfileField(
+            //   'Landmark',
+            //   profile.landmark,
+            //   icon: Icons.place,
+            // ),
 
             _buildProfileField(
               'Description',

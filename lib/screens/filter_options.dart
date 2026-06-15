@@ -21,7 +21,22 @@ class FilterOptions {
   int? numberOfBathrooms; // NEW: Number of bathrooms
   List<String> amenitiesDesired;
   String? availableFor; // NEW: Who the flat is available for (male, female, couple, family)
+String? placeId;
 
+double? latitude;
+double? longitude;
+
+double searchRadiusKm = 10;
+
+bool sortByNearest = true;
+
+int? minimumMatchPercentage;
+
+bool verifiedOnly = false;
+
+bool profilesWithPhotosOnly = false;
+
+bool activeWithin7Days = false;
   // SeekingFlatmate specific filters (when a lister is searching for a flatmate)
   int? budgetMin;
   int? budgetMax;
@@ -48,43 +63,104 @@ class FilterOptions {
   List<String> selectedIdealQualities;
   List<String> selectedDealBreakers;
 
+FilterOptions({
+  // ===============================
+  // LOCATION
+  // ===============================
 
-  FilterOptions({
-    this.desiredCity,
-    this.areaPreference, // NEW
-    this.moveInDate,     // NEW
-    this.availabilityDate, // NEW
-    this.ageMin,
-    this.ageMax,
-    this.gender,
-    this.rentPriceMin,
-    this.rentPriceMax,
-    this.flatType,
-    this.furnishedStatus,
-    this.numberOfBedrooms,   // NEW
-    this.numberOfBathrooms,  // NEW
-    List<String>? amenitiesDesired,
-    this.availableFor,       // NEW
-    this.budgetMin,
-    this.budgetMax,
-    this.cleanlinessLevel,   // NEW
-    this.socialHabits,       // NEW
-          // NEW
-    this.smokingHabit,       // NEW
-    this.drinkingHabit,      // NEW
-    this.foodPreference,     // NEW
-    this.petOwnership,       // NEW
-    this.petTolerance,       // NEW
-          // NEW
-       // NEW
-     // NEW
-    this.occupation,         // NEW
-    List<String>? selectedIdealQualities,
-    List<String>? selectedDealBreakers,
-  })  : amenitiesDesired = amenitiesDesired ?? [],
-        selectedIdealQualities = selectedIdealQualities ?? [],
-        selectedDealBreakers = selectedDealBreakers ?? [];
+  this.desiredCity,
+  this.areaPreference,
 
+  this.placeId,
+
+  this.latitude,
+  this.longitude,
+
+  this.searchRadiusKm = 10,
+
+  this.sortByNearest = true,
+
+  // ===============================
+  // DATES
+  // ===============================
+
+  this.moveInDate,
+  this.availabilityDate,
+
+  // ===============================
+  // BASIC FILTERS
+  // ===============================
+
+  this.ageMin,
+  this.ageMax,
+
+  this.gender,
+
+  this.occupation,
+
+  // ===============================
+  // FLAT FILTERS
+  // ===============================
+
+  this.rentPriceMin,
+  this.rentPriceMax,
+
+  this.flatType,
+
+  this.furnishedStatus,
+
+  this.numberOfBedrooms,
+  this.numberOfBathrooms,
+
+  this.availableFor,
+
+  List<String>? amenitiesDesired,
+
+  // ===============================
+  // BUDGET FILTERS
+  // ===============================
+
+  this.budgetMin,
+  this.budgetMax,
+
+  // ===============================
+  // LIFESTYLE FILTERS
+  // ===============================
+
+  this.cleanlinessLevel,
+
+  this.socialHabits,
+
+  this.smokingHabit,
+
+  this.drinkingHabit,
+
+  this.foodPreference,
+
+  this.petOwnership,
+
+  this.petTolerance,
+
+  // ===============================
+  // COMPATIBILITY FILTERS
+  // ===============================
+
+  this.minimumMatchPercentage,
+
+  this.verifiedOnly = false,
+
+  this.profilesWithPhotosOnly = false,
+
+  this.activeWithin7Days = false,
+
+  List<String>? selectedIdealQualities,
+
+  List<String>? selectedDealBreakers,
+})  : amenitiesDesired = amenitiesDesired ?? [],
+      selectedIdealQualities =
+          selectedIdealQualities ?? [],
+      selectedDealBreakers =
+          selectedDealBreakers ?? [];
   bool hasFilters() {
     return desiredCity != null ||
         areaPreference != null || // NEW

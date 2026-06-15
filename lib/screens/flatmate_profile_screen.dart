@@ -10,6 +10,8 @@ import 'package:mytennat/screens/home_page.dart';
 import 'package:mytennat/data/location_data.dart'; // Adjust path as needed
 import 'package:mytennat/data/user_profile.dart'; // Or the correct path to your UserProfile class
 import 'package:firebase_storage/firebase_storage.dart';
+import '../widgets/location_selector_widget.dart';
+import '../constants/google_keys.dart';
 // Data model to hold all the answers for the user listing a flat
 class FlatListingProfile {
   String documentId; // Added: To store the Firestore document ID
@@ -29,8 +31,15 @@ class FlatListingProfile {
   // String parkingAvailability;
   List<String> amenities;
  String? leaseDuration;
-  String address;
-  String landmark;
+  String city;
+
+String locationName;
+
+String placeId;
+
+double? latitude;
+
+double? longitude;
   String flatDescription;
 String? currentOccupants;
   // Flatmate Preferences
@@ -59,8 +68,11 @@ String? currentOccupants;
     this.bathroomType = '',
     this.leaseDuration = '',
     List<String>? amenities,
-    this.address = '',
-    this.landmark = '',
+   this.city = '',
+this.locationName = '',
+this.placeId = '',
+this.latitude,
+this.longitude,
     this.flatDescription = '',
     this.preferredGender = '',
     this.preferredAgeGroup = '',
@@ -124,9 +136,25 @@ bathroomType: data['bathroomType'] ?? '',
 
 amenities: List<String>.from(data['amenities'] ?? []),
 
-address: data['address'] ?? '',
+city: data['city'] ?? '',
 
-landmark: data['landmark'] ?? '',
+locationName:
+    data['locationName'] ?? '',
+
+placeId:
+    data['placeId'] ?? '',
+
+latitude:
+    data['latitude'] != null
+        ? (data['latitude'] as num)
+            .toDouble()
+        : null,
+
+longitude:
+    data['longitude'] != null
+        ? (data['longitude'] as num)
+            .toDouble()
+        : null,
 
 flatDescription: data['flatDescription'] ?? '',
       preferredGender: flatmatePreferences['preferredFlatmateGender'] ?? '',
@@ -159,8 +187,15 @@ flatDescription: data['flatDescription'] ?? '',
       'availabilityDate': availabilityDate != null ? Timestamp.fromDate(availabilityDate!) : null,
       'amenities': amenities,
       'currentOccupants': currentOccupants,
-      'address': address,
-      'landmark': landmark,
+      'city': city,
+
+'locationName': locationName,
+
+'placeId': placeId,
+
+'latitude': latitude,
+
+'longitude': longitude,
       'flatDescription': flatDescription,
 'imageUrls': imageUrls,
       // Flatmate preferences
@@ -190,8 +225,11 @@ flatDescription: data['flatDescription'] ?? '',
         '  depositAmount: $depositAmount,\n'
         '  bathroomType: $bathroomType,\n'
         '  amenities: $amenities,\n'
-        '  address: $address,\n'
-        '  landmark: $landmark,\n'
+       '  city: $city,\n'
+        '  locationName: $locationName,\n'
+        '  placeId: $placeId,\n'
+        '  latitude: $latitude,\n'
+        '  longitude: $longitude,\n'
         '  flatDescription: $flatDescription,\n'
         '  preferredGender: $preferredGender,\n'
         '  preferredAgeGroup: $preferredAgeGroup,\n'
@@ -233,7 +271,9 @@ class _SingleChoiceQuestionWidgetState
   @override
   void initState() {
     super.initState();
+
     _selectedOption = widget.initialValue;
+    print('Google API Key: $kGoogleMapsApiKey');
   }
 
   @override
@@ -820,8 +860,7 @@ bool _isUploadingImages = false;
   late TextEditingController _areaPreferenceController;
   late TextEditingController _rentPriceController;
   late TextEditingController _depositAmountController;
-  late TextEditingController _addressController;
-  late TextEditingController _landmarkController;
+  
   late TextEditingController _flatDescriptionController;
 
   // Define your sections - UPDATED
@@ -921,10 +960,7 @@ bool _isUploadingImages = false;
 
       case 30: // Amenities
         return _flatListingProfile.amenities.isNotEmpty; // At least one amenity selected
-      case 31: // Address
-        return _addressController.text.isNotEmpty;
-      case 32: // Landmark (optional, so always valid if we don't enforce it)
-        return true;
+     
       case 33: // Flat Description
         return _flatDescriptionController.text.isNotEmpty;
       case 34: // Preferred Flatmate Gender
@@ -965,8 +1001,6 @@ bool _isUploadingImages = false;
     // _areaPreferenceController = TextEditingController(text: _flatListingProfile.areaPreference);
     _rentPriceController = TextEditingController(text: _flatListingProfile.rentPrice?.toString() ?? '');
     _depositAmountController = TextEditingController(text: _flatListingProfile.depositAmount?.toString() ?? '');
-    _addressController = TextEditingController(text: _flatListingProfile.address);
-    _landmarkController = TextEditingController(text: _flatListingProfile.landmark);
     _flatDescriptionController = TextEditingController(text: _flatListingProfile.flatDescription);
 
 
@@ -1003,14 +1037,6 @@ bool _isUploadingImages = false;
       _flatListingProfile.depositAmount = int.tryParse(_depositAmountController.text);
       setState(() {});
     });
-    _addressController.addListener(() {
-      _flatListingProfile.address = _addressController.text;
-      setState(() {});
-    });
-    _landmarkController.addListener(() {
-      _flatListingProfile.landmark = _landmarkController.text;
-      setState(() {});
-    });
     _flatDescriptionController.addListener(() {
       _flatListingProfile.flatDescription = _flatDescriptionController.text;
       setState(() {});
@@ -1028,8 +1054,6 @@ bool _isUploadingImages = false;
     _areaPreferenceController.dispose();
     _rentPriceController.dispose();
     _depositAmountController.dispose();
-    _addressController.dispose();
-    _landmarkController.dispose();
     _flatDescriptionController.dispose();
     _pageController.dispose();
     super.dispose();
@@ -2301,6 +2325,32 @@ SingleChoiceQuestionWidget(
   },
   initialValue: _flatListingProfile.leaseDuration,
 ),
+
+LocationSelectorWidget(
+  googleApiKey:'AIzaSyBK82kg-QdV1TdTrOoC3-jvbSstRhz1wZ0',
+
+  initialCity: _flatListingProfile.city,
+  initialAddress: _flatListingProfile.locationName,
+
+  onLocationSelected: (location) {
+    setState(() {
+      _flatListingProfile.city =
+          location.city ?? '';
+
+      _flatListingProfile.locationName =
+          location.address ?? '';
+
+      _flatListingProfile.placeId =
+          location.placeId ?? '';
+
+      _flatListingProfile.latitude =
+          location.latitude;
+
+      _flatListingProfile.longitude =
+          location.longitude;
+    });
+  },
+),
 _buildFlatImagesQuestion(),
 
 
@@ -2422,22 +2472,8 @@ _buildFlatImagesQuestion(),
         initialValues: _flatListingProfile.amenities,
       ),
 
-      // Page 31: Address
-      _buildTextQuestion(
-        title: "What is the full address of the flat?",
-        subtitle: "Include Building/Society Name, Street, Locality.",
-        hintText: "Enter full address",
-        controller: _addressController,
-        maxLines: 3,
-      ),
-
-      // Page 32: Landmark
-      _buildTextQuestion(
-        title: "Add a nearby landmark (optional).",
-        subtitle: "Helps in easy navigation.",
-        hintText: "e.g., Near D-Mart, Beside XYZ Cafe",
-        controller: _landmarkController,
-      ),
+      
+    
 
       // Page 33: Flat Description
       _buildTextQuestion(
@@ -2716,8 +2752,11 @@ setState(() {
         userProfile: userProfile,
         rentPrice: int.tryParse(_rentPriceController.text),
         depositAmount: int.tryParse(_depositAmountController.text),
-        address: _addressController.text,
-        landmark: _landmarkController.text,
+       city: _flatListingProfile.city,
+locationName: _flatListingProfile.locationName,
+placeId: _flatListingProfile.placeId,
+latitude: _flatListingProfile.latitude,
+longitude: _flatListingProfile.longitude,
         flatDescription: _flatDescriptionController.text,
         flatType: _flatListingProfile.flatType,
         roomType: _flatListingProfile.roomType,
