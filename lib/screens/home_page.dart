@@ -319,7 +319,7 @@ class _HomePageState extends State<HomePage> {
     mainAxisAlignment: MainAxisAlignment.center,
     children: [
       Text(
-        'Good Afternoon 👋',
+        'Welcome Back 👋',
         style: TextStyle(
           color: Colors.white.withOpacity(.85),
           fontSize: 13,

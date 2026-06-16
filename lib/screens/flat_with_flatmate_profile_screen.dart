@@ -789,13 +789,25 @@ class _FlatWithFlatmateProfileScreenState
   late TextEditingController _bioController;
 
   // Define sections for progress tracking and navigation
-  final List<Map<String, dynamic>> _sections = [
-    {'title': 'Your Basic Info', 'startPage': 0, 'endPage': 11},      // 13 fields (Pages 0-12)
-    {'title': 'Your Habits', 'startPage': 12, 'endPage': 19},         // 8 fields (Pages 13-20)
-    {'title': 'Flat Requirements', 'startPage': 20, 'endPage': 23},   // 4 fields (Pages 21-24)
-    {'title': 'Flatmate Preferences', 'startPage': 24, 'endPage': 29},// 6 fields (Pages 25-30)
-    {'title': 'Upload Images', 'startPage': 30, 'endPage': 31},       // 1 field (Page 31)
-  ];
+final List<Map<String, dynamic>> _sections = [
+  {
+    'title': 'Location & Budget',
+    'startPage': 0,
+    'endPage': 3,
+  },
+
+  {
+    'title': 'Flat Requirements',
+    'startPage': 4,
+    'endPage': 7,
+  },
+
+  {
+    'title': 'Flatmate Preferences',
+    'startPage': 8,
+    'endPage': 13,
+  },
+];
 
   String _getCurrentSectionTitle() {
     for (var section in _sections) {
@@ -806,7 +818,23 @@ class _FlatWithFlatmateProfileScreenState
     }
     return 'Unknown Section'; // Default title if no section matches
   }
+String _getCurrentStepText() {
+  for (var section in _sections) {
+    if (_currentPage >= section['startPage'] &&
+        _currentPage <= section['endPage']) {
 
+      final currentStep =
+          _currentPage - section['startPage'] + 1;
+
+      final totalSteps =
+          section['endPage'] - section['startPage'] + 1;
+
+      return 'Step $currentStep of $totalSteps';
+    }
+  }
+
+  return '';
+}
   double _getCurrentSectionProgress() {
     for (var section in _sections) {
       if (_currentPage >= section['startPage'] &&
@@ -2488,81 +2516,285 @@ LocationSelectorWidget(
     ];
   }
 
-  void _nextPage() {
-    if (_currentPage < _pages.length - 1) {
-      _pageController.nextPage(
-        duration: const Duration(milliseconds: 300),
-        curve: Curves.easeIn,
-      );
-    } else {
-      _submitProfile();
-    }
+ void _nextPage() {
+  FocusScope.of(context).unfocus();
+
+  if (_currentPage < _pages.length - 1) {
+    _pageController.nextPage(
+      duration: const Duration(milliseconds: 300),
+      curve: Curves.easeIn,
+    );
+  } else {
+    _submitProfile();
   }
+}
 
   void _previousPage() {
-    if (_currentPage > 0) {
-      _pageController.previousPage(
-        duration: const Duration(milliseconds: 300),
-        curve: Curves.easeIn,
-      );
-    }
+  FocusScope.of(context).unfocus();
+
+  if (_currentPage > 0) {
+    _pageController.previousPage(
+      duration: const Duration(milliseconds: 300),
+      curve: Curves.easeIn,
+    );
   }
+}
 
   // --- Method to show sections bottom sheet ---
-  void _showSectionsBottomSheet() {
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: Colors.white,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
-      builder: (BuildContext context) {
-        return Column(
-          mainAxisSize: MainAxisSize.min,
+ void _showSectionsBottomSheet() {
+  showModalBottomSheet(
+    context: context,
+    backgroundColor: Colors.transparent,
+    isScrollControlled: true,
+    builder: (BuildContext context) {
+      return Container(
+        height: MediaQuery.of(context).size.height * .55,
+        decoration: const BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.vertical(
+            top: Radius.circular(32),
+          ),
+        ),
+        child: Column(
           children: [
-            Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Text(
-                'Jump to Section',
-                style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                  fontWeight: FontWeight.bold,
-                  color: Colors.black87,
-                ),
+            const SizedBox(height: 12),
+
+            // Drag Handle
+            Container(
+              width: 50,
+              height: 5,
+              decoration: BoxDecoration(
+                color: Colors.grey.shade300,
+                borderRadius: BorderRadius.circular(20),
               ),
             ),
-            const Divider(height: 1, thickness: 1, color: Colors.grey),
+
+            const SizedBox(height: 20),
+
+            // Header
+            Container(
+              padding: const EdgeInsets.symmetric(
+                horizontal: 24,
+              ),
+              child: Row(
+                children: [
+                  Container(
+                    width: 52,
+                    height: 52,
+                    decoration: BoxDecoration(
+                      borderRadius:
+                          BorderRadius.circular(16),
+                      gradient: const LinearGradient(
+                        colors: [
+                          Color(0xFF7C3AED),
+                          Color(0xFFEC4899),
+                        ],
+                      ),
+                    ),
+                    child: const Icon(
+                      Icons.dashboard_customize_rounded,
+                      color: Colors.white,
+                    ),
+                  ),
+
+                  const SizedBox(width: 16),
+
+                  const Expanded(
+                    child: Text(
+                      "Jump to Section",
+                      style: TextStyle(
+                        fontSize: 24,
+                        fontWeight: FontWeight.w800,
+                        color: Color(0xFF111827),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+
+            const SizedBox(height: 24),
+
             Expanded(
               child: ListView.builder(
-                shrinkWrap: true,
+                padding:
+                    const EdgeInsets.symmetric(
+                  horizontal: 20,
+                ),
                 itemCount: _sections.length,
                 itemBuilder: (context, index) {
                   final section = _sections[index];
-                  final bool isCurrentSection = _currentPage >= section['startPage'] && _currentPage <= section['endPage'];
-                  return ListTile(
-                    title: Text(
-                      section['title'],
-                      style: TextStyle(
-                        fontWeight: isCurrentSection ? FontWeight.bold : FontWeight.normal,
-                        color: isCurrentSection ? Colors.redAccent : Colors.black,
+
+                  final bool isCurrentSection =
+                      _currentPage >=
+                              section['startPage'] &&
+                          _currentPage <=
+                              section['endPage'];
+
+                  return GestureDetector(
+                    onTap: () {
+                      Navigator.pop(context);
+
+                      _pageController.jumpToPage(
+                        section['startPage'] as int,
+                      );
+                    },
+                    child: AnimatedContainer(
+                      duration: const Duration(
+                        milliseconds: 250,
+                      ),
+                      margin:
+                          const EdgeInsets.only(
+                        bottom: 14,
+                      ),
+                      padding:
+                          const EdgeInsets.all(18),
+                      decoration: BoxDecoration(
+                        borderRadius:
+                            BorderRadius.circular(
+                                24),
+
+                        gradient: isCurrentSection
+                            ? const LinearGradient(
+                                colors: [
+                                  Color(0xFF7C3AED),
+                                  Color(0xFF9333EA),
+                                  Color(0xFFEC4899),
+                                ],
+                              )
+                            : null,
+
+                        color: isCurrentSection
+                            ? null
+                            : Colors.white,
+
+                        border: Border.all(
+                          color: isCurrentSection
+                              ? Colors.transparent
+                              : const Color(
+                                  0xFFE5E7EB),
+                        ),
+
+                        boxShadow: [
+                          BoxShadow(
+                            color: isCurrentSection
+                                ? const Color(
+                                        0xFF7C3AED)
+                                    .withOpacity(.25)
+                                : Colors.black
+                                    .withOpacity(.05),
+                            blurRadius: 18,
+                            offset:
+                                const Offset(0, 8),
+                          ),
+                        ],
+                      ),
+                      child: Row(
+                        children: [
+                          Container(
+                            width: 42,
+                            height: 42,
+                            decoration:
+                                BoxDecoration(
+                              color:
+                                  isCurrentSection
+                                      ? Colors.white
+                                      : const Color(
+                                          0xFFF3F4F6),
+                              borderRadius:
+                                  BorderRadius
+                                      .circular(
+                                          12),
+                            ),
+                            child: Center(
+                              child: Text(
+                                "${index + 1}",
+                                style: TextStyle(
+                                  fontWeight:
+                                      FontWeight
+                                          .bold,
+                                  color:
+                                      isCurrentSection
+                                          ? const Color(
+                                              0xFF7C3AED)
+                                          : const Color(
+                                              0xFF6B7280),
+                                ),
+                              ),
+                            ),
+                          ),
+
+                          const SizedBox(width: 16),
+
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment:
+                                  CrossAxisAlignment
+                                      .start,
+                              children: [
+                                Text(
+                                  section['title'],
+                                  style:
+                                      TextStyle(
+                                    fontSize: 16,
+                                    fontWeight:
+                                        FontWeight
+                                            .w700,
+                                    color:
+                                        isCurrentSection
+                                            ? Colors
+                                                .white
+                                            : const Color(
+                                                0xFF111827),
+                                  ),
+                                ),
+
+                                const SizedBox(
+                                    height: 4),
+
+                                Text(
+                                  "Pages ${section['startPage'] + 1} - ${section['endPage'] + 1}",
+                                  style:
+                                      TextStyle(
+                                    color:
+                                        isCurrentSection
+                                            ? Colors
+                                                .white70
+                                            : const Color(
+                                                0xFF6B7280),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+
+                          if (isCurrentSection)
+                            const Icon(
+                              Icons.check_circle,
+                              color: Colors.white,
+                            )
+                          else
+                            const Icon(
+                              Icons.arrow_forward_ios,
+                              size: 16,
+                              color: Color(
+                                  0xFF7C3AED),
+                            ),
+                        ],
                       ),
                     ),
-                    trailing: isCurrentSection
-                        ? const Icon(Icons.arrow_forward_ios, color: Colors.redAccent, size: 18)
-                        : null,
-                    onTap: () {
-                      Navigator.pop(context); // Close the bottom sheet
-                      _pageController.jumpToPage(section['startPage'] as int); // Jump to the start of the selected section
-                    },
                   );
                 },
               ),
             ),
-          ],
-        );
-      },
-    );
-  }
 
+            const SizedBox(height: 20),
+          ],
+        ),
+      );
+    },
+  );
+}
   // --- Firebase Integration Method ---
   Future<void> _submitProfileToFirebase() async {
     setState(() {
@@ -2621,7 +2853,7 @@ LocationSelectorWidget(
       // and the new data from the controllers
       _seekingFlatmateProfile.userProfile = userProfile;
 
-
+_seekingFlatmateProfile.uid = user.uid;
       // 4. Convert the complete SeekingFlatmateProfile object to a map
       final Map<String, dynamic> profileData = _seekingFlatmateProfile.toMap();
 
@@ -2811,7 +3043,7 @@ Widget build(BuildContext context) {
                     const SizedBox(height: 8),
 
                     Text(
-                      "Step ${_currentPage + 1} of ${_pages.length}",
+                     _getCurrentStepText(),
                       style: TextStyle(
                         color: Colors.grey.shade600,
                         fontWeight: FontWeight.w600,
