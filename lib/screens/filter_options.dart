@@ -162,136 +162,337 @@ FilterOptions({
       selectedDealBreakers =
           selectedDealBreakers ?? [];
   bool hasFilters() {
-    return desiredCity != null ||
-        areaPreference != null || // NEW
-        moveInDate != null ||     // NEW
-        availabilityDate != null || // NEW
-        ageMin != null ||
-        ageMax != null ||
-        gender != null ||
-        rentPriceMin != null ||
-        rentPriceMax != null ||
-        flatType != null ||
-        furnishedStatus != null ||
-        numberOfBedrooms != null || // NEW
-        numberOfBathrooms != null || // NEW
-        amenitiesDesired.isNotEmpty ||
-        availableFor != null ||    // NEW
-        budgetMin != null ||
-        budgetMax != null ||
-        cleanlinessLevel != null || // NEW
-        socialHabits != null ||     // NEW
-          // NEW
-        smokingHabit != null ||     // NEW
-        drinkingHabit != null ||    // NEW
-        foodPreference != null ||   // NEW
-        petOwnership != null ||     // NEW
-        petTolerance != null ||     // NEW
+  return
 
-        occupation != null ||       // NEW
-        selectedIdealQualities.isNotEmpty ||
-        selectedDealBreakers.isNotEmpty;
-  }
+      // Location
+      desiredCity != null ||
+      areaPreference != null ||
+      placeId != null ||
+      latitude != null ||
+      longitude != null ||
+      searchRadiusKm != 10 ||
+      !sortByNearest ||
+
+      // Dates
+      moveInDate != null ||
+      availabilityDate != null ||
+
+      // Basic
+      ageMin != null ||
+      ageMax != null ||
+      gender != null ||
+      occupation != null ||
+
+      // Flat
+      rentPriceMin != null ||
+      rentPriceMax != null ||
+      flatType != null ||
+      furnishedStatus != null ||
+      numberOfBedrooms != null ||
+      numberOfBathrooms != null ||
+      availableFor != null ||
+      amenitiesDesired.isNotEmpty ||
+
+      // Budget
+      budgetMin != null ||
+      budgetMax != null ||
+
+      // Lifestyle
+      cleanlinessLevel != null ||
+      socialHabits != null ||
+      smokingHabit != null ||
+      drinkingHabit != null ||
+      foodPreference != null ||
+      petOwnership != null ||
+      petTolerance != null ||
+
+      // Compatibility
+      minimumMatchPercentage != null ||
+      verifiedOnly ||
+      profilesWithPhotosOnly ||
+      activeWithin7Days ||
+      selectedIdealQualities.isNotEmpty ||
+      selectedDealBreakers.isNotEmpty;
+}
 
   void clear() {
-    desiredCity = null;
-    areaPreference = null; // NEW
-    moveInDate = null;     // NEW
-    availabilityDate = null; // NEW
-    ageMin = null;
-    ageMax = null;
-    gender = null;
-    rentPriceMin = null;
-    rentPriceMax = null;
-    flatType = null;
-    furnishedStatus = null;
-    numberOfBedrooms = null;   // NEW
-    numberOfBathrooms = null;  // NEW
-    amenitiesDesired.clear();
-    availableFor = null;       // NEW
-    budgetMin = null;
-    budgetMax = null;
-    cleanlinessLevel = null;   // NEW
-    socialHabits = null;       // NEW
-          // NEW
-    smokingHabit = null;       // NEW
-    drinkingHabit = null;      // NEW
-    foodPreference = null;     // NEW
-    petOwnership = null;       // NEW
-    petTolerance = null;       // NEW
 
-    occupation = null;         // NEW
-    selectedIdealQualities.clear();
-    selectedDealBreakers.clear();
-  }
+  // Location
+  desiredCity = null;
+  areaPreference = null;
+
+  placeId = null;
+
+  latitude = null;
+  longitude = null;
+
+  searchRadiusKm = 10;
+
+  sortByNearest = true;
+
+  // Dates
+  moveInDate = null;
+  availabilityDate = null;
+
+  // Basic
+  ageMin = null;
+  ageMax = null;
+
+  gender = null;
+  occupation = null;
+
+  // Flat
+  rentPriceMin = null;
+  rentPriceMax = null;
+
+  flatType = null;
+  furnishedStatus = null;
+
+  numberOfBedrooms = null;
+  numberOfBathrooms = null;
+
+  availableFor = null;
+
+  amenitiesDesired.clear();
+
+  // Budget
+  budgetMin = null;
+  budgetMax = null;
+
+  // Lifestyle
+  cleanlinessLevel = null;
+  socialHabits = null;
+
+  smokingHabit = null;
+  drinkingHabit = null;
+
+  foodPreference = null;
+
+  petOwnership = null;
+  petTolerance = null;
+
+  // Compatibility
+  minimumMatchPercentage = null;
+
+  verifiedOnly = false;
+
+  profilesWithPhotosOnly = false;
+
+  activeWithin7Days = false;
+
+  selectedIdealQualities.clear();
+  selectedDealBreakers.clear();
+}
 
   FilterOptions copyWith({
-    String? desiredCity,
-    String? areaPreference, // NEW
-    DateTime? moveInDate,     // NEW
-    DateTime? availabilityDate, // NEW
-    int? ageMin,
-    int? ageMax,
-    String? gender,
-    List<String>? selectedHabits, // REMOVED from specific fields, keep if you plan to use a generic list
-    List<String>? selectedIdealQualities,
-    List<String>? selectedDealBreakers,
-    int? rentPriceMin,
-    int? rentPriceMax,
-    String? flatType,
-    String? furnishedStatus,
-    int? numberOfBedrooms,   // NEW
-    int? numberOfBathrooms,  // NEW
-    List<String>? amenitiesDesired,
-    String? availableFor,       // NEW
-    int? budgetMin,
-    int? budgetMax,
-    String? preferredFlatmateGender, // REMOVED (will use gender directly now)
-    String? preferredFlatmateAge,    // REMOVED (will use ageMin/Max)
-    String? preferredOccupation,     // REMOVED (will use occupation directly now)
-    String? cleanlinessLevel,   // NEW
-    String? socialHabits,       // NEW
-    String? noiseLevel,         // NEW
-    String? smokingHabit,       // NEW
-    String? drinkingHabit,      // NEW
-    String? foodPreference,     // NEW
-    String? petOwnership,       // NEW
-    String? petTolerance,       // NEW
-    String? workSchedule,       // NEW
-    String? sleepingSchedule,   // NEW
-    String? visitorsPolicy,     // NEW
-    String? guestsOvernightPolicy, // NEW
-    String? occupation,         // NEW
-  }) {
-    return FilterOptions(
-      desiredCity: desiredCity ?? this.desiredCity,
-      areaPreference: areaPreference ?? this.areaPreference, // NEW
-      moveInDate: moveInDate ?? this.moveInDate,           // NEW
-      availabilityDate: availabilityDate ?? this.availabilityDate, // NEW
-      ageMin: ageMin ?? this.ageMin,
-      ageMax: ageMax ?? this.ageMax,
-      gender: gender ?? this.gender,
-      selectedIdealQualities: selectedIdealQualities ?? List.from(this.selectedIdealQualities),
-      selectedDealBreakers: selectedDealBreakers ?? List.from(this.selectedDealBreakers),
-      rentPriceMin: rentPriceMin ?? this.rentPriceMin,
-      rentPriceMax: rentPriceMax ?? this.rentPriceMax,
-      flatType: flatType ?? this.flatType,
-      furnishedStatus: furnishedStatus ?? this.furnishedStatus,
-      numberOfBedrooms: numberOfBedrooms ?? this.numberOfBedrooms,   // NEW
-      numberOfBathrooms: numberOfBathrooms ?? this.numberOfBathrooms,  // NEW
-      amenitiesDesired: amenitiesDesired ?? List.from(this.amenitiesDesired),
-      availableFor: availableFor ?? this.availableFor,       // NEW
-      budgetMin: budgetMin ?? this.budgetMin,
-      budgetMax: budgetMax ?? this.budgetMax,
-      cleanlinessLevel: cleanlinessLevel ?? this.cleanlinessLevel,   // NEW
-      socialHabits: socialHabits ?? this.socialHabits,       // NEW
+  // Location
+  String? desiredCity,
+  String? areaPreference,
+  String? placeId,
 
-      smokingHabit: smokingHabit ?? this.smokingHabit,       // NEW
-      drinkingHabit: drinkingHabit ?? this.drinkingHabit,      // NEW
-      foodPreference: foodPreference ?? this.foodPreference,     // NEW
-      petOwnership: petOwnership ?? this.petOwnership,       // NEW
-      petTolerance: petTolerance ?? this.petTolerance,       // NEW
-      occupation: occupation ?? this.occupation,         // NEW
-    );
-  }
+  double? latitude,
+  double? longitude,
+
+  double? searchRadiusKm,
+
+  bool? sortByNearest,
+
+  // Dates
+  DateTime? moveInDate,
+  DateTime? availabilityDate,
+
+  // Basic
+  int? ageMin,
+  int? ageMax,
+  String? gender,
+  String? occupation,
+
+  // Flat Filters
+  int? rentPriceMin,
+  int? rentPriceMax,
+
+  String? flatType,
+  String? furnishedStatus,
+
+  int? numberOfBedrooms,
+  int? numberOfBathrooms,
+
+  String? availableFor,
+
+  List<String>? amenitiesDesired,
+
+  // Budget
+  int? budgetMin,
+  int? budgetMax,
+
+  // Lifestyle
+  String? cleanlinessLevel,
+  String? socialHabits,
+
+  String? smokingHabit,
+  String? drinkingHabit,
+
+  String? foodPreference,
+
+  String? petOwnership,
+  String? petTolerance,
+
+  // Compatibility
+  int? minimumMatchPercentage,
+
+  bool? verifiedOnly,
+  bool? profilesWithPhotosOnly,
+  bool? activeWithin7Days,
+
+  List<String>? selectedIdealQualities,
+  List<String>? selectedDealBreakers,
+}) {
+  return FilterOptions(
+
+    // Location
+    desiredCity:
+        desiredCity ?? this.desiredCity,
+
+    areaPreference:
+        areaPreference ??
+            this.areaPreference,
+
+    placeId:
+        placeId ?? this.placeId,
+
+    latitude:
+        latitude ?? this.latitude,
+
+    longitude:
+        longitude ?? this.longitude,
+
+    searchRadiusKm:
+        searchRadiusKm ??
+            this.searchRadiusKm,
+
+    sortByNearest:
+        sortByNearest ??
+            this.sortByNearest,
+
+    // Dates
+    moveInDate:
+        moveInDate ?? this.moveInDate,
+
+    availabilityDate:
+        availabilityDate ??
+            this.availabilityDate,
+
+    // Basic
+    ageMin:
+        ageMin ?? this.ageMin,
+
+    ageMax:
+        ageMax ?? this.ageMax,
+
+    gender:
+        gender ?? this.gender,
+
+    occupation:
+        occupation ?? this.occupation,
+
+    // Flat Filters
+    rentPriceMin:
+        rentPriceMin ??
+            this.rentPriceMin,
+
+    rentPriceMax:
+        rentPriceMax ??
+            this.rentPriceMax,
+
+    flatType:
+        flatType ?? this.flatType,
+
+    furnishedStatus:
+        furnishedStatus ??
+            this.furnishedStatus,
+
+    numberOfBedrooms:
+        numberOfBedrooms ??
+            this.numberOfBedrooms,
+
+    numberOfBathrooms:
+        numberOfBathrooms ??
+            this.numberOfBathrooms,
+
+    availableFor:
+        availableFor ??
+            this.availableFor,
+
+    amenitiesDesired:
+        amenitiesDesired ??
+            List.from(
+              this.amenitiesDesired,
+            ),
+
+    // Budget
+    budgetMin:
+        budgetMin ?? this.budgetMin,
+
+    budgetMax:
+        budgetMax ?? this.budgetMax,
+
+    // Lifestyle
+    cleanlinessLevel:
+        cleanlinessLevel ??
+            this.cleanlinessLevel,
+
+    socialHabits:
+        socialHabits ??
+            this.socialHabits,
+
+    smokingHabit:
+        smokingHabit ??
+            this.smokingHabit,
+
+    drinkingHabit:
+        drinkingHabit ??
+            this.drinkingHabit,
+
+    foodPreference:
+        foodPreference ??
+            this.foodPreference,
+
+    petOwnership:
+        petOwnership ??
+            this.petOwnership,
+
+    petTolerance:
+        petTolerance ??
+            this.petTolerance,
+
+    // Compatibility
+    minimumMatchPercentage:
+        minimumMatchPercentage ??
+            this.minimumMatchPercentage,
+
+    verifiedOnly:
+        verifiedOnly ??
+            this.verifiedOnly,
+
+    profilesWithPhotosOnly:
+        profilesWithPhotosOnly ??
+            this.profilesWithPhotosOnly,
+
+    activeWithin7Days:
+        activeWithin7Days ??
+            this.activeWithin7Days,
+
+    selectedIdealQualities:
+        selectedIdealQualities ??
+            List.from(
+              this.selectedIdealQualities,
+            ),
+
+    selectedDealBreakers:
+        selectedDealBreakers ??
+            List.from(
+              this.selectedDealBreakers,
+            ),
+  );
+}
 }
