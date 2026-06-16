@@ -5,6 +5,7 @@ import 'package:mytennat/data/user_profile.dart';
 import 'package:mytennat/screens/complete_user_profile_screen.dart';
 import 'package:mytennat/screens/my_listings_screen.dart';
 import 'package:mytennat/screens/view_profile_screen.dart';
+import 'package:mytennat/screens/verification_screen.dart';
 class UserScreen extends StatefulWidget {
   const UserScreen({Key? key}) : super(key: key);
 
@@ -17,7 +18,8 @@ class _UserScreenState extends State<UserScreen> {
   bool _isLoading = true;
   bool _showAdditionalData = false;
   double _completionPercentage = 0.0;
-
+String _verificationStatus = 'Not Verified';
+bool _isVerified = false;
   @override
   void initState() {
     super.initState();
@@ -36,11 +38,31 @@ class _UserScreenState extends State<UserScreen> {
     try {
       final docSnapshot = await FirebaseFirestore.instance.collection('users').doc(user.uid).get();
       if (docSnapshot.exists) {
-        setState(() {
-          _userProfile = UserProfile.fromMap(docSnapshot.data() as Map<String, dynamic>, docSnapshot.id);
-          _calculateCompletionPercentage();
-          _isLoading = false;
-        });
+       setState(() {
+  _userProfile = UserProfile.fromMap(
+    docSnapshot.data() as Map<String, dynamic>,
+    docSnapshot.id,
+  );
+
+  _isVerified =
+      docSnapshot.data()?['isVerified'] ?? false;
+
+  final status =
+      docSnapshot.data()?['verificationStatus'];
+
+  if (_isVerified) {
+    _verificationStatus = 'Verified';
+  } else if (status == 'pending') {
+    _verificationStatus = 'Pending Review';
+  } else if (status == 'rejected') {
+    _verificationStatus = 'Rejected';
+  } else {
+    _verificationStatus = 'Not Verified';
+  }
+
+  _calculateCompletionPercentage();
+  _isLoading = false;
+});
       } else {
         setState(() {
           _isLoading = false;
@@ -331,7 +353,8 @@ Widget build(BuildContext context) {
                           ),
 
                           const SizedBox(height: 20),
-
+                          _buildVerificationCard(),
+                          const SizedBox(height: 20),
                           _buildActionButton(
   label: 'Update Profile',
   icon: Icons.edit_rounded,
@@ -464,6 +487,141 @@ Widget _buildActionButton({
           ),
         ),
       ),
+    ),
+  );
+}
+Widget _buildVerificationCard() {
+  Color statusColor;
+  IconData statusIcon;
+
+  switch (_verificationStatus) {
+    case 'Verified':
+      statusColor = kOnlineColor;
+      statusIcon = Icons.verified_rounded;
+      break;
+
+    case 'Pending Review':
+      statusColor = Colors.orange;
+      statusIcon = Icons.hourglass_top_rounded;
+      break;
+
+    case 'Rejected':
+      statusColor = kErrorColor;
+      statusIcon = Icons.cancel_rounded;
+      break;
+
+    default:
+      statusColor = kPrimaryColor;
+      statusIcon =
+          Icons.verified_user_outlined;
+  }
+
+  return Container(
+    padding: const EdgeInsets.all(20),
+    decoration: BoxDecoration(
+      color: Colors.white,
+      borderRadius:
+          BorderRadius.circular(24),
+      boxShadow: [
+        BoxShadow(
+          color: Colors.black.withOpacity(.05),
+          blurRadius: 20,
+          offset: const Offset(0, 8),
+        ),
+      ],
+    ),
+    child: Column(
+      children: [
+
+        Row(
+          children: [
+
+            Container(
+              width: 52,
+              height: 52,
+              decoration: BoxDecoration(
+                color:
+                    statusColor.withOpacity(.1),
+                borderRadius:
+                    BorderRadius.circular(
+                        16),
+              ),
+              child: Icon(
+                statusIcon,
+                color: statusColor,
+              ),
+            ),
+
+            const SizedBox(width: 14),
+
+            Expanded(
+              child: Column(
+                crossAxisAlignment:
+                    CrossAxisAlignment
+                        .start,
+                children: [
+
+                  const Text(
+                    'Identity Verification',
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight:
+                          FontWeight.w700,
+                    ),
+                  ),
+
+                  const SizedBox(height: 4),
+
+                  Text(
+                    _verificationStatus,
+                    style: TextStyle(
+                      color: statusColor,
+                      fontWeight:
+                          FontWeight.w700,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+
+        const SizedBox(height: 16),
+
+        SizedBox(
+          width: double.infinity,
+          child: ElevatedButton(
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) =>
+                      const VerificationScreen(),
+                ),
+              );
+            },
+            style: ElevatedButton.styleFrom(
+  backgroundColor: kPrimaryColor,
+  foregroundColor: Colors.white,
+  shape: RoundedRectangleBorder(
+    borderRadius: BorderRadius.circular(16),
+  ),
+),
+
+child: Text(
+  _verificationStatus == 'Pending Review'
+      ? 'View Submission'
+      : _verificationStatus == 'Verified'
+          ? 'Verified'
+          : 'Start Verification',
+  style: const TextStyle(
+    fontWeight: FontWeight.w700,
+    fontSize: 15,
+  ),
+),
+          ),
+        ),
+      ],
     ),
   );
 }
