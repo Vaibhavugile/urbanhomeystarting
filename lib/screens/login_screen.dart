@@ -9,7 +9,7 @@ import 'home_page.dart';
 import 'package:flutter/foundation.dart';
 import 'package:mytennat/screens/initial_profile_screen.dart'; // Import InitialProfileScreen
 import 'package:mytennat/screens/complete_user_profile_screen.dart'; // Import CompleteUserProfileScreen
-
+import 'package:cloud_functions/cloud_functions.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -21,7 +21,6 @@ class LoginScreen extends StatefulWidget {
 class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStateMixin {
   final _phoneController = TextEditingController();
   final _otpController = TextEditingController();
-  String _verificationId = '';
   bool _isOtpSent = false;
   bool _loading = false;
   int _resendOtpTimer = 60;
@@ -84,172 +83,260 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
     });
   }
 
-  Future<void> _verifyPhoneNumber() async {
-    setState(() {
-      _loading = true;
+Future<void> _verifyPhoneNumber() async {
+  setState(() {
+    _loading = true;
+  });
+
+  try {
+    final callable = FirebaseFunctions.instance
+        .httpsCallable('sendOtp');
+
+    await callable.call({
+      'phoneNumber':
+          '+91${_phoneController.text.trim()}',
     });
 
-    try {
-      await FirebaseAuth.instance.verifyPhoneNumber(
-        phoneNumber: '+91${_phoneController.text}', // Assuming Indian numbers
-        verificationCompleted: (PhoneAuthCredential credential) async {
-          debugPrint('Phone verification completed automatically.');
-          await FirebaseAuth.instance.signInWithCredential(credential);
-          _navigateToNextScreen();
-        },
-        verificationFailed: (FirebaseAuthException e) {
-          setState(() {
-            _loading = false;
-          });
-          String errorMessage = 'Verification failed. Please try again.';
-          if (e.code == 'invalid-phone-number') {
-            errorMessage = 'The provided phone number is not valid.';
-          } else if (e.code == 'too-many-requests') {
-            errorMessage = 'Too many requests. Please try again later.';
-          }
-          debugPrint('Phone verification failed: ${e.code} - ${e.message}');
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(errorMessage)),
-          );
-        },
-        codeSent: (String verificationId, int? resendToken) {
-          setState(() {
-            _verificationId = verificationId;
-            _isOtpSent = true;
-            _loading = false;
-          });
-          _startResendTimer();
-          debugPrint('OTP code sent to phone number. Verification ID: $verificationId');
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('OTP sent to your phone!')),
-          );
-        },
-        codeAutoRetrievalTimeout: (String verificationId) {
-          setState(() {
-            _verificationId = verificationId;
-            _loading = false;
-          });
-          debugPrint('OTP auto-retrieval timed out. Verification ID: $verificationId');
-        },
-        timeout: const Duration(seconds: 60),
-      );
-    } catch (e) {
-      setState(() {
-        _loading = false;
-      });
-      debugPrint('Error verifying phone number: ${e.toString()}');
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error: ${e.toString()}')),
-      );
-    }
-  }
-
-  Future<void> _verifyOtpAndSignIn() async {
     setState(() {
-      _loading = true;
+      _isOtpSent = true;
+      _loading = false;
     });
 
-    try {
-      PhoneAuthCredential credential = PhoneAuthProvider.credential(
-        verificationId: _verificationId,
-        smsCode: _otpController.text,
-      );
-      await FirebaseAuth.instance.signInWithCredential(credential);
-      debugPrint('OTP verification successful. User signed in.');
-      _navigateToNextScreen();
-    } on FirebaseAuthException catch (e) {
-      setState(() {
-        _loading = false;
-      });
-      String errorMessage = 'Invalid OTP. Please try again.';
-      if (e.code == 'invalid-verification-code') {
-        errorMessage = 'The entered OTP is incorrect.';
-      } else if (e.code == 'session-expired') {
-        errorMessage = 'OTP session expired. Please resend OTP.';
-      }
-      debugPrint('OTP verification failed: ${e.code} - ${e.message}');
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(errorMessage)),
-      );
-    } catch (e) {
-      setState(() {
-        _loading = false;
-      });
-      debugPrint('Error verifying OTP and signing in: ${e.toString()}');
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error: ${e.toString()}')),
-      );
-    }
-  }
+    _startResendTimer();
 
-  Future<void> _navigateToNextScreen() async {
+    ScaffoldMessenger.of(context)
+        .showSnackBar(
+      const SnackBar(
+        content: Text(
+          'OTP sent on WhatsApp',
+        ),
+      ),
+    );
+  } catch (e) {
     setState(() {
       _loading = false;
     });
 
-    final user = FirebaseAuth.instance.currentUser;
-    if (user != null) {
-      final userDocRef = FirebaseFirestore.instance.collection('users').doc(user.uid);
-
-      // Get the phone number from the authenticated user
-      final String? userPhoneNumber = user.phoneNumber;
-      debugPrint('Authenticated user phone number: $userPhoneNumber');
-
-      final userProfileSnapshot = await userDocRef.get(); // Get the user's main profile document
-
-      final flatListingsSnapshot = await userDocRef.collection('flatListings').limit(1).get();
-      final bool hasFlatListingProfile = flatListingsSnapshot.docs.isNotEmpty;
-
-      final seekingFlatmateProfilesSnapshot = await userDocRef.collection('seekingFlatmateProfiles').limit(1).get();
-      final bool hasSeekingFlatmateProfile = seekingFlatmateProfilesSnapshot.docs.isNotEmpty;
-
-      if (userProfileSnapshot.exists && userProfileSnapshot.data() != null &&
-          userProfileSnapshot.data()!.containsKey('name') &&
-          userProfileSnapshot.data()!.containsKey('age') &&
-          userProfileSnapshot.data()!.containsKey('gender') &&
-          userProfileSnapshot.data()!.containsKey('city')) {
-        // User has initial profile. Check for complete profile or existing listings.
-        if (userProfileSnapshot.data()!.containsKey('occupation') &&
-            userProfileSnapshot.data()!.containsKey('religion') &&
-            userProfileSnapshot.data()!.containsKey('bio')) {
-          // User has a complete profile.
-          debugPrint('User has a complete profile. Navigating to HomePage.');
-          Navigator.of(context).pushAndRemoveUntil(
-            MaterialPageRoute(builder: (context) => const HomePage()),
-                (Route<dynamic> route) => false,
-          );
-        } else {
-          // User has initial profile but not complete.
-          debugPrint('User has initial profile but not complete. Navigating to CompleteUserProfileScreen.');
-          Navigator.of(context).pushAndRemoveUntil(
-            MaterialPageRoute(builder: (context) => const CompleteUserProfileScreen()),
-                (Route<dynamic> route) => false,
-          );
-        }
-      } else if (hasFlatListingProfile || hasSeekingFlatmateProfile) {
-        // User doesn't have a main user profile but has a flat listing or seeking flatmate profile
-        // This case might indicate an older flow or partial data. For now, we'll direct them to HomePage.
-        debugPrint('User has existing flat listing or seeking flatmate profile. Navigating to HomePage.');
-        Navigator.of(context).pushAndRemoveUntil(
-          MaterialPageRoute(builder: (context) => const HomePage()),
-              (Route<dynamic> route) => false,
-        );
-      }
-      else {
-        // New user. No existing profiles found (initial, complete, flat listing, or seeking flatmate).
-        debugPrint('New user. No existing profiles found. Navigating to InitialProfileScreen.');
-        Navigator.of(context).pushAndRemoveUntil(
-          MaterialPageRoute(builder: (context) => const InitialProfileScreen()),
-              (Route<dynamic> route) => false,
-        );
-      }
-    } else {
-      debugPrint('Authentication failed: No current user after sign-in attempt.');
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Authentication failed. Please try again.')),
-      );
-    }
+    ScaffoldMessenger.of(context)
+        .showSnackBar(
+      SnackBar(
+        content: Text(
+          'Failed to send OTP: $e',
+        ),
+      ),
+    );
   }
+}
+
+Future<void> _verifyOtpAndSignIn() async {
+  setState(() {
+    _loading = true;
+  });
+
+  try {
+    final callable =
+        FirebaseFunctions.instance
+            .httpsCallable(
+      'verifyOtp',
+    );
+
+    final result =
+        await callable.call({
+      'phoneNumber':
+          '+91${_phoneController.text.trim()}',
+      'otp':
+          _otpController.text.trim(),
+    });
+
+    final token =
+        result.data['token'];
+
+    await FirebaseAuth.instance
+        .signInWithCustomToken(
+      token,
+    );
+
+    debugPrint(
+      'Custom token login successful',
+    );
+
+    await _createOrUpdateUser();
+
+    _navigateToNextScreen();
+  } catch (e) {
+    setState(() {
+      _loading = false;
+    });
+
+    ScaffoldMessenger.of(context)
+        .showSnackBar(
+      SnackBar(
+        content: Text(
+          'Invalid OTP: $e',
+        ),
+      ),
+    );
+  }
+}
+Future<void> _createOrUpdateUser() async {
+  final user =
+      FirebaseAuth.instance.currentUser;
+
+  if (user == null) return;
+
+  await FirebaseFirestore.instance
+      .collection('users')
+      .doc(user.uid)
+      .set({
+    'uid': user.uid,
+    'phoneNumber':
+        '+91${_phoneController.text.trim()}',
+    'lastLogin':
+        FieldValue.serverTimestamp(),
+    'createdAt':
+        FieldValue.serverTimestamp(),
+  }, SetOptions(merge: true));
+}
+ Future<void> _navigateToNextScreen() async {
+  setState(() {
+    _loading = false;
+  });
+
+  final user = FirebaseAuth.instance.currentUser;
+
+  if (user == null) {
+    debugPrint(
+      'Authentication failed: No current user after sign-in attempt.',
+    );
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text(
+          'Authentication failed. Please try again.',
+        ),
+      ),
+    );
+
+    return;
+  }
+
+  final userDocRef = FirebaseFirestore.instance
+      .collection('users')
+      .doc(user.uid);
+
+  final userProfileSnapshot =
+      await userDocRef.get();
+
+  final userData =
+      userProfileSnapshot.data();
+
+  // Phone number now comes from Firestore
+  final String? userPhoneNumber =
+      userData?['phoneNumber'];
+
+  debugPrint(
+    'Authenticated user phone number: $userPhoneNumber',
+  );
+
+  final flatListingsSnapshot =
+      await userDocRef
+          .collection('flatListings')
+          .limit(1)
+          .get();
+
+  final bool hasFlatListingProfile =
+      flatListingsSnapshot.docs.isNotEmpty;
+
+  final seekingFlatmateProfilesSnapshot =
+      await userDocRef
+          .collection('seekingFlatmateProfiles')
+          .limit(1)
+          .get();
+
+  final bool hasSeekingFlatmateProfile =
+      seekingFlatmateProfilesSnapshot
+          .docs
+          .isNotEmpty;
+
+  if (userProfileSnapshot.exists &&
+      userData != null &&
+      userData.containsKey('name') &&
+      userData.containsKey('age') &&
+      userData.containsKey('gender') &&
+      userData.containsKey('city')) {
+
+    if (userData.containsKey('occupation') &&
+        userData.containsKey('religion') &&
+        userData.containsKey('bio')) {
+
+      debugPrint(
+        'User has a complete profile. Navigating to HomePage.',
+      );
+
+      Navigator.of(context)
+          .pushAndRemoveUntil(
+        MaterialPageRoute(
+          builder: (context) =>
+              const HomePage(),
+        ),
+        (Route<dynamic> route) =>
+            false,
+      );
+
+      return;
+    }
+
+    debugPrint(
+      'User has initial profile but not complete. Navigating to CompleteUserProfileScreen.',
+    );
+
+    Navigator.of(context)
+        .pushAndRemoveUntil(
+      MaterialPageRoute(
+        builder: (context) =>
+            const CompleteUserProfileScreen(),
+      ),
+      (Route<dynamic> route) =>
+          false,
+    );
+
+    return;
+  }
+
+  if (hasFlatListingProfile ||
+      hasSeekingFlatmateProfile) {
+
+    debugPrint(
+      'User has existing flat listing or seeking flatmate profile. Navigating to HomePage.',
+    );
+
+    Navigator.of(context)
+        .pushAndRemoveUntil(
+      MaterialPageRoute(
+        builder: (context) =>
+            const HomePage(),
+      ),
+      (Route<dynamic> route) =>
+          false,
+    );
+
+    return;
+  }
+
+  debugPrint(
+    'New user. No existing profiles found. Navigating to InitialProfileScreen.',
+  );
+
+  Navigator.of(context)
+      .pushAndRemoveUntil(
+    MaterialPageRoute(
+      builder: (context) =>
+          const InitialProfileScreen(),
+    ),
+    (Route<dynamic> route) =>
+        false,
+  );
+}
 
 Widget _buildMobileLoginUi(BuildContext context) {
   return Scaffold(
