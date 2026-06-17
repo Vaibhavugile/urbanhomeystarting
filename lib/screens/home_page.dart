@@ -21,7 +21,7 @@ import '../widgets/home/Community_Stats_Section.dart';
 import '../widgets/home/PopularCitiesSection.dart';
 import '../widgets/home/Success_Stories_Section.dart';
 import '../widgets/home/subscription_section.dart';
-
+import 'package:mytennat/screens/notification_screen.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -35,7 +35,8 @@ class _HomePageState extends State<HomePage> {
   String? _currentActiveProfileId;
   dynamic _activeProfileObject;
   bool _isLoadingProfileType = true;
-
+String get currentUserId =>
+    FirebaseAuth.instance.currentUser!.uid;
   String? _currentPlanName;
   int? _currentPlanContacts;
   int? _remainingContacts;
@@ -353,80 +354,152 @@ class _HomePageState extends State<HomePage> {
         ),
     ],
   ),
-  actions: [
-    if (_currentPlanName != null)
-      Container(
-        margin: const EdgeInsets.only(
-          top: 20,
-          bottom: 20,
-          right: 10,
+ actions: [
+
+  if (_currentPlanName != null)
+    Container(
+      margin: const EdgeInsets.only(
+        top: 20,
+        bottom: 20,
+        right: 10,
+      ),
+      padding: const EdgeInsets.symmetric(
+        horizontal: 12,
+        vertical: 6,
+      ),
+      decoration: BoxDecoration(
+        color: Colors.white.withOpacity(.15),
+        borderRadius: BorderRadius.circular(30),
+        border: Border.all(
+          color: Colors.white24,
         ),
-        padding: const EdgeInsets.symmetric(
-          horizontal: 12,
-          vertical: 6,
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const Icon(
+            Icons.workspace_premium_rounded,
+            color: Colors.amber,
+            size: 16,
+          ),
+
+          const SizedBox(width: 6),
+
+          Text(
+            _currentPlanName!,
+            style: const TextStyle(
+              color: Colors.white,
+              fontWeight: FontWeight.w700,
+              fontSize: 12,
+            ),
+          ),
+        ],
+      ),
+    ),
+
+  StreamBuilder<QuerySnapshot>(
+    stream: FirebaseFirestore.instance
+        .collection('users')
+        .doc(FirebaseAuth.instance.currentUser!.uid)
+        .collection('notifications')
+        .where(
+          'isRead',
+          isEqualTo: false,
+        )
+        .snapshots(),
+    builder: (context, snapshot) {
+
+      final unreadCount =
+          snapshot.data?.docs.length ?? 0;
+
+      return Padding(
+        padding: const EdgeInsets.only(
+          right: 8,
         ),
+        child: Stack(
+          children: [
+
+            IconButton(
+              icon: const Icon(
+                Icons.notifications_outlined,
+                color: Colors.white,
+                size: 28,
+              ),
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) =>
+                        const NotificationScreen(),
+                  ),
+                );
+              },
+            ),
+
+            if (unreadCount > 0)
+              Positioned(
+                right: 4,
+                top: 4,
+                child: Container(
+                  padding:
+                      const EdgeInsets.all(5),
+                  decoration:
+                      const BoxDecoration(
+                    color: Colors.red,
+                    shape: BoxShape.circle,
+                  ),
+                  child: Text(
+                    unreadCount > 99
+                        ? '99+'
+                        : unreadCount.toString(),
+                    style:
+                        const TextStyle(
+                      color: Colors.white,
+                      fontSize: 10,
+                      fontWeight:
+                          FontWeight.bold,
+                    ),
+                  ),
+                ),
+              ),
+          ],
+        ),
+      );
+    },
+  ),
+
+  Padding(
+    padding: const EdgeInsets.only(
+      right: 16,
+    ),
+    child: InkWell(
+      borderRadius: BorderRadius.circular(18),
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (_) => const UserScreen(),
+          ),
+        );
+      },
+      child: Container(
+        height: 48,
+        width: 48,
         decoration: BoxDecoration(
           color: Colors.white.withOpacity(.15),
-          borderRadius: BorderRadius.circular(30),
+          borderRadius: BorderRadius.circular(18),
           border: Border.all(
             color: Colors.white24,
           ),
         ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Icon(
-              Icons.workspace_premium_rounded,
-              color: Colors.amber,
-              size: 16,
-            ),
-
-            const SizedBox(width: 6),
-
-            Text(
-              _currentPlanName!,
-              style: const TextStyle(
-                color: Colors.white,
-                fontWeight: FontWeight.w700,
-                fontSize: 12,
-              ),
-            ),
-          ],
-        ),
-      ),
-
-    Padding(
-      padding: const EdgeInsets.only(
-        right: 16,
-      ),
-      child: InkWell(
-        borderRadius: BorderRadius.circular(18),
-        onTap: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (_) => const UserScreen(),
-            ),
-          );
-        },
-        child: Container(
-          height: 48,
-          width: 48,
-          decoration: BoxDecoration(
-            color: Colors.white.withOpacity(.15),
-            borderRadius: BorderRadius.circular(18),
-            border: Border.all(
-              color: Colors.white24,
-            ),
-          ),
-          child: const Icon(
-            Icons.person_outline_rounded,
-            color: Colors.white,
-          ),
+        child: const Icon(
+          Icons.person_outline_rounded,
+          color: Colors.white,
         ),
       ),
     ),
-  ],
+  ),
+],
 ),
       
       body: Container(

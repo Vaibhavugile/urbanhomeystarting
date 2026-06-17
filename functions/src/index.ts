@@ -255,7 +255,21 @@ onDocumentCreated(
             "high",
         },
       });
-
+    await admin
+      .firestore()
+      .collection("users")
+      .doc(receiverId)
+      .collection("notifications")
+      .add({
+        title: "New Message",
+        body: content,
+        type: "chat",
+        senderId: senderId,
+        chatId: event.params.chatId,
+        isRead: false,
+        createdAt:
+        admin.firestore.FieldValue.serverTimestamp(),
+      });
     console.log(
       "Push sent"
     );
