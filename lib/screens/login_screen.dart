@@ -10,7 +10,7 @@ import 'package:flutter/foundation.dart';
 import 'package:mytennat/screens/initial_profile_screen.dart'; // Import InitialProfileScreen
 import 'package:mytennat/screens/complete_user_profile_screen.dart'; // Import CompleteUserProfileScreen
 import 'package:cloud_functions/cloud_functions.dart';
-
+import 'package:mytennat/services/notification_service.dart';
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
 
@@ -159,6 +159,7 @@ Future<void> _verifyOtpAndSignIn() async {
     debugPrint(
       'Custom token login successful',
     );
+    await NotificationService.initialize();
 
     await _createOrUpdateUser();
 

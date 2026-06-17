@@ -1,7 +1,17 @@
 import axios from "axios";
 import * as admin from "firebase-admin";
-import {onCall, HttpsError} from "firebase-functions/v2/https";
-import {defineSecret} from "firebase-functions/params";
+
+import {
+  onCall,
+  HttpsError,
+} from "firebase-functions/v2/https";
+
+import {
+  onDocumentCreated,
+} from "firebase-functions/v2/firestore";
+
+import {defineSecret}
+  from "firebase-functions/params";
 
 const MSG91_AUTH_KEY =
   defineSecret("MSG91_AUTH_KEY");
@@ -168,6 +178,87 @@ export const verifyOtp = onCall(
       uid,
       token,
     };
+  }
+);
+export const onNewMessage =
+onDocumentCreated(
+  "chats/{chatId}/messages/{messageId}",
+  async (event) => {
+    const message =
+      event.data?.data();
+
+    if (!message) {
+      return;
+    }
+
+    const receiverId =
+      message.receiverId;
+
+    const senderId =
+      message.senderId;
+
+    const content =
+      message.content ||
+      "New Message";
+
+    console.log(
+      "New message:",
+      content
+    );
+
+    const receiverDoc =
+      await admin
+        .firestore()
+        .collection("users")
+        .doc(receiverId)
+        .get();
+
+    if (!receiverDoc.exists) {
+      console.log(
+        "Receiver not found"
+      );
+      return;
+    }
+
+    const receiverData =
+      receiverDoc.data();
+
+    const fcmToken =
+      receiverData?.fcmToken;
+
+    if (!fcmToken) {
+      console.log(
+        "No FCM token"
+      );
+      return;
+    }
+
+    await admin
+      .messaging()
+      .send({
+        token: fcmToken,
+
+        notification: {
+          title:
+            "New Message",
+          body: content,
+        },
+
+        data: {
+          type: "chat",
+          senderId:
+            senderId,
+        },
+
+        android: {
+          priority:
+            "high",
+        },
+      });
+
+    console.log(
+      "Push sent"
+    );
   }
 );
 
