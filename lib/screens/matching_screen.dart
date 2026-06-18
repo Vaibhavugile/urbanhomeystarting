@@ -273,176 +273,316 @@ class _MatchingScreenState extends State<MatchingScreen> {
       print('Error fetching outgoing likes: $e');
     }
   }
-  Future<void> _fetchFlatListingProfiles({bool applyFilters = false}) async {
-    try {
-      Query query = _firestore.collectionGroup('flatListings')
-          .where('uid', isNotEqualTo: _currentUser!.uid);
+  Future<void> _fetchFlatListingProfiles({
+  bool applyFilters = false,
+}) async {
+  try {
+    Query query = _firestore
+        .collectionGroup('flatListings')
+        .where(
+          'uid',
+          isNotEqualTo: _currentUser!.uid,
+        );
 
-      if (applyFilters && _currentUserParsedProfile is SeekingFlatmateProfile) {
-        if (_currentFilters.desiredCity != null && _currentFilters.desiredCity!.isNotEmpty) {
-          query = query.where('userProfile.city', isEqualTo: _currentFilters.desiredCity);
-        }
-        if (_currentFilters.availabilityDate != null) {
-          query = query.where('flatDetails.availabilityDate', isGreaterThanOrEqualTo: _currentFilters.availabilityDate);
-        }
-        if (_currentFilters.rentPriceMin != null) {
-          query = query.where('flatDetails.rentPrice', isGreaterThanOrEqualTo: _currentFilters.rentPriceMin);
-        }
-        if (_currentFilters.rentPriceMax != null) {
-          query = query.where('flatDetails.rentPrice', isLessThanOrEqualTo: _currentFilters.rentPriceMax);
-        }
-        if (_currentFilters.flatType != null && _currentFilters.flatType!.isNotEmpty) {
-          query = query.where('flatDetails.flatType', isEqualTo: _currentFilters.flatType);
-        }
-        if (_currentFilters.furnishedStatus != null && _currentFilters.furnishedStatus!.isNotEmpty) {
-          query = query.where('flatDetails.furnishedStatus', isEqualTo: _currentFilters.furnishedStatus);
-        }
-        if (_currentFilters.amenitiesDesired.isNotEmpty) {
-          query = query.where('flatDetails.amenities', arrayContainsAny: _currentFilters.amenitiesDesired);
-        }
-        if (_currentFilters.availableFor != null && _currentFilters.availableFor!.isNotEmpty) {
-          query = query.where('flatDetails.availableFor', isEqualTo: _currentFilters.availableFor);
-        }
-        if (_currentFilters.gender != null && _currentFilters.gender!.isNotEmpty) {
-          query = query.where('userProfile.gender', isEqualTo: _currentFilters.gender);
-        }
-        if (_currentFilters.ageMin != null) {
-          query = query.where('userProfile.age', isGreaterThanOrEqualTo: _currentFilters.ageMin);
-        }
-        if (_currentFilters.ageMax != null) {
-          query = query.where('userProfile.age', isLessThanOrEqualTo: _currentFilters.ageMax);
-        }
-        if (_currentFilters.cleanlinessLevel != null && _currentFilters.cleanlinessLevel!.isNotEmpty) {
-          query = query.where('userProfile.habits.cleanliness', isEqualTo: _currentFilters.cleanlinessLevel);
-        }
-        if (_currentFilters.socialHabits != null && _currentFilters.socialHabits!.isNotEmpty) {
-          query = query.where('userProfile.habits.socialPreferences', isEqualTo: _currentFilters.socialHabits);
-        }
-        if (_currentFilters.smokingHabit != null && _currentFilters.smokingHabit!.isNotEmpty) {
-          query = query.where('userProfile.habits.smoking', isEqualTo: _currentFilters.smokingHabit);
-        }
-        if (_currentFilters.drinkingHabit != null && _currentFilters.drinkingHabit!.isNotEmpty) {
-          query = query.where('userProfile.habits.drinking', isEqualTo: _currentFilters.drinkingHabit);
-        }
-        if (_currentFilters.foodPreference != null && _currentFilters.foodPreference!.isNotEmpty) {
-          query = query.where('userProfile.habits.food', isEqualTo: _currentFilters.foodPreference);
-        }
-        if (_currentFilters.petOwnership != null && _currentFilters.petOwnership!.isNotEmpty) {
-          query = query.where('userProfile.habits.petOwnership', isEqualTo: _currentFilters.petOwnership);
-        }
-        if (_currentFilters.petTolerance != null && _currentFilters.petTolerance!.isNotEmpty) {
-          query = query.where('userProfile.habits.petTolerance', isEqualTo: _currentFilters.petTolerance);
-        }
-        if (_currentFilters.occupation != null && _currentFilters.occupation!.isNotEmpty) {
-          query = query.where('userProfile.occupation', isEqualTo: _currentFilters.occupation);
-        }
+    if (applyFilters &&
+        _currentUserParsedProfile
+            is SeekingFlatmateProfile) {
+
+      if (_currentFilters.desiredCity != null &&
+          _currentFilters.desiredCity!
+              .isNotEmpty) {
+        query = query.where(
+          'userProfile.city',
+          isEqualTo:
+              _currentFilters.desiredCity,
+        );
       }
 
-      QuerySnapshot querySnapshot = await query.get();
+      if (_currentFilters.availabilityDate !=
+          null) {
+        query = query.where(
+          'flatDetails.availabilityDate',
+          isGreaterThanOrEqualTo:
+              _currentFilters
+                  .availabilityDate,
+        );
+      }
 
-      // Add print statement to show the number of documents fetched
-      print('Fetched ${querySnapshot.docs.length} flat listing profiles.');
+      if (_currentFilters.rentPriceMin !=
+          null) {
+        query = query.where(
+          'flatDetails.rentPrice',
+          isGreaterThanOrEqualTo:
+              _currentFilters
+                  .rentPriceMin,
+        );
+      }
 
-      List<dynamic> fetchedProfiles = querySnapshot.docs
-          .map((doc) {
-        // Add print statement to show the data of each document
-        print('Fetched flat listing profile: ${doc.data()}');
-        return FlatListingProfile.fromMap(doc.data() as Map<String, dynamic>, doc.id);
-      })
-          .toList();
+      if (_currentFilters.rentPriceMax !=
+          null) {
+        query = query.where(
+          'flatDetails.rentPrice',
+          isLessThanOrEqualTo:
+              _currentFilters
+                  .rentPriceMax,
+        );
+      }
 
-      _profiles = fetchedProfiles;
+      if (_currentFilters.flatType != null &&
+          _currentFilters.flatType!
+              .isNotEmpty) {
+        query = query.where(
+          'flatDetails.flatType',
+          isEqualTo:
+              _currentFilters.flatType,
+        );
+      }
+    }
+
+    // FETCH PROFILES
+    final QuerySnapshot querySnapshot =
+        await query.get();
+
+    // FETCH LIKED PROFILES
+    final likedSnapshot =
+        await _firestore
+            .collection('user_likes')
+            .doc(_currentUser!.uid)
+            .collection('likes')
+            .get();
+
+    final likedIds =
+        likedSnapshot.docs
+            .map(
+              (e) => e[
+                  'likedProfileDocumentId'],
+            )
+            .toSet();
+
+    debugPrint(
+      'LIKED IDS COUNT: ${likedIds.length}',
+    );
+
+    for (final id in likedIds) {
       debugPrint(
-  'TOTAL FLAT LISTINGS: ${_profiles.length}',
-);
-
-for (final p in _profiles) {
-  debugPrint(
-    'Loaded Flat Listing => ${p.documentId}',
-  );
-}
-      setState(() {});
-
-    } catch (e) {
-      _showAlertDialog('Error', 'Failed to load flat listing profiles: $e', () {});
-      print('Firebase Firestore Error: $e');
+        'ALREADY LIKED => $id',
+      );
     }
-  }
-  Future<void> _fetchSeekingFlatmateProfiles({bool applyFilters = false}) async {
-    try {
-      Query query = _firestore.collectionGroup('seekingFlatmateProfiles')
-          .where('uid', isNotEqualTo: _currentUser!.uid);
 
-      if (applyFilters && _currentUserParsedProfile is FlatListingProfile) {
-        if (_currentFilters.desiredCity != null && _currentFilters.desiredCity!.isNotEmpty) {
-          query = query.where('userProfile.city', isEqualTo: _currentFilters.desiredCity);
-        }
-        if (_currentFilters.areaPreference != null && _currentFilters.areaPreference!.isNotEmpty) {
-        }
-        if (_currentFilters.moveInDate != null) {
-          query = query.where('moveInDate', isLessThanOrEqualTo: _currentFilters.moveInDate);
-        }
-        if (_currentFilters.budgetMin != null) {
-          query = query.where('budgetMin', isGreaterThanOrEqualTo: _currentFilters.budgetMin);
-        }
-        if (_currentFilters.budgetMax != null) {
-          query = query.where('budgetMax', isLessThanOrEqualTo: _currentFilters.budgetMax);
-        }
-        if (_currentFilters.gender != null && _currentFilters.gender!.isNotEmpty) {
-          query = query.where('flatmatePreferences.preferredFlatmateGender', isEqualTo: _currentFilters.gender);
-        }
-        if (_currentFilters.ageMin != null) {
-          query = query.where('flatmatePreferences.preferredFlatmateAge', isGreaterThanOrEqualTo: _currentFilters.ageMin);
-        }
-        if (_currentFilters.ageMax != null) {
-          query = query.where('flatmatePreferences.preferredFlatmateAge', isLessThanOrEqualTo: _currentFilters.ageMax);
-        }
-        if (_currentFilters.cleanlinessLevel != null && _currentFilters.cleanlinessLevel!.isNotEmpty) {
-          query = query.where('userProfile.habits.cleanliness', isEqualTo: _currentFilters.cleanlinessLevel);
-        }
-        if (_currentFilters.socialHabits != null && _currentFilters.socialHabits!.isNotEmpty) {
-          query = query.where('userProfile.habits.socialPreferences', isEqualTo: _currentFilters.socialHabits);
-        }
-        if (_currentFilters.smokingHabit != null && _currentFilters.smokingHabit!.isNotEmpty) {
-          query = query.where('userProfile.habits.smoking', isEqualTo: _currentFilters.smokingHabit);
-        }
-        if (_currentFilters.drinkingHabit != null && _currentFilters.drinkingHabit!.isNotEmpty) {
-          query = query.where('userProfile.habits.drinking', isEqualTo: _currentFilters.drinkingHabit);
-        }
-        if (_currentFilters.foodPreference != null && _currentFilters.foodPreference!.isNotEmpty) {
-          query = query.where('userProfile.habits.food', isEqualTo: _currentFilters.foodPreference);
-        }
-        if (_currentFilters.petOwnership != null && _currentFilters.petOwnership!.isNotEmpty) {
-          query = query.where('userProfile.habits.petOwnership', isEqualTo: _currentFilters.petOwnership);
-        }
-        if (_currentFilters.petTolerance != null && _currentFilters.petTolerance!.isNotEmpty) {
-          query = query.where('userProfile.habits.petTolerance', isEqualTo: _currentFilters.petTolerance);
-        }
-        if (_currentFilters.occupation != null && _currentFilters.occupation!.isNotEmpty) {
-          query = query.where('flatmatePreferences.preferredOccupation', isEqualTo: _currentFilters.occupation);
-        }
+    debugPrint(
+      'TOTAL FROM FIRESTORE: ${querySnapshot.docs.length}',
+    );
+
+    // REMOVE ALREADY LIKED PROFILES
+    final List<dynamic>
+        fetchedProfiles =
+        querySnapshot.docs
+            .where(
+              (doc) => !likedIds.contains(
+                doc.id,
+              ),
+            )
+            .map(
+              (doc) =>
+                  FlatListingProfile
+                      .fromMap(
+                doc.data()
+                    as Map<
+                        String,
+                        dynamic>,
+                doc.id,
+              ),
+            )
+            .toList();
+
+    debugPrint(
+      'AFTER FILTERING LIKED: ${fetchedProfiles.length}',
+    );
+
+    _profiles = fetchedProfiles;
+
+    setState(() {});
+  } catch (e) {
+    debugPrint(
+      'FETCH FLAT LISTING ERROR: $e',
+    );
+
+    _showAlertDialog(
+      'Error',
+      'Failed to load flat listing profiles: $e',
+      () {},
+    );
+  }
+}
+  Future<void> _fetchSeekingFlatmateProfiles({
+  bool applyFilters = false,
+}) async {
+  try {
+    Query query = _firestore
+        .collectionGroup(
+          'seekingFlatmateProfiles',
+        )
+        .where(
+          'uid',
+          isNotEqualTo: _currentUser!.uid,
+        );
+
+    if (applyFilters &&
+        _currentUserParsedProfile
+            is FlatListingProfile) {
+
+      if (_currentFilters.desiredCity !=
+              null &&
+          _currentFilters.desiredCity!
+              .isNotEmpty) {
+        query = query.where(
+          'userProfile.city',
+          isEqualTo:
+              _currentFilters.desiredCity,
+        );
       }
 
-      QuerySnapshot querySnapshot = await query.get();
+      if (_currentFilters.moveInDate !=
+          null) {
+        query = query.where(
+          'moveInDate',
+          isLessThanOrEqualTo:
+              _currentFilters.moveInDate,
+        );
+      }
 
-      // Add print statement to show the number of documents fetched
-      print('Fetched ${querySnapshot.docs.length} seeking flatmate profiles.');
+      if (_currentFilters.budgetMin !=
+          null) {
+        query = query.where(
+          'budgetMin',
+          isGreaterThanOrEqualTo:
+              _currentFilters.budgetMin,
+        );
+      }
 
-      List<dynamic> fetchedProfiles = querySnapshot.docs
-          .map((doc) {
-        // Add print statement to show the data of each document
-        print('Fetched seeking flatmate profile: ${doc.data()}');
-        return SeekingFlatmateProfile.fromMap(doc.data() as Map<String, dynamic>, doc.id);
-      })
-          .toList();
+      if (_currentFilters.budgetMax !=
+          null) {
+        query = query.where(
+          'budgetMax',
+          isLessThanOrEqualTo:
+              _currentFilters.budgetMax,
+        );
+      }
 
-      _profiles = fetchedProfiles;
-      setState(() {});
-    } catch (e) {
-      _showAlertDialog('Error', 'Failed to load seeking flatmate profiles: $e', () {});
-      print('Firebase Firestore Error: $e');
+      if (_currentFilters.gender !=
+              null &&
+          _currentFilters.gender!
+              .isNotEmpty) {
+        query = query.where(
+          'flatmatePreferences.preferredFlatmateGender',
+          isEqualTo:
+              _currentFilters.gender,
+        );
+      }
+
+      if (_currentFilters.ageMin !=
+          null) {
+        query = query.where(
+          'flatmatePreferences.preferredFlatmateAge',
+          isGreaterThanOrEqualTo:
+              _currentFilters.ageMin,
+        );
+      }
+
+      if (_currentFilters.ageMax !=
+          null) {
+        query = query.where(
+          'flatmatePreferences.preferredFlatmateAge',
+          isLessThanOrEqualTo:
+              _currentFilters.ageMax,
+        );
+      }
+
+      if (_currentFilters.occupation !=
+              null &&
+          _currentFilters.occupation!
+              .isNotEmpty) {
+        query = query.where(
+          'flatmatePreferences.preferredOccupation',
+          isEqualTo:
+              _currentFilters.occupation,
+        );
+      }
     }
+
+    final QuerySnapshot querySnapshot =
+        await query.get();
+
+    final likedSnapshot =
+        await _firestore
+            .collection('user_likes')
+            .doc(_currentUser!.uid)
+            .collection('likes')
+            .get();
+
+    final likedIds =
+        likedSnapshot.docs
+            .map(
+              (e) => e[
+                  'likedProfileDocumentId'],
+            )
+            .toSet();
+
+    debugPrint(
+      'LIKED IDS COUNT: ${likedIds.length}',
+    );
+
+    for (final id in likedIds) {
+      debugPrint(
+        'ALREADY LIKED => $id',
+      );
+    }
+
+    debugPrint(
+      'TOTAL SEEKING FLATMATES FROM FIRESTORE: ${querySnapshot.docs.length}',
+    );
+
+    final List<dynamic>
+        fetchedProfiles =
+        querySnapshot.docs
+            .where(
+              (doc) =>
+                  !likedIds.contains(
+                doc.id,
+              ),
+            )
+            .map(
+              (doc) =>
+                  SeekingFlatmateProfile
+                      .fromMap(
+                doc.data()
+                    as Map<
+                        String,
+                        dynamic>,
+                doc.id,
+              ),
+            )
+            .toList();
+
+    debugPrint(
+      'AFTER FILTERING LIKED SEEKING FLATMATES: ${fetchedProfiles.length}',
+    );
+
+    _profiles = fetchedProfiles;
+
+    setState(() {});
+  } catch (e) {
+    debugPrint(
+      'FETCH SEEKING FLATMATE ERROR: $e',
+    );
+
+    _showAlertDialog(
+      'Error',
+      'Failed to load seeking flatmate profiles: $e',
+      () {},
+    );
   }
+}
   void _showAlertDialog(String title, String message, VoidCallback onPressed) {
     showDialog(
       context: context,
@@ -1093,127 +1233,241 @@ for (final p in _profiles) {
     );
   }
 
-// MODIFIED: Method to build the original card/swipe view
-  Widget _buildCardView() {
-    if (_profiles.isEmpty) {
-      return Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const Text(
-              'No more profiles to show.',
-              style: TextStyle(fontSize: 18, color: Colors.grey),
-              textAlign: TextAlign.center,
+Widget _buildCardView() {
+  if (_profiles.isEmpty) {
+    return Center(
+      child: Container(
+        margin: const EdgeInsets.symmetric(
+          horizontal: 24,
+        ),
+        padding: const EdgeInsets.all(28),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius:
+              BorderRadius.circular(28),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(
+                .06,
+              ),
+              blurRadius: 30,
+              offset: const Offset(0, 12),
             ),
+          ],
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              height: 90,
+              width: 90,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                gradient:
+                    const LinearGradient(
+                  colors: [
+                    Color(0xFF7C3AED),
+                    Color(0xFFEC4899),
+                  ],
+                ),
+              ),
+              child: const Icon(
+                Icons.favorite_border,
+                color: Colors.white,
+                size: 42,
+              ),
+            ),
+
             const SizedBox(height: 20),
-            ElevatedButton.icon(
-              onPressed: () {
-                _fetchUserProfile(applyFilters: true);
-              },
-              icon: const Icon(Icons.refresh),
-              label: const Text('Refresh Profiles'),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFFAD1457),
-                foregroundColor: Colors.white,
+
+            const Text(
+              'No More Profiles',
+              style: TextStyle(
+                fontSize: 22,
+                fontWeight: FontWeight.w800,
+                color: Color(0xFF111827),
+              ),
+            ),
+
+            const SizedBox(height: 8),
+
+            const Text(
+              'We could not find any more matching profiles right now.',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                color: Color(0xFF64748B),
+                height: 1.5,
+              ),
+            ),
+
+            const SizedBox(height: 24),
+
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton.icon(
+                onPressed: () {
+                  _fetchUserProfile(
+                    applyFilters: true,
+                  );
+                },
+                icon: const Icon(
+                  Icons.refresh_rounded,
+                ),
+                label: const Text(
+                  'Refresh Profiles',
+                ),
+                style:
+                    ElevatedButton.styleFrom(
+                  elevation: 0,
+                  minimumSize:
+                      const Size.fromHeight(
+                    56,
+                  ),
+                  backgroundColor:
+                      const Color(
+                    0xFF7C3AED,
+                  ),
+                  foregroundColor:
+                      Colors.white,
+                  shape:
+                      RoundedRectangleBorder(
+                    borderRadius:
+                        BorderRadius.circular(
+                      18,
+                    ),
+                  ),
+                ),
               ),
             ),
           ],
         ),
-      );
-    }
-
-    return Stack(
-      children: _profiles.asMap().entries.map((entry) {
-        int index = entry.key;
-        dynamic profile = entry.value;
-        debugPrint(
-      '====================================',
-    );
-
-    debugPrint(
-      'BUILDING CARD INDEX: $index',
-    );
-
-    debugPrint(
-      'PROFILE TYPE: ${profile.runtimeType}',
-    );
-
-    try {
-      debugPrint(
-        'PROFILE NAME: ${profile.userProfile.name}',
-      );
-    } catch (e) {
-      debugPrint(
-        'NAME ERROR: $e',
-      );
-    }
-
-    try {
-      debugPrint(
-        'DOCUMENT ID: ${profile.documentId}',
-      );
-    } catch (e) {
-      debugPrint(
-        'DOCUMENT ID ERROR: $e',
-      );
-    }
-
-    debugPrint(
-      '====================================',
-    );
-
-        if (index >= 3) {
-          return const SizedBox.shrink();
-        }
-
-        double scale = math.max(0.0, 1.0 - index * 0.1);
-        double topPadding = math.max(0.0, index * 20.0);
-        double horizontalPadding = math.max(0.0, index * 10.0);
-
-        return Positioned(
-          top: topPadding,
-          left: horizontalPadding,
-          right: horizontalPadding,
-          child: Transform.scale(
-            scale: scale,
-            alignment: Alignment.topCenter,
-            child: Dismissible(
-              key: Key(profile.documentId ?? index.toString()),
-              direction: DismissDirection.horizontal,
-              onDismissed: (direction) => _handleProfileDismissed(direction),
-              child: InkWell(
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => ViewProfileScreen(
-                        userId: profile.uid,
-                        profileDocumentId: profile.documentId!,
-                      ),
-                    ),
-                  );
-                },
-              child: ProfileCard(
-  profile: profile,
-  onLike: () {
-    _handleProfileDismissed(
-      DismissDirection.startToEnd,
-    );
-  },
-  onPass: () {
-    _handleProfileDismissed(
-      DismissDirection.endToStart,
-    );
-  },
-),
-              ),
-            ),
-          ),
-        );
-      }).toList(),
+      ),
     );
   }
 
+  final profile = _profiles.first;
+
+  return AnimatedSwitcher(
+    duration:
+        const Duration(milliseconds: 300),
+    child: Container(
+      key: ValueKey(
+        profile.documentId,
+      ),
+      margin: const EdgeInsets.fromLTRB(
+        16,
+        8,
+        16,
+        16,
+      ),
+      child: Dismissible(
+        key: Key(
+          profile.documentId ??
+              profile.uid,
+        ),
+
+        direction:
+            DismissDirection.horizontal,
+
+        onDismissed:
+            _handleProfileDismissed,
+
+        background: Container(
+          decoration: BoxDecoration(
+            borderRadius:
+                BorderRadius.circular(
+              32,
+            ),
+            gradient:
+                const LinearGradient(
+              colors: [
+                Color(0xFF22C55E),
+                Color(0xFF16A34A),
+              ],
+            ),
+          ),
+          alignment:
+              Alignment.centerLeft,
+          padding:
+              const EdgeInsets.only(
+            left: 30,
+          ),
+          child: const Icon(
+            Icons.favorite_rounded,
+            color: Colors.white,
+            size: 42,
+          ),
+        ),
+
+        secondaryBackground:
+            Container(
+          decoration: BoxDecoration(
+            borderRadius:
+                BorderRadius.circular(
+              32,
+            ),
+            gradient:
+                const LinearGradient(
+              colors: [
+                Color(0xFFEF4444),
+                Color(0xFFDC2626),
+              ],
+            ),
+          ),
+          alignment:
+              Alignment.centerRight,
+          padding:
+              const EdgeInsets.only(
+            right: 30,
+          ),
+          child: const Icon(
+            Icons.close_rounded,
+            color: Colors.white,
+            size: 42,
+          ),
+        ),
+
+        child: InkWell(
+          borderRadius:
+              BorderRadius.circular(
+            32,
+          ),
+          onTap: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (_) =>
+                    ViewProfileScreen(
+                  userId: profile.uid,
+                  profileDocumentId:
+                      profile.documentId!,
+                ),
+              ),
+            );
+          },
+
+          child: ProfileCard(
+            profile: profile,
+
+            onLike: () {
+              _handleProfileDismissed(
+                DismissDirection
+                    .startToEnd,
+              );
+            },
+
+            onPass: () {
+              _handleProfileDismissed(
+                DismissDirection
+                    .endToStart,
+              );
+            },
+          ),
+        ),
+      ),
+    ),
+  );
+}
 
 
   @override
