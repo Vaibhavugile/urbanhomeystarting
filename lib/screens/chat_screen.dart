@@ -83,6 +83,7 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
   String? _chatRoomId; // This will hold the actual chat room ID, confirmed after creation/finding
   bool _showScrollToBottomButton = false;
   bool _isLoadingChat = true; // New state to indicate chat room loading/creation
+  bool _isMarkingRead = false;
 
   @override
   void initState() {
@@ -91,17 +92,17 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
     WidgetsBinding.instance.addObserver(this);
     _initializeChatRoom(); // Call the new initialization method
 
-    _scrollController.addListener(() {
-      if (_scrollController.position.pixels < _scrollController.position.maxScrollExtent - 200 && !_showScrollToBottomButton) {
-        setState(() {
-          _showScrollToBottomButton = true;
-        });
-      } else if (_scrollController.position.pixels >= _scrollController.position.maxScrollExtent - 200 && _showScrollToBottomButton) {
-        setState(() {
-          _showScrollToBottomButton = false;
-        });
-      }
-    });
+    // _scrollController.addListener(() {
+    //   if (_scrollController.position.pixels < _scrollController.position.maxScrollExtent - 200 && !_showScrollToBottomButton) {
+    //     setState(() {
+    //       _showScrollToBottomButton = true;
+    //     });
+    //   } else if (_scrollController.position.pixels >= _scrollController.position.maxScrollExtent - 200 && _showScrollToBottomButton) {
+    //     setState(() {
+    //       _showScrollToBottomButton = false;
+    //     });
+    //   }
+    // });
   }
 
   @override
@@ -239,11 +240,11 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
 
       print('[_sendMessage] Chat document updated successfully (last message).');
 
-      _scrollController.animateTo(
-        0.0, // Scroll to the top of the reversed list (latest message)
-        duration: const Duration(milliseconds: 300),
-        curve: Curves.easeOut,
-      );
+      // _scrollController.animateTo(
+      //   0.0, // Scroll to the top of the reversed list (latest message)
+      //   duration: const Duration(milliseconds: 300),
+      //   curve: Curves.easeOut,
+      // );
       print('[_sendMessage] Scroll animation initiated.');
 
     } catch (e) {
@@ -283,7 +284,16 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
     print('[_markVisibleMessagesAsRead] Checking for visible messages to mark as read...');
     print('[_markVisibleMessagesAsRead] Current User UID: ${_currentUser?.uid}');
     print('[_markVisibleMessagesAsRead] Chat Room ID: $_chatRoomId');
+if (_isMarkingRead) return;
 
+  _isMarkingRead = true;
+
+  Future.delayed(
+    const Duration(seconds: 1),
+    () {
+      _isMarkingRead = false;
+    },
+  );
 
     if (_chatRoomId == null || _currentUser == null) {
       print('[_markVisibleMessagesAsRead] Pre-check failed: chatRoomId null or currentUser null. Aborting.');
@@ -643,9 +653,13 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
 
                     final messages = snapshot.data!.docs;
 
-                    return ListView.builder(
-                      controller: _scrollController,
-                      reverse: true,
+                     return ListView.builder(
+  key: const PageStorageKey('chat_messages'),
+  controller: _scrollController,
+  reverse: true,
+  addAutomaticKeepAlives: false,
+  addRepaintBoundaries: true,
+  cacheExtent: 1000,
                       padding: const EdgeInsets.all(12.0),
                       itemCount: messages.length,
                       itemBuilder: (context, index) {
@@ -725,11 +739,14 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
               right: 20.0,
               child: FloatingActionButton(
                 onPressed: () {
-                  _scrollController.animateTo(
-                    0.0,
-                    duration: const Duration(milliseconds: 300),
-                    curve: Curves.easeOut,
-                  );
+                  if (_scrollController.hasClients &&
+    _scrollController.offset < 150) {
+  _scrollController.animateTo(
+    0.0,
+    duration: const Duration(milliseconds: 300),
+    curve: Curves.easeOut,
+  );
+}
                   setState(() {
                     _showScrollToBottomButton = false;
                   });
