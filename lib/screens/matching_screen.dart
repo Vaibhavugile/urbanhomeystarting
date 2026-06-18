@@ -352,6 +352,15 @@ class _MatchingScreenState extends State<MatchingScreen> {
           .toList();
 
       _profiles = fetchedProfiles;
+      debugPrint(
+  'TOTAL FLAT LISTINGS: ${_profiles.length}',
+);
+
+for (final p in _profiles) {
+  debugPrint(
+    'Loaded Flat Listing => ${p.documentId}',
+  );
+}
       setState(() {});
 
     } catch (e) {
@@ -1117,6 +1126,41 @@ class _MatchingScreenState extends State<MatchingScreen> {
       children: _profiles.asMap().entries.map((entry) {
         int index = entry.key;
         dynamic profile = entry.value;
+        debugPrint(
+      '====================================',
+    );
+
+    debugPrint(
+      'BUILDING CARD INDEX: $index',
+    );
+
+    debugPrint(
+      'PROFILE TYPE: ${profile.runtimeType}',
+    );
+
+    try {
+      debugPrint(
+        'PROFILE NAME: ${profile.userProfile.name}',
+      );
+    } catch (e) {
+      debugPrint(
+        'NAME ERROR: $e',
+      );
+    }
+
+    try {
+      debugPrint(
+        'DOCUMENT ID: ${profile.documentId}',
+      );
+    } catch (e) {
+      debugPrint(
+        'DOCUMENT ID ERROR: $e',
+      );
+    }
+
+    debugPrint(
+      '====================================',
+    );
 
         if (index >= 3) {
           return const SizedBox.shrink();

@@ -17,6 +17,13 @@ class ProfileCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+      debugPrint('========================');
+  debugPrint('PROFILE CARD BUILDING');
+  debugPrint('Profile Type: ${profile.runtimeType}');
+  debugPrint('Profile ID: ${profile.documentId}');
+  debugPrint('========================');
+
+  try {
    String name = '';
 String city = '';
 String address = '';
@@ -75,7 +82,7 @@ print("PropertyText: $propertyText");
 print("rentPrice: ${profile.rentPrice}");
 
 
-  address = profile.address ?? '';
+  address = profile.locationName ?? '';
 
   availableFor =
       profile.availableFor ?? '';
@@ -679,6 +686,23 @@ Wrap(
         ),
       ),
     );
+      } catch (e, stack) {
+
+    debugPrint('========================');
+    debugPrint('PROFILE CARD ERROR');
+    debugPrint(e.toString());
+    debugPrint(stack.toString());
+    debugPrint('========================');
+
+    return Scaffold(
+      body: Center(
+        child: Text(
+          'Profile Card Error\n$e',
+        ),
+      ),
+    );
+  }
+}
   }
   Widget _buildChip(
   IconData icon,
@@ -739,5 +763,5 @@ Widget _tagChip(String text) {
     ),
   );
 }
-}
+
 
