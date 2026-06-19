@@ -325,56 +325,84 @@ Positioned(
 ),
             // CONTENT
             Positioned(
-              left: 20,
-              right: 20,
-              bottom: 20,
-              child: Column(
+  left: 0,
+  right: 0,
+  bottom: 0,
+  child: Container(
+    padding: const EdgeInsets.fromLTRB(
+      24,
+      24,
+      24,
+      24,
+    ),
+    decoration: BoxDecoration(
+      gradient: LinearGradient(
+        begin: Alignment.topCenter,
+        end: Alignment.bottomCenter,
+        colors: [
+          Colors.transparent,
+          Colors.black.withOpacity(.15),
+          Colors.black.withOpacity(.55),
+          Colors.black.withOpacity(.92),
+        ],
+      ),
+    ),
+    child: Column(
                 crossAxisAlignment:
                     CrossAxisAlignment.start,
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Text(
-                    age.isNotEmpty
-                        ? '$name, $age'
-                        : name,
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 30,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-
-Container(
-  padding: const EdgeInsets.symmetric(
-    horizontal: 10,
-    vertical: 4,
-  ),
-  decoration: BoxDecoration(
-    color: Colors.blue.withOpacity(.2),
-    borderRadius: BorderRadius.circular(20),
-  ),
-  child: const Row(
-    mainAxisSize: MainAxisSize.min,
-    children: [
-      Icon(
-        Icons.verified,
-        color: Colors.blue,
-        size: 16,
-      ),
-      SizedBox(width: 4),
-      Text(
-        'Verified Profile',
-        style: TextStyle(
+       Row(
+  children: [
+    Expanded(
+      child: Text(
+        age.isNotEmpty
+            ? '$name, $age'
+            : name,
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
+        style: const TextStyle(
           color: Colors.white,
-          fontWeight: FontWeight.w600,
-          fontSize: 12,
+          fontSize: 26,
+          fontWeight: FontWeight.w800,
         ),
       ),
-    ],
-  ),
-),
+    ),
 
+    Container(
+      padding: const EdgeInsets.symmetric(
+        horizontal: 10,
+        vertical: 6,
+      ),
+      decoration: BoxDecoration(
+        color: Colors.blue.withOpacity(.15),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(
+          color: Colors.blue.withOpacity(.4),
+        ),
+      ),
+      child: const Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(
+            Icons.verified,
+            color: Colors.blue,
+            size: 14,
+          ),
+          SizedBox(width: 4),
+          Text(
+            'Verified',
+            style: TextStyle(
+              color: Colors.white,
+              fontSize: 11,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ],
+      ),
+    ),
+  ],
+),
                   const SizedBox(height: 8),
 
                   Row(
@@ -421,19 +449,7 @@ Container(
           
 
                   
-                  if (bio.isNotEmpty) ...[
-  const SizedBox(height: 10),
-  Text(
-    bio,
-    maxLines: 2,
-    overflow: TextOverflow.ellipsis,
-    style: const TextStyle(
-      color: Colors.white70,
-      fontSize: 14,
-      height: 1.4,
-    ),
-  ),
-],
+   
 const SizedBox(height: 10),
 Text(
   profile is SeekingFlatmateProfile
@@ -509,65 +525,65 @@ Wrap(
 ),
 const SizedBox(height: 12),
 
-const Text(
-  'Lifestyle',
-  style: TextStyle(
-    color: Colors.white,
-    fontSize: 15,
-    fontWeight: FontWeight.bold,
-  ),
-),
+// const Text(
+//   'Lifestyle',
+//   style: TextStyle(
+//     color: Colors.white,
+//     fontSize: 15,
+//     fontWeight: FontWeight.bold,
+//   ),
+// ),
 
-const SizedBox(height: 8),
+// const SizedBox(height: 8),
 
-Wrap(
-  spacing: 8,
-  runSpacing: 8,
-  children: [
+// Wrap(
+//   spacing: 8,
+//   runSpacing: 8,
+//   children: [
 
-    if (cleanliness.isNotEmpty)
-      _tagChip('✨ $cleanliness'),
+//     if (cleanliness.isNotEmpty)
+//       _tagChip('✨ $cleanliness'),
 
-    if (smoking.isNotEmpty)
-      _tagChip('🚭 $smoking'),
+//     if (smoking.isNotEmpty)
+//       _tagChip('🚭 $smoking'),
 
-    if (drinking.isNotEmpty)
-      _tagChip('🍺 $drinking'),
+//     if (drinking.isNotEmpty)
+//       _tagChip('🍺 $drinking'),
 
-    if (food.isNotEmpty)
-      _tagChip('🥗 $food'),
+//     if (food.isNotEmpty)
+//       _tagChip('🥗 $food'),
 
-    if (petTolerance.isNotEmpty)
-      _tagChip('🐶 $petTolerance'),
+//     if (petTolerance.isNotEmpty)
+//       _tagChip('🐶 $petTolerance'),
 
-    if (socialPreference.isNotEmpty)
-      _tagChip('🎉 $socialPreference'),
-  ],
-),
+//     if (socialPreference.isNotEmpty)
+//       _tagChip('🎉 $socialPreference'),
+//   ],
+// ),
 
-if (profile is SeekingFlatmateProfile) ...[
+// if (profile is SeekingFlatmateProfile) ...[
 
-const SizedBox(height: 12),
+// const SizedBox(height: 12),
 
-const Text(
-  'Preferred Amenities',
-  style: TextStyle(
-    color: Colors.white,
-    fontSize: 15,
-    fontWeight: FontWeight.bold,
-  ),
-),
+// const Text(
+//   'Preferred Amenities',
+//   style: TextStyle(
+//     color: Colors.white,
+//     fontSize: 15,
+//     fontWeight: FontWeight.bold,
+//   ),
+// ),
 
-const SizedBox(height: 8),
+// const SizedBox(height: 8),
 
-Wrap(
-  spacing: 8,
-  runSpacing: 8,
-  children: desiredAmenities.map((e) {
-    return _tagChip('🏠 $e');
-  }).toList(),
-),
-],
+// Wrap(
+//   spacing: 8,
+//   runSpacing: 8,
+//   children: desiredAmenities.map((e) {
+//     return _tagChip('🏠 $e');
+//   }).toList(),
+// ),
+// ],
 const SizedBox(height: 12),
 const Text(
   'Looking For',
@@ -617,63 +633,70 @@ Wrap(
 
                   const SizedBox(height: 20),
 
-               Row(
-  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+   Row(
+  mainAxisAlignment: MainAxisAlignment.center,
   children: [
-    Container(
-      decoration: BoxDecoration(
-        shape: BoxShape.circle,
-        boxShadow: [
-          BoxShadow(
-            color: Colors.red.withOpacity(0.35),
-            blurRadius: 25,
-            spreadRadius: 2,
-          ),
-        ],
-      ),
-      child: GestureDetector(
-        onTap: onPass,
-        child: Container(
-          width: 72,
-          height: 72,
-          decoration: const BoxDecoration(
-            color: Colors.white,
-            shape: BoxShape.circle,
-          ),
-          child: const Icon(
-            Icons.close_rounded,
-            color: Colors.red,
-            size: 34,
-          ),
-        ),
-      ),
-    ),
 
-    Container(
-      decoration: BoxDecoration(
-        shape: BoxShape.circle,
-        boxShadow: [
-          BoxShadow(
-            color: Colors.pink.withOpacity(0.35),
-            blurRadius: 25,
-            spreadRadius: 2,
+    // PASS
+    GestureDetector(
+  onTap: onPass,
+  child: Container(
+    width: 72,
+    height: 72,
+    decoration: BoxDecoration(
+      shape: BoxShape.circle,
+      gradient: const LinearGradient(
+  colors: [
+    Color(0xFFFFB6C1),
+    Color(0xFFFF7AA2),
+  ],
+),
+      boxShadow: [
+        BoxShadow(
+          color: Color(0xFFFF6B81).withOpacity(.35),
+          blurRadius: 24,
+          spreadRadius: 1,
+        ),
+      ],
+    ),
+    child: const Icon(
+      Icons.close_rounded,
+      color: Colors.white,
+      size: 32,
+    ),
+  ),
+),
+
+    const SizedBox(width: 28),
+
+    // LIKE
+    GestureDetector(
+      onTap: onLike,
+      child: Container(
+        width: 72,
+        height: 72,
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          gradient: const LinearGradient(
+            colors: [
+              Color(0xFFEC4899),
+              Color(0xFF7C3AED),
+            ],
           ),
-        ],
-      ),
-      child: GestureDetector(
-        onTap: onLike,
-        child: Container(
-          width: 72,
-          height: 72,
-          decoration: const BoxDecoration(
-            color: Colors.white,
-            shape: BoxShape.circle,
-          ),
-          child: const Icon(
-            Icons.favorite_rounded,
-            color: Colors.pink,
-            size: 34,
-          ),
+          boxShadow: [
+            BoxShadow(
+              color: const Color(
+                0xFFEC4899,
+              ).withOpacity(.45),
+              blurRadius: 30,
+              spreadRadius: 2,
+            ),
+          ],
+        ),
+        child: const Icon(
+          Icons.favorite_rounded,
+          color: Colors.white,
+          size: 32,
         ),
       ),
     ),
@@ -682,6 +705,7 @@ Wrap(
                 ],
               ),
             ),
+        ),
           ],
         ),
       ),
@@ -704,37 +728,38 @@ Wrap(
   }
 }
   }
-  Widget _buildChip(
+Widget _buildChip(
   IconData icon,
   String text,
 ) {
   return Container(
     padding: const EdgeInsets.symmetric(
-      horizontal: 12,
-      vertical: 8,
+      horizontal: 10,
+      vertical: 6,
     ),
     decoration: BoxDecoration(
-      color: Colors.black38,
-border: Border.all(
-  color: Colors.white24,
-),
-      borderRadius: BorderRadius.circular(25),
-      
+      color: Colors.white.withOpacity(0.08),
+      borderRadius: BorderRadius.circular(18),
+      border: Border.all(
+        color: Colors.white.withOpacity(0.12),
+      ),
     ),
     child: Row(
       mainAxisSize: MainAxisSize.min,
       children: [
         Icon(
           icon,
-          size: 16,
-          color: Colors.white,
+          size: 14,
+          color: Colors.white.withOpacity(0.9),
         ),
         const SizedBox(width: 5),
         Text(
           text,
-          style: const TextStyle(
-            color: Colors.white,
-            fontWeight: FontWeight.w600,
+          style: TextStyle(
+            color: Colors.white.withOpacity(0.95),
+            fontSize: 13,
+            fontWeight: FontWeight.w500,
+            letterSpacing: 0.2,
           ),
         ),
       ],
@@ -744,21 +769,22 @@ border: Border.all(
 Widget _tagChip(String text) {
   return Container(
     padding: const EdgeInsets.symmetric(
-      horizontal: 12,
-      vertical: 8,
+      horizontal: 10,
+      vertical: 6,
     ),
     decoration: BoxDecoration(
-      color: Colors.black38,
-      borderRadius: BorderRadius.circular(25),
+      color: Colors.white.withOpacity(0.08),
+      borderRadius: BorderRadius.circular(18),
       border: Border.all(
-        color: Colors.white24,
+        color: Colors.white.withOpacity(0.12),
       ),
     ),
     child: Text(
       text,
-      style: const TextStyle(
-        color: Colors.white,
+      style: TextStyle(
+        color: Colors.white.withOpacity(0.95),
         fontSize: 13,
+        fontWeight: FontWeight.w500,
       ),
     ),
   );
