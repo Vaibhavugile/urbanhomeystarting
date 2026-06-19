@@ -275,4 +275,171 @@ onDocumentCreated(
     );
   }
 );
+export const onNewLike =
+onDocumentCreated(
+  "user_likes/{userId}/likes/{profileId}",
+  async (event) => {
+    const like = event.data?.data();
+
+    if (!like) {
+      return;
+    }
+
+    const likedUserId =
+      like.likedUserId;
+
+    const likingUserId =
+      like.likingUserId;
+
+    const receiverDoc =
+      await admin
+        .firestore()
+        .collection("users")
+        .doc(likedUserId)
+        .get();
+
+    if (!receiverDoc.exists) {
+      console.log("User not found");
+      return;
+    }
+
+    const receiverData =
+      receiverDoc.data();
+
+    const fcmToken =
+      receiverData?.fcmToken;
+
+    if (!fcmToken) {
+      console.log("No FCM token");
+      return;
+    }
+
+    await admin.messaging().send({
+      token: fcmToken,
+
+      notification: {
+        title:
+          "Someone Liked You ❤️",
+        body:
+          "A member is interested in your profile. Take a look.",
+      },
+
+      data: {
+        type: "like",
+        senderId:
+          likingUserId,
+      },
+
+      android: {
+        priority: "high",
+      },
+    });
+
+    await admin
+      .firestore()
+      .collection("users")
+      .doc(likedUserId)
+      .collection("notifications")
+      .add({
+        title:
+          "Someone Liked You ❤️",
+        body:
+          "A member is interested in your profile. Take a look.",
+        type: "like",
+        senderId:
+          likingUserId,
+        isRead: false,
+        createdAt:
+          admin.firestore.FieldValue.serverTimestamp(),
+      });
+
+    console.log(
+      "Like notification sent"
+    );
+  }
+);
+export const onMatchCreated =
+onDocumentCreated(
+  "matches/{matchId}",
+  async (event) => {
+    const match =
+      event.data?.data();
+
+    if (!match) {
+      return;
+    }
+
+    const users = [
+      match.user1_uid,
+      match.user2_uid,
+    ];
+
+    for (const uid of users) {
+      const userDoc =
+        await admin
+          .firestore()
+          .collection("users")
+          .doc(uid)
+          .get();
+
+      if (!userDoc.exists) {
+        continue;
+      }
+
+      const userData =
+        userDoc.data();
+
+      const fcmToken =
+        userData?.fcmToken;
+
+      if (!fcmToken) {
+        continue;
+      }
+
+      await admin.messaging().send({
+        token: fcmToken,
+
+        notification: {
+          title:
+            "Connection Made 🤝",
+          body:
+            "You both showed interest. Start chatting now.",
+        },
+
+        data: {
+          type: "match",
+          matchId:
+            event.params.matchId,
+        },
+
+        android: {
+          priority: "high",
+        },
+      });
+
+      await admin
+        .firestore()
+        .collection("users")
+        .doc(uid)
+        .collection("notifications")
+        .add({
+          title:
+            "Connection Made 🤝",
+          body:
+            "You both showed interest. Start chatting now.",
+          type: "match",
+          matchId:
+            event.params.matchId,
+          isRead: false,
+          createdAt:
+            admin.firestore.FieldValue.serverTimestamp(),
+        });
+    }
+
+    console.log(
+      "Match notifications sent"
+    );
+  }
+);
+
 
