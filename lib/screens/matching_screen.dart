@@ -58,6 +58,7 @@ class _MatchingScreenState extends State<MatchingScreen> {
   // Key: current user's active profile ID, Value: List of profiles liked by it
   final Map<String, List<dynamic>> _outgoingLikes = {};
 
+
   String? _bannerMessage;
   String? _lastLikedProfileName; // Name of the person you just liked who didn't like back
 
@@ -69,7 +70,8 @@ class _MatchingScreenState extends State<MatchingScreen> {
 
   // NEW: State variable to track the current view
   _ViewType _currentViewType = _ViewType.card;
-
+dynamic _lastPassedProfile;
+bool _canUndoPass = false;
   @override
   void initState() {
     super.initState();
@@ -1141,11 +1143,17 @@ class _MatchingScreenState extends State<MatchingScreen> {
 
     if (direction == DismissDirection.startToEnd) {
       _processLike(likedOrPassedUserId, dismissedProfileDocId);
-    } else if (direction == DismissDirection.endToStart) {
-      ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Profile Passed'))
-      );
-    }
+    }else if (direction == DismissDirection.endToStart) {
+
+  _lastPassedProfile = dismissedProfile;
+  _canUndoPass = true;
+
+  ScaffoldMessenger.of(context).showSnackBar(
+    const SnackBar(
+      content: Text('Profile Passed'),
+    ),
+  );
+}
 
     // FIX: Remove the dismissed profile from the list to trigger a rebuild
     setState(() {
@@ -1160,6 +1168,25 @@ class _MatchingScreenState extends State<MatchingScreen> {
       );
     }
   }
+  void _undoLastPass() {
+  if (_lastPassedProfile == null) return;
+
+  setState(() {
+    _profiles.insert(
+      0,
+      _lastPassedProfile,
+    );
+
+    _lastPassedProfile = null;
+    _canUndoPass = false;
+  });
+
+  ScaffoldMessenger.of(context).showSnackBar(
+    const SnackBar(
+      content: Text('Profile Restored'),
+    ),
+  );
+}
 
   double _calculateMatchPercentage(dynamic userProfile, dynamic otherProfile) {
     // Implement your matching logic here
@@ -1476,6 +1503,27 @@ Widget _buildCardView() {
     final bool isLargeScreen = screenWidth > 900; // Define your breakpoint for web layout
     return Scaffold(
       key: _scaffoldKey, // Assign the key to Scaffold
+      floatingActionButtonLocation:
+      FloatingActionButtonLocation.startTop,
+
+  floatingActionButton: _canUndoPass
+      ? FloatingActionButton.extended(
+          onPressed: _undoLastPass,
+          backgroundColor: Colors.white,
+          foregroundColor: const Color(0xFF7C3AED),
+          elevation: 12,
+          icon: const Icon(
+            Icons.undo_rounded,
+          ),
+          label: const Text(
+            'Undo',
+            style: TextStyle(
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+        )
+      : null,
+
       appBar: AppBar(
         title: const Text('UrbanHomey Matching', style: TextStyle(color: Colors.white)),
         // Changed to a consistent gradient background

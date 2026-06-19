@@ -2,7 +2,7 @@
 import 'package:flutter/material.dart';
 import 'package:mytennat/screens/flatmate_profile_screen.dart';
 import 'package:mytennat/screens/flat_with_flatmate_profile_screen.dart';
-
+import 'profile_details_sheet.dart';
 class ProfileCard extends StatelessWidget {
   final dynamic profile;
   final VoidCallback onLike;
@@ -632,6 +632,69 @@ Wrap(
 
 
                   const SizedBox(height: 20),
+                  const SizedBox(height: 16),
+
+GestureDetector(
+  onTap: () {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (_) => ProfileDetailsSheet(
+  profile: profile,
+
+  name: name,
+  age: age,
+  city: city,
+  occupation: occupation,
+  imageUrl: imageUrl,
+
+  bio: bio,
+  cleanliness: cleanliness,
+  smoking: smoking,
+  drinking: drinking,
+  food: food,
+  petTolerance: petTolerance,
+  socialPreference: socialPreference,
+  desiredAmenities: desiredAmenities,
+),
+    );
+  },
+  child: Container(
+    width: double.infinity,
+    padding: const EdgeInsets.symmetric(
+      vertical: 12,
+    ),
+    decoration: BoxDecoration(
+      color: Colors.white.withOpacity(.08),
+      borderRadius: BorderRadius.circular(18),
+      border: Border.all(
+        color: Colors.white.withOpacity(.12),
+      ),
+    ),
+    child: const Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        Text(
+          'View More',
+          style: TextStyle(
+            color: Colors.white,
+            fontSize: 14,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+        SizedBox(width: 6),
+        Icon(
+          Icons.keyboard_arrow_up_rounded,
+          color: Colors.white,
+          size: 18,
+        ),
+      ],
+    ),
+  ),
+),
+
+const SizedBox(height: 16),
 
    Row(
   mainAxisAlignment: MainAxisAlignment.center,

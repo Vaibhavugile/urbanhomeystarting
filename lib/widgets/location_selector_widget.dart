@@ -143,6 +143,8 @@ class _LocationSelectorWidgetState
 
 @override
 Widget build(BuildContext context) {
+  final isKeyboardOpen =
+    MediaQuery.of(context).viewInsets.bottom > 0;
   return Container(
     padding: const EdgeInsets.all(20),
 
@@ -164,9 +166,10 @@ Widget build(BuildContext context) {
       ],
     ),
 
-    child: Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
+   child: SingleChildScrollView(
+  child: Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
 
 
         /// HEADER
@@ -449,6 +452,8 @@ if (_selectedCity == null)
 
                 itemClick: (Prediction prediction) {
 
+  FocusScope.of(context).unfocus();
+
   setState(() {
 
     _addressController.text =
@@ -613,7 +618,7 @@ if (_selectedCity == null)
 
               Text(
                 _addressController.text,
-                maxLines: 2,
+                maxLines: 3,
                 overflow:
                     TextOverflow.ellipsis,
                 style: const TextStyle(
@@ -708,9 +713,10 @@ if (_selectedCity == null)
   //   ),
   // ),
   if (_latitude != null &&
-    _longitude != null)
+    _longitude != null &&
+    !isKeyboardOpen)
   Container(
-    height: 200,
+    height: 140,
     margin: const EdgeInsets.only(
       bottom: 12,
     ),
@@ -778,6 +784,7 @@ if (_selectedCity == null)
         ),
       ],
     ),
+  ),
   );
 }
 }

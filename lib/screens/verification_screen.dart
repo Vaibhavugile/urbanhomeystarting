@@ -7,7 +7,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
-
+import 'home_page.dart';
 const Color kPrimaryColor = Color(0xFF7C3AED);
 const Color kSecondaryColor = Color(0xFF9333EA);
 const Color kAccentColor = Color(0xFFEC4899);
@@ -225,16 +225,21 @@ Future<void> _submitVerification() async {
           'Pending Review';
     });
 
+   if (!mounted) return;
+
+Future.delayed(
+  const Duration(seconds: 1),
+  () {
     if (!mounted) return;
 
-    ScaffoldMessenger.of(context)
-        .showSnackBar(
-      const SnackBar(
-        content: Text(
-          'Verification submitted successfully',
-        ),
+    Navigator.of(context).pushAndRemoveUntil(
+      MaterialPageRoute(
+        builder: (_) => const HomePage(),
       ),
+      (route) => false,
     );
+  },
+);
   } catch (e) {
     ScaffoldMessenger.of(context)
         .showSnackBar(

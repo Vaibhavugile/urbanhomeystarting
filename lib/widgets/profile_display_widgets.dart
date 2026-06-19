@@ -689,80 +689,77 @@ Widget _buildIconValueCard(
     ),
 
     child: Column(
-      crossAxisAlignment:
-          CrossAxisAlignment.start,
-      children: [
+  crossAxisAlignment:
+      CrossAxisAlignment.start,
+  mainAxisSize: MainAxisSize.max,
+  children: [
 
         /// TOP ROW
-        Row(
-          children: [
+        Column(
+  crossAxisAlignment: CrossAxisAlignment.start,
+  children: [
 
-            Container(
-              width: 52,
-              height: 52,
-
-              decoration: BoxDecoration(
-                borderRadius:
-                    BorderRadius.circular(
-                  16,
-                ),
-
-                gradient:
-                    kPrimaryGradient,
-              ),
-
-              child: Center(
-                child: iconWidget,
-              ),
-            ),
-
-            const Spacer(),
-
-            Container(
-              padding:
-                  const EdgeInsets.symmetric(
-                horizontal: 10,
-                vertical: 6,
-              ),
-
-              decoration: BoxDecoration(
-                color: kLightGrey,
-                borderRadius:
-                    BorderRadius.circular(
-                  30,
-                ),
-              ),
-
-              child: Text(
-                label.toUpperCase(),
-                style: const TextStyle(
-                  color: kMediumText,
-                  fontSize: 10,
-                  fontWeight:
-                      FontWeight.w700,
-                  letterSpacing: .8,
-                ),
-              ),
-            ),
-          ],
-        ),
-
-        const SizedBox(height: 18),
-
-        Text(
-          value,
-          maxLines: 2,
-          overflow:
-              TextOverflow.ellipsis,
-          style: const TextStyle(
-            fontSize: 17,
-            fontWeight:
-                FontWeight.w800,
-            color: kDarkText,
-            height: 1.3,
+    Container(
+      width: 58,
+      height: 58,
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(18),
+        gradient: kPrimaryGradient,
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFF7C3AED)
+                .withOpacity(.20),
+            blurRadius: 15,
+            offset: const Offset(0, 8),
           ),
-        ),
+        ],
+      ),
+      child: Center(
+        child: iconWidget,
+      ),
+    ),
 
+    const SizedBox(height: 14),
+
+    Container(
+      padding: const EdgeInsets.symmetric(
+        horizontal: 12,
+        vertical: 7,
+      ),
+      decoration: BoxDecoration(
+        color: kLightGrey,
+        borderRadius: BorderRadius.circular(30),
+      ),
+      child: Text(
+        label.toUpperCase(),
+        maxLines: 2,
+        textAlign: TextAlign.center,
+        style: const TextStyle(
+          color: kMediumText,
+          fontSize: 10,
+          fontWeight: FontWeight.w700,
+          letterSpacing: .8,
+        ),
+      ),
+    ),
+  ],
+),
+
+    const SizedBox(height: 18),
+
+Expanded(
+  child: Text(
+    value,
+    maxLines: 3,
+    overflow: TextOverflow.ellipsis,
+    style: const TextStyle(
+      fontSize: 17,
+      fontWeight: FontWeight.w800,
+      color: kDarkText,
+      height: 1.3,
+    ),
+  ),
+),
         const SizedBox(height: 12),
 
         Container(
@@ -1203,14 +1200,12 @@ Widget _buildCharacteristicGrid(
         itemCount: validItems.length,
 
         gridDelegate:
-            const SliverGridDelegateWithFixedCrossAxisCount(
-          crossAxisCount: 2,
-
-          crossAxisSpacing: 14,
-          mainAxisSpacing: 14,
-
-          childAspectRatio: 1.05,
-        ),
+    const SliverGridDelegateWithFixedCrossAxisCount(
+  crossAxisCount: 2,
+  crossAxisSpacing: 14,
+  mainAxisSpacing: 14,
+  childAspectRatio: 0.82,
+),
 
         itemBuilder: (context, index) {
           final entry =
