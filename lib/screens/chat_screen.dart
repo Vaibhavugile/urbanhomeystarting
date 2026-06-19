@@ -84,7 +84,12 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
   bool _showScrollToBottomButton = false;
   bool _isLoadingChat = true; // New state to indicate chat room loading/creation
   bool _isMarkingRead = false;
+static const int _pageSize = 20;
 
+DocumentSnapshot? _lastDocument;
+
+bool _hasMoreMessages = true;
+bool _isLoadingMoreMessages = false;
   @override
   void initState() {
     super.initState();
