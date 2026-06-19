@@ -4,7 +4,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:intl/intl.dart'; // For date formatting
 import 'package:flutter/scheduler.dart'; // For post-frame callbacks
 import 'package:rxdart/rxdart.dart'; // Ensure rxdart is imported if not already
-
+import 'dart:async';
 
 // Custom Colors for a modern look, aligned with your gradient theme
 // ======================================================
@@ -85,11 +85,12 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
   bool _isLoadingChat = true; // New state to indicate chat room loading/creation
   bool _isMarkingRead = false;
 static const int _pageSize = 20;
-
+StreamSubscription? _messageSubscription;
 DocumentSnapshot? _lastDocument;
 
 bool _hasMoreMessages = true;
 bool _isLoadingMoreMessages = false;
+List<QueryDocumentSnapshot<Map<String, dynamic>>> _messages = [];
   @override
   void initState() {
     super.initState();
@@ -97,26 +98,25 @@ bool _isLoadingMoreMessages = false;
     WidgetsBinding.instance.addObserver(this);
     _initializeChatRoom(); // Call the new initialization method
 
-    // _scrollController.addListener(() {
-    //   if (_scrollController.position.pixels < _scrollController.position.maxScrollExtent - 200 && !_showScrollToBottomButton) {
-    //     setState(() {
-    //       _showScrollToBottomButton = true;
-    //     });
-    //   } else if (_scrollController.position.pixels >= _scrollController.position.maxScrollExtent - 200 && _showScrollToBottomButton) {
-    //     setState(() {
-    //       _showScrollToBottomButton = false;
-    //     });
-    //   }
-    // });
+    _scrollController.addListener(() {
+  if (_scrollController.position.pixels >=
+      _scrollController.position.maxScrollExtent - 200) {
+    _loadMoreMessages();
+  }
+});
   }
 
-  @override
-  void dispose() {
-    _messageController.dispose();
-    _scrollController.dispose();
-    WidgetsBinding.instance.removeObserver(this);
-    super.dispose();
-  }
+ @override
+void dispose() {
+  _messageSubscription?.cancel();
+
+  _messageController.dispose();
+  _scrollController.dispose();
+
+  WidgetsBinding.instance.removeObserver(this);
+
+  super.dispose();
+}
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
@@ -176,6 +176,8 @@ bool _isLoadingMoreMessages = false;
         print('[_initializeChatRoom] Chat room $_chatRoomId participants ensured.');
       }
       _markVisibleMessagesAsRead(); // Mark messages as read after chat room is confirmed
+      await _loadMoreMessages();
+      _listenForNewMessages();
     } catch (e) {
       print('[_initializeChatRoom] Error initializing chat room: $e');
       if (mounted) {
@@ -190,7 +192,84 @@ bool _isLoadingMoreMessages = false;
       });
     }
   }
+Future<void> _loadMoreMessages() async {
+  if (_isLoadingMoreMessages || !_hasMoreMessages || _chatRoomId == null) {
+    return;
+  }
 
+  setState(() {
+    _isLoadingMoreMessages = true;
+  });
+
+  Query<Map<String, dynamic>> query = _firestore
+      .collection('chats')
+      .doc(_chatRoomId)
+      .collection('messages')
+      .orderBy('timestamp', descending: true)
+      .limit(_pageSize);
+
+  if (_lastDocument != null) {
+    query = query.startAfterDocument(_lastDocument!);
+  }
+
+  final snapshot = await query.get();
+
+  if (snapshot.docs.isNotEmpty) {
+    _lastDocument = snapshot.docs.last;
+
+    for (final doc in snapshot.docs) {
+  final exists = _messages.any((m) => m.id == doc.id);
+
+  if (!exists) {
+    _messages.add(doc);
+  }
+}
+
+    if (snapshot.docs.length < _pageSize) {
+      _hasMoreMessages = false;
+    }
+  } else {
+    _hasMoreMessages = false;
+  }
+
+  setState(() {
+    _isLoadingMoreMessages = false;
+  });
+}
+void _listenForNewMessages() {
+  if (_chatRoomId == null) return;
+
+  _messageSubscription?.cancel();
+
+  _messageSubscription = _firestore
+      .collection('chats')
+      .doc(_chatRoomId)
+      .collection('messages')
+      .orderBy('timestamp', descending: true)
+      .limit(_pageSize)
+      .snapshots()
+      .listen((snapshot) {
+    if (!mounted) return;
+
+    setState(() {
+      for (final doc in snapshot.docs) {
+        final exists = _messages.any((m) => m.id == doc.id);
+
+        if (!exists) {
+          _messages.add(doc);
+        }
+      }
+      _messages.sort((a, b) {
+  final ta = a.data()['timestamp'] as Timestamp?;
+  final tb = b.data()['timestamp'] as Timestamp?;
+
+  if (ta == null || tb == null) return 0;
+
+  return tb.compareTo(ta);
+});
+    });
+  });
+}
 
   void _sendMessage() async {
     // Add these print statements at the very beginning to capture current state
@@ -535,19 +614,20 @@ if (_isMarkingRead) return;
         children: [
           Column(
             children: [
-              Expanded(
-                child: StreamBuilder<QuerySnapshot<Map<String, dynamic>>>( // Explicitly typing QuerySnapshot
-                  stream: _firestore
-                      .collection('chats')
-                      .doc(_chatRoomId)
-                      .collection('messages')
-                      .orderBy('timestamp', descending: true)
-                      .snapshots(),
-                  builder: (context, snapshot) {
-                    if (snapshot.connectionState == ConnectionState.waiting) {
-                      return const Center(child: CircularProgressIndicator(valueColor: AlwaysStoppedAnimation<Color>(kAccentColor)));
-                    }
-                    if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+             Expanded(
+  child: Builder(
+    builder: (context) {// Explicitly typing QuerySnapshot
+            
+                    if (_isLoadingChat && _messages.isEmpty) {
+  return const Center(
+    child: CircularProgressIndicator(
+      valueColor: AlwaysStoppedAnimation<Color>(
+        kAccentColor,
+      ),
+    ),
+  );
+}
+                    if (_messages.isEmpty) {
   return Center(
     child: Padding(
       padding: const EdgeInsets.symmetric(
@@ -656,7 +736,7 @@ if (_isMarkingRead) return;
   );
 }
 
-                    final messages = snapshot.data!.docs;
+                    final messages = _messages;
 
                      return ListView.builder(
   key: const PageStorageKey('chat_messages'),
@@ -729,7 +809,8 @@ if (_isMarkingRead) return;
                         );
                       },
                     );
-                  },
+                  
+    },
                 ),
               ),
               _MessageInput(
