@@ -46,7 +46,7 @@ String get currentUserId =>
   static const String _lastSelectedProfileKey = 'lastSelectedProfileId_';
 
   int _selectedIndex = 0; // For Bottom Navigation Bar
-
+String _exploreType = "flat_listing";
   @override
   void initState() {
     super.initState();
@@ -211,7 +211,18 @@ String get currentUserId =>
     // Re-fetch data to update the UI
     _fetchUserData();
   }
-
+void _openExploreMode() {
+  Navigator.push(
+    context,
+    MaterialPageRoute(
+      builder: (context) => MatchingScreen(
+        profileType: _exploreType,
+        profileId: "",
+        isExploreMode: true,
+      ),
+    ),
+  );
+}
   // Modified method to initiate the animation and then the switch
   void _switchProfileTypeWithAnimation() {
     if (_userProfileType == null) {
@@ -237,62 +248,97 @@ String get currentUserId =>
     );
   }
 
-  void _onItemTapped(int index) {
-    setState(() {
-      _selectedIndex = index;
-    });
+ void _onItemTapped(int index) {
+  setState(() {
+    _selectedIndex = index;
+  });
 
-    switch (index) {
-      case 0:
-        break;
-      case 1:
-        if (_userProfileType != null && _currentActiveProfileId != null) {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => MatchingScreen(
-                profileType: _userProfileType!,
-                profileId: _currentActiveProfileId!,
-              ),
-            ),
-          );
-        } else {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Please complete your profile to view matches.')),
-          );
-        }
-        break;
-      case 2:
-        if (_userProfileType != null && _currentActiveProfileId != null) {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => MatchesListScreen(
-                profileType: _userProfileType!,
-                profileId: _currentActiveProfileId!,
-              ),
-            ),
-          );
-        } else {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Please complete your profile to view chat/matches.')),
-          );
-        }
-        break;
-      case 3:
+  switch (index) {
+
+    case 0:
+      break;
+
+    case 1:
+
+      if (_userProfileType != null &&
+          _currentActiveProfileId != null) {
+
         Navigator.push(
           context,
-          MaterialPageRoute(builder: (context) => const UserActivityScreen()),
+          MaterialPageRoute(
+            builder: (context) => MatchingScreen(
+              profileType: _userProfileType!,
+              profileId: _currentActiveProfileId!,
+              isExploreMode: false,
+            ),
+          ),
         );
-        break;
-      case 4:
+
+      } else {
+
         Navigator.push(
           context,
-          MaterialPageRoute(builder: (context) => const MoreProfileScreen()),
+          MaterialPageRoute(
+            builder: (context) => MatchingScreen(
+              profileType: _exploreType,
+              profileId: "",
+              isExploreMode: true,
+            ),
+          ),
         );
-        break;
-    }
+
+      }
+
+      break;
+
+    case 2:
+
+      if (_userProfileType != null &&
+          _currentActiveProfileId != null) {
+
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => MatchesListScreen(
+              profileType: _userProfileType!,
+              profileId: _currentActiveProfileId!,
+            ),
+          ),
+        );
+
+      } else {
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text(
+              'Create a profile to access chats and matches.',
+            ),
+          ),
+        );
+
+      }
+
+      break;
+
+    case 3:
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => const UserActivityScreen(),
+        ),
+      );
+      break;
+
+    case 4:
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => const MoreProfileScreen(),
+        ),
+      );
+      break;
   }
+}
 
   @override
   Widget build(BuildContext context) {
@@ -515,7 +561,143 @@ String get currentUserId =>
             children: [
 
 const SizedBox(height: 20),
+Container(
+  padding: const EdgeInsets.all(20),
+  decoration: BoxDecoration(
+    color: Colors.white,
+    borderRadius: BorderRadius.circular(24),
+    boxShadow: [
+      BoxShadow(
+        color: Colors.black.withOpacity(.05),
+        blurRadius: 15,
+        offset: const Offset(0, 8),
+      ),
+    ],
+  ),
+  child: Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
 
+      const Text(
+        "Explore",
+        style: TextStyle(
+          fontSize: 22,
+          fontWeight: FontWeight.w800,
+          color: Color(0xFF111827),
+        ),
+      ),
+
+      const SizedBox(height: 6),
+
+      const Text(
+        "Browse rooms and flatmates before creating your profile",
+        style: TextStyle(
+          color: Color(0xFF64748B),
+        ),
+      ),
+
+      const SizedBox(height: 20),
+
+      Row(
+        children: [
+
+          Expanded(
+            child: GestureDetector(
+              onTap: () {
+                setState(() {
+                  _exploreType = "flat_listing";
+                });
+              },
+              child: Container(
+                padding: const EdgeInsets.symmetric(
+                  vertical: 14,
+                ),
+                decoration: BoxDecoration(
+                  color: _exploreType == "flat_listing"
+                      ? const Color(0xFF7C3AED)
+                      : const Color(0xFFF3F4F6),
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                child: Center(
+                  child: Text(
+                    "🏠 Rooms",
+                    style: TextStyle(
+                      color: _exploreType == "flat_listing"
+                          ? Colors.white
+                          : Colors.black87,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
+
+          const SizedBox(width: 12),
+
+          Expanded(
+            child: GestureDetector(
+              onTap: () {
+                setState(() {
+                  _exploreType = "seeking_flatmate";
+                });
+              },
+              child: Container(
+                padding: const EdgeInsets.symmetric(
+                  vertical: 14,
+                ),
+                decoration: BoxDecoration(
+                  color: _exploreType == "seeking_flatmate"
+                      ? const Color(0xFF7C3AED)
+                      : const Color(0xFFF3F4F6),
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                child: Center(
+                  child: Text(
+                    "👤 Flatmates",
+                    style: TextStyle(
+                      color: _exploreType == "seeking_flatmate"
+                          ? Colors.white
+                          : Colors.black87,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+
+      const SizedBox(height: 16),
+
+      SizedBox(
+        width: double.infinity,
+        child: ElevatedButton(
+          onPressed: _openExploreMode,
+          style: ElevatedButton.styleFrom(
+            backgroundColor: const Color(0xFF7C3AED),
+            foregroundColor: Colors.white,
+            minimumSize: const Size(
+              double.infinity,
+              54,
+            ),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(18),
+            ),
+          ),
+          child: const Text(
+            "Explore Matches",
+            style: TextStyle(
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+        ),
+      ),
+    ],
+  ),
+),
+const SizedBox(height: 24),
 HeroBanner(
   onFindRoom: () {
     Navigator.push(

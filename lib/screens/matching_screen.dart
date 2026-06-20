@@ -24,16 +24,16 @@ enum _ViewType {
 }
 
 class MatchingScreen extends StatefulWidget {
-  // Add these final fields to receive the active profile details
   final String profileType;
   final String profileId;
+  final bool isExploreMode;
 
   const MatchingScreen({
     super.key,
     required this.profileType,
     required this.profileId,
+    this.isExploreMode = false,
   });
-
   @override
   State<MatchingScreen> createState() => _MatchingScreenState();
 }
@@ -79,14 +79,35 @@ bool _canUndoPass = false;
     // Initialize _userProfileType and _currentUserParsedProfile from widget properties
     _userProfileType = widget.profileType;
     if (_currentUser == null) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        _showAlertDialog('Not Logged In', 'Please log in to use the matching feature.', () {
-          // You might navigate to a login screen here
-        });
-      });
-    } else {
-      _fetchUserProfile(); // Now fetches using widget.profileId
-    }
+  WidgetsBinding.instance.addPostFrameCallback((_) {
+    _showAlertDialog(
+      'Not Logged In',
+      'Please log in to use the matching feature.',
+      () {},
+    );
+  });
+  return;
+}
+
+if (widget.isExploreMode) {
+
+  if (widget.profileType == "flat_listing") {
+
+    // Show Rooms
+    _fetchFlatListingProfiles();
+
+  } else {
+
+    // Show Flatmates
+    _fetchSeekingFlatmateProfiles();
+
+  }
+
+} else {
+
+  _fetchUserProfile();
+
+}
   }
 
   @override
@@ -401,9 +422,10 @@ bool _canUndoPass = false;
       'AFTER FILTERING LIKED: ${fetchedProfiles.length}',
     );
 
-    _profiles = fetchedProfiles;
-
-    setState(() {});
+    setState(() {
+  _profiles = fetchedProfiles;
+  _isLoading = false;
+});
   } catch (e) {
     debugPrint(
       'FETCH FLAT LISTING ERROR: $e',
@@ -570,9 +592,10 @@ bool _canUndoPass = false;
       'AFTER FILTERING LIKED SEEKING FLATMATES: ${fetchedProfiles.length}',
     );
 
-    _profiles = fetchedProfiles;
-
-    setState(() {});
+    setState(() {
+  _profiles = fetchedProfiles;
+  _isLoading = false;
+});
   } catch (e) {
     debugPrint(
       'FETCH SEEKING FLATMATE ERROR: $e',
@@ -584,6 +607,71 @@ bool _canUndoPass = false;
       () {},
     );
   }
+}
+void _showCreateProfileRequiredDialog() {
+  showDialog(
+    context: context,
+    builder: (_) => AlertDialog(
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(20),
+      ),
+      title: const Text(
+        "Create Profile First",
+      ),
+      content: const Text(
+        "You can explore profiles freely.\n\nCreate your profile to like, connect and chat with others.",
+      ),
+      actions: [
+
+        TextButton(
+          onPressed: () {
+            Navigator.pop(context);
+          },
+          child: const Text(
+            "Later",
+          ),
+        ),
+
+        ElevatedButton(
+          onPressed: () {
+            Navigator.pop(context);
+
+            if (widget.profileType ==
+                "flat_listing") {
+
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) =>
+                      FlatWithFlatmateProfileScreen(
+                    initialPhoneNumber:
+                        null,
+                  ),
+                ),
+              );
+
+            } else {
+
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) =>
+                      FlatmateProfileScreen(
+                    initialPhoneNumber:
+                        null,
+                  ),
+                ),
+              );
+
+            }
+          },
+          child: const Text(
+            "Create Profile",
+          ),
+        ),
+      ],
+    ),
+  );
 }
   void _showAlertDialog(String title, String message, VoidCallback onPressed) {
     showDialog(
@@ -611,7 +699,25 @@ bool _canUndoPass = false;
     setState(() {
       _currentFilters = newFilters;
     });
-    _fetchUserProfile(applyFilters: true);
+    if (widget.isExploreMode) {
+
+  if (widget.profileType == "flat_listing") {
+    _fetchFlatListingProfiles(
+      applyFilters: true,
+    );
+  } else {
+    _fetchSeekingFlatmateProfiles(
+      applyFilters: true,
+    );
+  }
+
+} else {
+
+  _fetchUserProfile(
+    applyFilters: true,
+  );
+
+}
     if (_scaffoldKey.currentState?.isDrawerOpen ?? false) {
       Navigator.of(context).pop(); // Close the drawer after applying filters
     }
@@ -1141,9 +1247,22 @@ bool _canUndoPass = false;
     // NEW: Increment interaction count regardless of like or dislike
     _interactionCount++;
 
-    if (direction == DismissDirection.startToEnd) {
-      _processLike(likedOrPassedUserId, dismissedProfileDocId);
-    }else if (direction == DismissDirection.endToStart) {
+   if (direction ==
+    DismissDirection.startToEnd) {
+
+  if (widget.isExploreMode) {
+
+    _showCreateProfileRequiredDialog();
+
+  } else {
+
+    _processLike(
+      likedOrPassedUserId,
+      dismissedProfileDocId,
+    );
+
+  }
+}else if (direction == DismissDirection.endToStart) {
 
   _lastPassedProfile = dismissedProfile;
   _canUndoPass = true;
