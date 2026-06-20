@@ -22,9 +22,9 @@ Row(
 children: [
 Expanded(
 child: _actionCard(
-title: "Need Room",
-subtitle: "Find your next stay",
-icon: Icons.bed_rounded,
+title: "Looking for a Flat",
+subtitle: "Find a flat & flatmates",
+icon: Icons.apartment_rounded,
 gradient: const [
 Color(0xFFEDE9FE),
 Color(0xFFF5F3FF),
@@ -36,8 +36,8 @@ onTap: onNeedRoom,
 const SizedBox(width: 14),
 Expanded(
 child: _actionCard(
-title: "Need Flatmate",
-subtitle: "Find roommates",
+title: "Looking for a Flatmate",
+subtitle: "Already have a flat",
 icon: Icons.groups_rounded,
 gradient: const [
 Color(0xFFFCE7F3),
@@ -51,39 +51,39 @@ onTap: onNeedFlatmate,
 ),
 
 
-  const SizedBox(height: 14),
+  // const SizedBox(height: 14),
 
-  Row(
-    children: [
-      Expanded(
-        child: _actionCard(
-          title: "List Property",
-          subtitle: "Post your flat",
-          icon: Icons.home_work_rounded,
-          gradient: const [
-            Color(0xFFFEF3C7),
-            Color(0xFFFFFBEB),
-          ],
-          badge: "FREE",
-          onTap: onListProperty,
-        ),
-      ),
-      const SizedBox(width: 14),
-      Expanded(
-        child: _actionCard(
-          title: "Explore",
-          subtitle: "Browse homes",
-          icon: Icons.explore_rounded,
-          gradient: const [
-            Color(0xFFCFFAFE),
-            Color(0xFFF0FDFA),
-          ],
-          badge: "NEW",
-          onTap: onExplore,
-        ),
-      ),
-    ],
-  ),
+  // Row(
+  //   children: [
+  //     Expanded(
+  //       child: _actionCard(
+  //         title: "List Property",
+  //         subtitle: "Post your flat",
+  //         icon: Icons.home_work_rounded,
+  //         gradient: const [
+  //           Color(0xFFFEF3C7),
+  //           Color(0xFFFFFBEB),
+  //         ],
+  //         badge: "FREE",
+  //         onTap: onListProperty,
+  //       ),
+  //     ),
+  //     const SizedBox(width: 14),
+  //     Expanded(
+  //       child: _actionCard(
+  //         title: "Explore",
+  //         subtitle: "Browse homes",
+  //         icon: Icons.explore_rounded,
+  //         gradient: const [
+  //           Color(0xFFCFFAFE),
+  //           Color(0xFFF0FDFA),
+  //         ],
+  //         badge: "NEW",
+  //         onTap: onExplore,
+  //       ),
+  //     ),
+  //   ],
+  // ),
 ],
 
 
