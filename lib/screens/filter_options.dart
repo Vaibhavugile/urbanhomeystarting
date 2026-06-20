@@ -1,68 +1,81 @@
-// lib/screens/matching_screen.dart (or a separate filter_options.dart file)
-
 class FilterOptions {
-  // Location & Price Filters
-  String? desiredCity;
-  String? areaPreference; // NEW: For area preference
-  DateTime? moveInDate; // NEW: For seeker's move-in date
-  DateTime? availabilityDate; // NEW: For listing's availability date
+  // ===============================
+  // LOCATION
+  // ===============================
 
-  // Common filters (for age, gender that apply to the *other* user)
+  String? desiredCity;
+  String? areaPreference;
+
+  String? placeId;
+
+  double? latitude;
+  double? longitude;
+
+  double searchRadiusKm = 10;
+
+  bool sortByNearest = true;
+
+  // ===============================
+  // DATES
+  // ===============================
+
+  DateTime? moveInDate;
+  DateTime? availabilityDate;
+
+  // ===============================
+  // BASIC FILTERS
+  // ===============================
+
   int? ageMin;
   int? ageMax;
-  String? gender; // Gender of the *other* user you are looking for
 
-  // FlatListing specific filters (when a seeker is searching for a flat)
+  String? gender;
+
+  String? occupation;
+
+  // ===============================
+  // FLAT FILTERS
+  // ===============================
+
   int? rentPriceMin;
   int? rentPriceMax;
+
   String? flatType;
+
+  String? roomType; // NEW
+
   String? furnishedStatus;
-  int? numberOfBedrooms; // NEW: Number of bedrooms
-  int? numberOfBathrooms; // NEW: Number of bathrooms
+
+  String? bathroomType; // NEW
+
+  String? leaseDuration; // NEW
+
+  int? numberOfBedrooms;
+
+  int? numberOfBathrooms;
+
   List<String> amenitiesDesired;
-  String? availableFor; // NEW: Who the flat is available for (male, female, couple, family)
-String? placeId;
 
-double? latitude;
-double? longitude;
+  String? availableFor;
 
-double searchRadiusKm = 10;
+  // ===============================
+  // SEEKING FLATMATE FILTERS
+  // ===============================
 
-bool sortByNearest = true;
-
-int? minimumMatchPercentage;
-
-bool verifiedOnly = false;
-
-bool profilesWithPhotosOnly = false;
-
-bool activeWithin7Days = false;
-  // SeekingFlatmate specific filters (when a lister is searching for a flatmate)
   int? budgetMin;
   int? budgetMax;
 
-  // Lifestyle & Habit Filters (for mutual compatibility)
-  // These are more granular and can be selected by the user in the filter screen
-  // And then applied to the habits/preferences of the *other* profile.
-  String? cleanlinessLevel; // NEW: e.g., 'Very Clean', 'Moderately Clean'
-  String? socialHabits; // NEW: e.g., 'Very Social', 'Introvert'
-  // String? noiseLevel; // NEW: e.g., 'Quiet', 'Moderate'
-  String? smokingHabit; // NEW: e.g., 'Non-Smoker', 'Social Smoker'
-  String? drinkingHabit; // NEW: e.g., 'Non-Drinker', 'Social Drinker'
-  String? foodPreference; // NEW: e.g., 'Vegetarian', 'Non-Vegetarian'
-  String? petOwnership; // NEW: e.g., 'Has Pets', 'No Pets'
-  String? petTolerance; // NEW: e.g., 'Pet-Friendly', 'Not Pet-Friendly'
-  // String? workSchedule; // NEW: e.g., '9-5', 'Flexible'
-  // String? sleepingSchedule; // NEW: e.g., 'Early Riser', 'Night Owl'
-  // String? visitorsPolicy; // NEW: e.g., 'Guests Welcome', 'Occasional Guests'
-  // String? guestsOvernightPolicy; // NEW: e.g., 'Allowed', 'Not Allowed'
-  String? occupation; // NEW: for matching occupation directly
+  // ===============================
+  // MATCHING FILTERS
+  // ===============================
 
-  // Keep these generic lists for other preferences if needed, but for direct Firestore queries,
-  // granular fields are often easier to manage.
-  List<String> selectedIdealQualities;
-  List<String> selectedDealBreakers;
+  int? minimumMatchPercentage;
 
+  bool verifiedOnly = false;
+
+  bool profilesWithPhotosOnly = false;
+
+  bool activeWithin7Days = false;
 FilterOptions({
   // ===============================
   // LOCATION
@@ -107,9 +120,16 @@ FilterOptions({
 
   this.flatType,
 
+  this.roomType,
+
   this.furnishedStatus,
 
+  this.bathroomType,
+
+  this.leaseDuration,
+
   this.numberOfBedrooms,
+
   this.numberOfBathrooms,
 
   this.availableFor,
@@ -124,25 +144,7 @@ FilterOptions({
   this.budgetMax,
 
   // ===============================
-  // LIFESTYLE FILTERS
-  // ===============================
-
-  this.cleanlinessLevel,
-
-  this.socialHabits,
-
-  this.smokingHabit,
-
-  this.drinkingHabit,
-
-  this.foodPreference,
-
-  this.petOwnership,
-
-  this.petTolerance,
-
-  // ===============================
-  // COMPATIBILITY FILTERS
+  // MATCHING FILTERS
   // ===============================
 
   this.minimumMatchPercentage,
@@ -152,72 +154,95 @@ FilterOptions({
   this.profilesWithPhotosOnly = false,
 
   this.activeWithin7Days = false,
-
-  List<String>? selectedIdealQualities,
-
-  List<String>? selectedDealBreakers,
-})  : amenitiesDesired = amenitiesDesired ?? [],
-      selectedIdealQualities =
-          selectedIdealQualities ?? [],
-      selectedDealBreakers =
-          selectedDealBreakers ?? [];
-  bool hasFilters() {
+})
+    : amenitiesDesired = amenitiesDesired ?? [];
+ bool hasFilters() {
   return
 
-      // Location
+      // ===============================
+      // LOCATION
+      // ===============================
+
       desiredCity != null ||
       areaPreference != null ||
+
       placeId != null ||
+
       latitude != null ||
       longitude != null ||
+
       searchRadiusKm != 10 ||
+
       !sortByNearest ||
 
-      // Dates
+      // ===============================
+      // DATES
+      // ===============================
+
       moveInDate != null ||
       availabilityDate != null ||
 
-      // Basic
+      // ===============================
+      // BASIC FILTERS
+      // ===============================
+
       ageMin != null ||
       ageMax != null ||
+
       gender != null ||
+
       occupation != null ||
 
-      // Flat
+      // ===============================
+      // FLAT FILTERS
+      // ===============================
+
       rentPriceMin != null ||
       rentPriceMax != null ||
+
       flatType != null ||
+
+      roomType != null ||
+
       furnishedStatus != null ||
+
+      bathroomType != null ||
+
+      leaseDuration != null ||
+
       numberOfBedrooms != null ||
+
       numberOfBathrooms != null ||
+
       availableFor != null ||
+
       amenitiesDesired.isNotEmpty ||
 
-      // Budget
+      // ===============================
+      // BUDGET FILTERS
+      // ===============================
+
       budgetMin != null ||
       budgetMax != null ||
 
-      // Lifestyle
-      cleanlinessLevel != null ||
-      socialHabits != null ||
-      smokingHabit != null ||
-      drinkingHabit != null ||
-      foodPreference != null ||
-      petOwnership != null ||
-      petTolerance != null ||
+      // ===============================
+      // MATCHING FILTERS
+      // ===============================
 
-      // Compatibility
       minimumMatchPercentage != null ||
+
       verifiedOnly ||
+
       profilesWithPhotosOnly ||
-      activeWithin7Days ||
-      selectedIdealQualities.isNotEmpty ||
-      selectedDealBreakers.isNotEmpty;
+
+      activeWithin7Days;
 }
+void clear() {
 
-  void clear() {
+  // ===============================
+  // LOCATION
+  // ===============================
 
-  // Location
   desiredCity = null;
   areaPreference = null;
 
@@ -230,23 +255,40 @@ FilterOptions({
 
   sortByNearest = true;
 
-  // Dates
+  // ===============================
+  // DATES
+  // ===============================
+
   moveInDate = null;
   availabilityDate = null;
 
-  // Basic
+  // ===============================
+  // BASIC FILTERS
+  // ===============================
+
   ageMin = null;
   ageMax = null;
 
   gender = null;
+
   occupation = null;
 
-  // Flat
+  // ===============================
+  // FLAT FILTERS
+  // ===============================
+
   rentPriceMin = null;
   rentPriceMax = null;
 
   flatType = null;
+
+  roomType = null;
+
   furnishedStatus = null;
+
+  bathroomType = null;
+
+  leaseDuration = null;
 
   numberOfBedrooms = null;
   numberOfBathrooms = null;
@@ -255,23 +297,17 @@ FilterOptions({
 
   amenitiesDesired.clear();
 
-  // Budget
+  // ===============================
+  // BUDGET FILTERS
+  // ===============================
+
   budgetMin = null;
   budgetMax = null;
 
-  // Lifestyle
-  cleanlinessLevel = null;
-  socialHabits = null;
+  // ===============================
+  // MATCHING FILTERS
+  // ===============================
 
-  smokingHabit = null;
-  drinkingHabit = null;
-
-  foodPreference = null;
-
-  petOwnership = null;
-  petTolerance = null;
-
-  // Compatibility
   minimumMatchPercentage = null;
 
   verifiedOnly = false;
@@ -279,13 +315,13 @@ FilterOptions({
   profilesWithPhotosOnly = false;
 
   activeWithin7Days = false;
-
-  selectedIdealQualities.clear();
-  selectedDealBreakers.clear();
 }
 
-  FilterOptions copyWith({
-  // Location
+ FilterOptions copyWith({
+  // ===============================
+  // LOCATION
+  // ===============================
+
   String? desiredCity,
   String? areaPreference,
   String? placeId,
@@ -297,22 +333,39 @@ FilterOptions({
 
   bool? sortByNearest,
 
-  // Dates
+  // ===============================
+  // DATES
+  // ===============================
+
   DateTime? moveInDate,
   DateTime? availabilityDate,
 
-  // Basic
+  // ===============================
+  // BASIC FILTERS
+  // ===============================
+
   int? ageMin,
   int? ageMax,
+
   String? gender,
   String? occupation,
 
-  // Flat Filters
+  // ===============================
+  // FLAT FILTERS
+  // ===============================
+
   int? rentPriceMin,
   int? rentPriceMax,
 
   String? flatType,
+
+  String? roomType,
+
   String? furnishedStatus,
+
+  String? bathroomType,
+
+  String? leaseDuration,
 
   int? numberOfBedrooms,
   int? numberOfBathrooms,
@@ -321,178 +374,157 @@ FilterOptions({
 
   List<String>? amenitiesDesired,
 
-  // Budget
+  // ===============================
+  // BUDGET FILTERS
+  // ===============================
+
   int? budgetMin,
   int? budgetMax,
 
-  // Lifestyle
-  String? cleanlinessLevel,
-  String? socialHabits,
+  // ===============================
+  // MATCHING FILTERS
+  // ===============================
 
-  String? smokingHabit,
-  String? drinkingHabit,
-
-  String? foodPreference,
-
-  String? petOwnership,
-  String? petTolerance,
-
-  // Compatibility
   int? minimumMatchPercentage,
 
   bool? verifiedOnly,
   bool? profilesWithPhotosOnly,
   bool? activeWithin7Days,
-
-  List<String>? selectedIdealQualities,
-  List<String>? selectedDealBreakers,
 }) {
-  return FilterOptions(
+ return FilterOptions(
 
-    // Location
-    desiredCity:
-        desiredCity ?? this.desiredCity,
+  // ===============================
+  // LOCATION
+  // ===============================
 
-    areaPreference:
-        areaPreference ??
-            this.areaPreference,
+  desiredCity:
+      desiredCity ?? this.desiredCity,
 
-    placeId:
-        placeId ?? this.placeId,
+  areaPreference:
+      areaPreference ??
+          this.areaPreference,
 
-    latitude:
-        latitude ?? this.latitude,
+  placeId:
+      placeId ?? this.placeId,
 
-    longitude:
-        longitude ?? this.longitude,
+  latitude:
+      latitude ?? this.latitude,
 
-    searchRadiusKm:
-        searchRadiusKm ??
-            this.searchRadiusKm,
+  longitude:
+      longitude ?? this.longitude,
 
-    sortByNearest:
-        sortByNearest ??
-            this.sortByNearest,
+  searchRadiusKm:
+      searchRadiusKm ??
+          this.searchRadiusKm,
 
-    // Dates
-    moveInDate:
-        moveInDate ?? this.moveInDate,
+  sortByNearest:
+      sortByNearest ??
+          this.sortByNearest,
 
-    availabilityDate:
-        availabilityDate ??
-            this.availabilityDate,
+  // ===============================
+  // DATES
+  // ===============================
 
-    // Basic
-    ageMin:
-        ageMin ?? this.ageMin,
+  moveInDate:
+      moveInDate ?? this.moveInDate,
 
-    ageMax:
-        ageMax ?? this.ageMax,
+  availabilityDate:
+      availabilityDate ??
+          this.availabilityDate,
 
-    gender:
-        gender ?? this.gender,
+  // ===============================
+  // BASIC FILTERS
+  // ===============================
 
-    occupation:
-        occupation ?? this.occupation,
+  ageMin:
+      ageMin ?? this.ageMin,
 
-    // Flat Filters
-    rentPriceMin:
-        rentPriceMin ??
-            this.rentPriceMin,
+  ageMax:
+      ageMax ?? this.ageMax,
 
-    rentPriceMax:
-        rentPriceMax ??
-            this.rentPriceMax,
+  gender:
+      gender ?? this.gender,
 
-    flatType:
-        flatType ?? this.flatType,
+  occupation:
+      occupation ?? this.occupation,
 
-    furnishedStatus:
-        furnishedStatus ??
-            this.furnishedStatus,
+  // ===============================
+  // FLAT FILTERS
+  // ===============================
 
-    numberOfBedrooms:
-        numberOfBedrooms ??
-            this.numberOfBedrooms,
+  rentPriceMin:
+      rentPriceMin ??
+          this.rentPriceMin,
 
-    numberOfBathrooms:
-        numberOfBathrooms ??
-            this.numberOfBathrooms,
+  rentPriceMax:
+      rentPriceMax ??
+          this.rentPriceMax,
 
-    availableFor:
-        availableFor ??
-            this.availableFor,
+  flatType:
+      flatType ?? this.flatType,
 
-    amenitiesDesired:
-        amenitiesDesired ??
-            List.from(
-              this.amenitiesDesired,
-            ),
+  roomType:
+      roomType ?? this.roomType,
 
-    // Budget
-    budgetMin:
-        budgetMin ?? this.budgetMin,
+  furnishedStatus:
+      furnishedStatus ??
+          this.furnishedStatus,
 
-    budgetMax:
-        budgetMax ?? this.budgetMax,
+  bathroomType:
+      bathroomType ??
+          this.bathroomType,
 
-    // Lifestyle
-    cleanlinessLevel:
-        cleanlinessLevel ??
-            this.cleanlinessLevel,
+  leaseDuration:
+      leaseDuration ??
+          this.leaseDuration,
 
-    socialHabits:
-        socialHabits ??
-            this.socialHabits,
+  numberOfBedrooms:
+      numberOfBedrooms ??
+          this.numberOfBedrooms,
 
-    smokingHabit:
-        smokingHabit ??
-            this.smokingHabit,
+  numberOfBathrooms:
+      numberOfBathrooms ??
+          this.numberOfBathrooms,
 
-    drinkingHabit:
-        drinkingHabit ??
-            this.drinkingHabit,
+  availableFor:
+      availableFor ??
+          this.availableFor,
 
-    foodPreference:
-        foodPreference ??
-            this.foodPreference,
+  amenitiesDesired:
+      amenitiesDesired ??
+          List.from(
+            this.amenitiesDesired,
+          ),
 
-    petOwnership:
-        petOwnership ??
-            this.petOwnership,
+  // ===============================
+  // BUDGET FILTERS
+  // ===============================
 
-    petTolerance:
-        petTolerance ??
-            this.petTolerance,
+  budgetMin:
+      budgetMin ?? this.budgetMin,
 
-    // Compatibility
-    minimumMatchPercentage:
-        minimumMatchPercentage ??
-            this.minimumMatchPercentage,
+  budgetMax:
+      budgetMax ?? this.budgetMax,
 
-    verifiedOnly:
-        verifiedOnly ??
-            this.verifiedOnly,
+  // ===============================
+  // MATCHING FILTERS
+  // ===============================
 
-    profilesWithPhotosOnly:
-        profilesWithPhotosOnly ??
-            this.profilesWithPhotosOnly,
+  minimumMatchPercentage:
+      minimumMatchPercentage ??
+          this.minimumMatchPercentage,
 
-    activeWithin7Days:
-        activeWithin7Days ??
-            this.activeWithin7Days,
+  verifiedOnly:
+      verifiedOnly ??
+          this.verifiedOnly,
 
-    selectedIdealQualities:
-        selectedIdealQualities ??
-            List.from(
-              this.selectedIdealQualities,
-            ),
+  profilesWithPhotosOnly:
+      profilesWithPhotosOnly ??
+          this.profilesWithPhotosOnly,
 
-    selectedDealBreakers:
-        selectedDealBreakers ??
-            List.from(
-              this.selectedDealBreakers,
-            ),
-  );
+  activeWithin7Days:
+      activeWithin7Days ??
+          this.activeWithin7Days,
+);
 }
 }
