@@ -16,7 +16,7 @@ import 'package:mytennat/screens/matching/widgets/profile_card.dart';
 import 'package:mytennat/screens/matching/widgets/profile_list_item.dart';
 import 'package:mytennat/screens/matching/services/matching_service.dart';
 import 'package:mytennat/screens/matching/widgets/ad_panel.dart';
-
+import 'dart:math' as math;
 // NEW: Enum to manage different view types
 enum _ViewType {
   card,
@@ -57,7 +57,14 @@ class _MatchingScreenState extends State<MatchingScreen> {
   final Map<String, List<dynamic>> _incomingLikes = {};
   // Key: current user's active profile ID, Value: List of profiles liked by it
   final Map<String, List<dynamic>> _outgoingLikes = {};
+// Pagination
+DocumentSnapshot? _lastDocument;
 
+bool _hasMoreProfiles = true;
+
+bool _isLoadingMore = false;
+
+static const int _pageSize = 50;
 
   String? _bannerMessage;
   String? _lastLikedProfileName; // Name of the person you just liked who didn't like back
@@ -134,7 +141,69 @@ if (widget.isExploreMode) {
     }
     return 'Unknown Type';
   }
+  double _calculateDistanceKm(
+  double lat1,
+  double lon1,
+  double lat2,
+  double lon2,
+) {
+  const double earthRadius = 6371;
 
+  final dLat =
+      (lat2 - lat1) *
+      (math.pi / 180);
+
+  final dLon =
+      (lon2 - lon1) *
+      (math.pi / 180);
+
+  final a =
+      math.sin(dLat / 2) *
+          math.sin(dLat / 2) +
+      math.cos(
+            lat1 *
+                (math.pi / 180),
+          ) *
+          math.cos(
+            lat2 *
+                (math.pi / 180),
+          ) *
+          math.sin(dLon / 2) *
+          math.sin(dLon / 2);
+
+  final c = 2 *
+      math.atan2(
+        math.sqrt(a),
+        math.sqrt(1 - a),
+      );
+
+  return earthRadius * c;
+}
+String? get _defaultCity {
+
+  if (_currentFilters.desiredCity != null &&
+      _currentFilters.desiredCity!.isNotEmpty) {
+    return _currentFilters.desiredCity;
+  }
+
+  if (_currentUserParsedProfile
+      is FlatListingProfile) {
+
+    return (_currentUserParsedProfile
+            as FlatListingProfile)
+        .city;
+  }
+
+  if (_currentUserParsedProfile
+      is SeekingFlatmateProfile) {
+
+    return (_currentUserParsedProfile
+            as SeekingFlatmateProfile)
+        .city;
+  }
+
+  return null;
+}
   Future<void> _fetchUserProfile({bool applyFilters = false}) async {
     if (_currentUser == null) return;
 
@@ -176,7 +245,7 @@ if (widget.isExploreMode) {
           await _fetchIncomingLikes(_currentUser!.uid, widget.profileId);
           await _fetchOutgoingLikes(_currentUser!.uid, widget.profileId);
           // If current user is 'flat_listing', they are looking for 'seeking_flatmate' profiles
-          await _fetchSeekingFlatmateProfiles(applyFilters: applyFilters);
+          await _fetchSeekingFlatmateProfiles(applyFilters: true);
         } else {
           _showAlertDialog('Profile Not Found', 'The selected Flat Listing profile could not be found.', () {
             // Navigate back to profile selection or home
@@ -199,7 +268,7 @@ if (widget.isExploreMode) {
           await _fetchIncomingLikes(_currentUser!.uid, widget.profileId);
           await _fetchOutgoingLikes(_currentUser!.uid, widget.profileId);
           // If current user is 'seeking_flatmate', they are looking for 'flat_listing' profiles
-          await _fetchFlatListingProfiles(applyFilters: applyFilters);
+          await _fetchFlatListingProfiles(applyFilters: true);
         } else {
           _showAlertDialog('Profile Not Found', 'The selected Seeking Flatmate profile could not be found.', () {
             // Navigate back to profile selection or home
@@ -296,58 +365,57 @@ if (widget.isExploreMode) {
       print('Error fetching outgoing likes: $e');
     }
   }
-  Future<void> _fetchFlatListingProfiles({
+Future<void> _fetchFlatListingProfiles({
   bool applyFilters = false,
+  
 }) async {
   try {
+    if (applyFilters) {
+  _lastDocument = null;
+  _hasMoreProfiles = true;
+}
     Query query = _firestore
         .collectionGroup('flatListings')
         .where(
           'uid',
           isNotEqualTo: _currentUser!.uid,
         );
+        debugPrint(
+  'CURRENT USER PROFILE TYPE = ${_currentUserParsedProfile.runtimeType}',
+);
+
+debugPrint(
+  'CURRENT FILTER CITY = ${_currentFilters.desiredCity}',
+);
+
+debugPrint(
+  'DEFAULT CITY = $_defaultCity',
+);
 
     if (applyFilters &&
         _currentUserParsedProfile
             is SeekingFlatmateProfile) {
 
-      if (_currentFilters.desiredCity != null &&
-          _currentFilters.desiredCity!
-              .isNotEmpty) {
-        query = query.where(
-          'userProfile.city',
-          isEqualTo:
-              _currentFilters.desiredCity,
-        );
-      }
+      if (_defaultCity != null &&
+    _defaultCity!.isNotEmpty) {
+
+  debugPrint(
+    'APPLYING CITY FILTER => $_defaultCity',
+  );
+
+  query = query.where(
+    'city',
+    isEqualTo: _defaultCity,
+  );
+}
 
       if (_currentFilters.availabilityDate !=
           null) {
         query = query.where(
-          'flatDetails.availabilityDate',
+          'availabilityDate',
           isGreaterThanOrEqualTo:
               _currentFilters
                   .availabilityDate,
-        );
-      }
-
-      if (_currentFilters.rentPriceMin !=
-          null) {
-        query = query.where(
-          'flatDetails.rentPrice',
-          isGreaterThanOrEqualTo:
-              _currentFilters
-                  .rentPriceMin,
-        );
-      }
-
-      if (_currentFilters.rentPriceMax !=
-          null) {
-        query = query.where(
-          'flatDetails.rentPrice',
-          isLessThanOrEqualTo:
-              _currentFilters
-                  .rentPriceMax,
         );
       }
 
@@ -355,16 +423,89 @@ if (widget.isExploreMode) {
           _currentFilters.flatType!
               .isNotEmpty) {
         query = query.where(
-          'flatDetails.flatType',
+          'flatType',
           isEqualTo:
               _currentFilters.flatType,
         );
       }
+
+      if (_currentFilters.roomType != null &&
+          _currentFilters.roomType!
+              .isNotEmpty) {
+        query = query.where(
+          'roomType',
+          isEqualTo:
+              _currentFilters.roomType,
+        );
+      }
+
+      if (_currentFilters.furnishedStatus !=
+              null &&
+          _currentFilters
+              .furnishedStatus!
+              .isNotEmpty) {
+        query = query.where(
+          'furnishedStatus',
+          isEqualTo:
+              _currentFilters
+                  .furnishedStatus,
+        );
+      }
+
+      if (_currentFilters.bathroomType !=
+              null &&
+          _currentFilters
+              .bathroomType!
+              .isNotEmpty) {
+        query = query.where(
+          'bathroomType',
+          isEqualTo:
+              _currentFilters
+                  .bathroomType,
+        );
+      }
+
+      if (_currentFilters.leaseDuration !=
+              null &&
+          _currentFilters
+              .leaseDuration!
+              .isNotEmpty) {
+        query = query.where(
+          'leaseDuration',
+          isEqualTo:
+              _currentFilters
+                  .leaseDuration,
+        );
+      }
+
+      if (_currentFilters.availableFor !=
+              null &&
+          _currentFilters
+              .availableFor!
+              .isNotEmpty) {
+        query = query.where(
+          'availableFor',
+          isEqualTo:
+              _currentFilters
+                  .availableFor,
+        );
+      }
     }
 
-    // FETCH PROFILES
+    // LIMIT RESULTS
     final QuerySnapshot querySnapshot =
-        await query.get();
+    await query
+        .limit(_pageSize)
+        .get();
+
+    if (querySnapshot.docs.isNotEmpty) {
+  _lastDocument =
+      querySnapshot.docs.last;
+}
+
+_hasMoreProfiles =
+    querySnapshot.docs.length ==
+    _pageSize;
 
     // FETCH LIKED PROFILES
     final likedSnapshot =
@@ -386,18 +527,7 @@ if (widget.isExploreMode) {
       'LIKED IDS COUNT: ${likedIds.length}',
     );
 
-    for (final id in likedIds) {
-      debugPrint(
-        'ALREADY LIKED => $id',
-      );
-    }
-
-    debugPrint(
-      'TOTAL FROM FIRESTORE: ${querySnapshot.docs.length}',
-    );
-
-    // REMOVE ALREADY LIKED PROFILES
-    final List<dynamic>
+    final List<FlatListingProfile>
         fetchedProfiles =
         querySnapshot.docs
             .where(
@@ -418,14 +548,113 @@ if (widget.isExploreMode) {
             )
             .toList();
 
+    // RENT FILTER
+    if (_currentFilters.rentPriceMin !=
+        null) {
+      fetchedProfiles.removeWhere(
+        (profile) =>
+            profile.rentPrice == null ||
+profile.rentPrice! <
+_currentFilters.rentPriceMin!
+      );
+    }
+
+    if (_currentFilters.rentPriceMax !=
+        null) {
+      fetchedProfiles.removeWhere(
+        (profile) =>
+            profile.rentPrice == null ||
+profile.rentPrice! >
+_currentFilters.rentPriceMax!
+      );
+    }
+
+    // AMENITIES FILTER
+    if (_currentFilters
+        .amenitiesDesired.isNotEmpty) {
+      fetchedProfiles.removeWhere(
+        (profile) =>
+            !_currentFilters
+                .amenitiesDesired
+                .every(
+                  (a) => profile
+                      .amenities
+                      .contains(a),
+                ),
+      );
+    }
+ // LOCATION RADIUS FILTER
+if (_currentFilters.latitude != null &&
+    _currentFilters.longitude != null) {
+
+  fetchedProfiles.removeWhere(
+    (profile) {
+
+      if (profile.latitude == null ||
+          profile.longitude == null) {
+        return true;
+      }
+
+      final distance =
+          _calculateDistanceKm(
+        _currentFilters.latitude!,
+        _currentFilters.longitude!,
+        profile.latitude!,
+        profile.longitude!,
+      );
+
+      return distance >
+          _currentFilters.searchRadiusKm;
+    },
+  );
+}
+if (_currentFilters.sortByNearest &&
+    _currentFilters.latitude != null &&
+    _currentFilters.longitude != null) {
+
+  fetchedProfiles.sort(
+    (a, b) {
+
+      final distanceA =
+          _calculateDistanceKm(
+        _currentFilters.latitude!,
+        _currentFilters.longitude!,
+        a.latitude ?? 0,
+        a.longitude ?? 0,
+      );
+
+      final distanceB =
+          _calculateDistanceKm(
+        _currentFilters.latitude!,
+        _currentFilters.longitude!,
+        b.latitude ?? 0,
+        b.longitude ?? 0,
+      );
+
+      return distanceA.compareTo(
+        distanceB,
+      );
+    },
+  );
+}
+    // PHOTOS ONLY
+    if (_currentFilters
+        .profilesWithPhotosOnly) {
+      fetchedProfiles.removeWhere(
+        (profile) =>
+            profile.imageUrls == null ||
+profile.imageUrls!.isEmpty,
+      );
+    }
+
     debugPrint(
       'AFTER FILTERING LIKED: ${fetchedProfiles.length}',
     );
 
     setState(() {
-  _profiles = fetchedProfiles;
-  _isLoading = false;
-});
+      _profiles = fetchedProfiles;
+      _isLoading = false;
+    });
   } catch (e) {
     debugPrint(
       'FETCH FLAT LISTING ERROR: $e',
@@ -438,10 +667,289 @@ if (widget.isExploreMode) {
     );
   }
 }
+Future<void> _loadMoreFlatListings() async {
+
+  if (_isLoadingMore ||
+      !_hasMoreProfiles ||
+      _lastDocument == null) {
+    return;
+  }
+
+  setState(() {
+    _isLoadingMore = true;
+  });
+
+  try {
+
+    Query query = _firestore
+        .collectionGroup('flatListings')
+        .where(
+          'uid',
+          isNotEqualTo:
+              _currentUser!.uid,
+        );
+
+    // APPLY SAME FILTERS
+    if (_currentUserParsedProfile
+        is SeekingFlatmateProfile) {
+
+      if (_defaultCity != null &&
+    _defaultCity!.isNotEmpty) {
+
+  query = query.where(
+    'city',
+    isEqualTo: _defaultCity,
+  );
+}
+
+      if (_currentFilters.availabilityDate !=
+          null) {
+        query = query.where(
+          'availabilityDate',
+          isGreaterThanOrEqualTo:
+              _currentFilters
+                  .availabilityDate,
+        );
+      }
+
+      if (_currentFilters.flatType != null &&
+          _currentFilters.flatType!
+              .isNotEmpty) {
+        query = query.where(
+          'flatType',
+          isEqualTo:
+              _currentFilters.flatType,
+        );
+      }
+
+      if (_currentFilters.roomType != null &&
+          _currentFilters.roomType!
+              .isNotEmpty) {
+        query = query.where(
+          'roomType',
+          isEqualTo:
+              _currentFilters.roomType,
+        );
+      }
+
+      if (_currentFilters.furnishedStatus !=
+              null &&
+          _currentFilters
+              .furnishedStatus!
+              .isNotEmpty) {
+        query = query.where(
+          'furnishedStatus',
+          isEqualTo:
+              _currentFilters
+                  .furnishedStatus,
+        );
+      }
+
+      if (_currentFilters.bathroomType !=
+              null &&
+          _currentFilters
+              .bathroomType!
+              .isNotEmpty) {
+        query = query.where(
+          'bathroomType',
+          isEqualTo:
+              _currentFilters
+                  .bathroomType,
+        );
+      }
+
+      if (_currentFilters.leaseDuration !=
+              null &&
+          _currentFilters
+              .leaseDuration!
+              .isNotEmpty) {
+        query = query.where(
+          'leaseDuration',
+          isEqualTo:
+              _currentFilters
+                  .leaseDuration,
+        );
+      }
+
+      if (_currentFilters.availableFor !=
+              null &&
+          _currentFilters
+              .availableFor!
+              .isNotEmpty) {
+        query = query.where(
+          'availableFor',
+          isEqualTo:
+              _currentFilters
+                  .availableFor,
+        );
+      }
+    }
+
+    final QuerySnapshot snapshot =
+        await query
+            .startAfterDocument(
+              _lastDocument!,
+            )
+            .limit(_pageSize)
+            .get();
+  debugPrint(
+  'FIRESTORE RETURNED ${snapshot.docs.length} DOCS',
+);
+
+for (final doc in snapshot.docs) {
+  debugPrint(
+    'CITY FROM FIRESTORE => ${doc['city']}',
+  );
+}
+
+    if (snapshot.docs.isNotEmpty) {
+      _lastDocument =
+          snapshot.docs.last;
+    }
+
+    _hasMoreProfiles =
+        snapshot.docs.length ==
+        _pageSize;
+
+    final likedSnapshot =
+        await _firestore
+            .collection('user_likes')
+            .doc(_currentUser!.uid)
+            .collection('likes')
+            .get();
+
+    final likedIds =
+        likedSnapshot.docs
+            .map(
+              (e) => e[
+                  'likedProfileDocumentId'],
+            )
+            .toSet();
+
+    List<FlatListingProfile>
+        newProfiles =
+        snapshot.docs
+            .where(
+              (doc) =>
+                  !likedIds.contains(
+                doc.id,
+              ),
+            )
+            .map(
+              (doc) =>
+                  FlatListingProfile
+                      .fromMap(
+                doc.data()
+                    as Map<
+                        String,
+                        dynamic>,
+                doc.id,
+              ),
+            )
+            .toList();
+
+    // LOCAL FILTERS
+
+    if (_currentFilters.rentPriceMin !=
+        null) {
+      newProfiles.removeWhere(
+         (p) =>
+         p.rentPrice == null ||
+        p.rentPrice! <
+            _currentFilters
+                .rentPriceMin!,
+      );
+    }
+
+    if (_currentFilters.rentPriceMax !=
+    null) {
+  newProfiles.removeWhere(
+    (p) =>
+        p.rentPrice == null ||
+        p.rentPrice! >
+            _currentFilters
+                .rentPriceMax!,
+  );
+}
+    if (_currentFilters
+        .amenitiesDesired.isNotEmpty) {
+
+      newProfiles.removeWhere(
+        (p) =>
+            !_currentFilters
+                .amenitiesDesired
+                .every(
+                  (a) => p.amenities
+                      .contains(a),
+                ),
+      );
+    }
+
+    if (_currentFilters
+        .profilesWithPhotosOnly) {
+
+      newProfiles.removeWhere(
+        (p) => p.imageUrls == null ||
+p.imageUrls!.isEmpty,
+      );
+    }
+
+    if (_currentFilters.latitude != null &&
+        _currentFilters.longitude != null) {
+
+      newProfiles.removeWhere(
+        (p) {
+
+          if (p.latitude == null ||
+              p.longitude == null) {
+            return true;
+          }
+
+          final distance =
+              _calculateDistanceKm(
+            _currentFilters.latitude!,
+            _currentFilters.longitude!,
+            p.latitude!,
+            p.longitude!,
+          );
+
+          return distance >
+              _currentFilters
+                  .searchRadiusKm;
+        },
+      );
+    }
+
+    setState(() {
+      _profiles.addAll(
+        newProfiles,
+      );
+    });
+
+  } catch (e) {
+
+    debugPrint(
+      'LOAD MORE FLAT LISTINGS ERROR: $e',
+    );
+
+  } finally {
+
+    setState(() {
+      _isLoadingMore = false;
+    });
+  }
+}
+
   Future<void> _fetchSeekingFlatmateProfiles({
   bool applyFilters = false,
 }) async {
   try {
+
+    if (applyFilters) {
+      _lastDocument = null;
+      _hasMoreProfiles = true;
+    }
+
     Query query = _firestore
         .collectionGroup(
           'seekingFlatmateProfiles',
@@ -450,24 +958,34 @@ if (widget.isExploreMode) {
           'uid',
           isNotEqualTo: _currentUser!.uid,
         );
+        debugPrint(
+  'CURRENT USER PROFILE TYPE = ${_currentUserParsedProfile.runtimeType}',
+);
+
+debugPrint(
+  'CURRENT FILTER CITY = ${_currentFilters.desiredCity}',
+);
+
+debugPrint(
+  'DEFAULT CITY = $_defaultCity',
+);
 
     if (applyFilters &&
         _currentUserParsedProfile
             is FlatListingProfile) {
 
-      if (_currentFilters.desiredCity !=
-              null &&
-          _currentFilters.desiredCity!
-              .isNotEmpty) {
-        query = query.where(
-          'userProfile.city',
-          isEqualTo:
-              _currentFilters.desiredCity,
-        );
-      }
+     if (_defaultCity != null &&
+    _defaultCity!.isNotEmpty) {
+ debugPrint(
+    'APPLYING CITY FILTER => $_defaultCity',
+  );
+  query = query.where(
+    'city',
+    isEqualTo: _defaultCity,
+  );
+}
 
-      if (_currentFilters.moveInDate !=
-          null) {
+      if (_currentFilters.moveInDate != null) {
         query = query.where(
           'moveInDate',
           isLessThanOrEqualTo:
@@ -475,59 +993,21 @@ if (widget.isExploreMode) {
         );
       }
 
-      if (_currentFilters.budgetMin !=
-          null) {
-        query = query.where(
-          'budgetMin',
-          isGreaterThanOrEqualTo:
-              _currentFilters.budgetMin,
-        );
-      }
-
-      if (_currentFilters.budgetMax !=
-          null) {
-        query = query.where(
-          'budgetMax',
-          isLessThanOrEqualTo:
-              _currentFilters.budgetMax,
-        );
-      }
-
-      if (_currentFilters.gender !=
-              null &&
+      if (_currentFilters.gender != null &&
           _currentFilters.gender!
               .isNotEmpty) {
         query = query.where(
-          'flatmatePreferences.preferredFlatmateGender',
+          'gender',
           isEqualTo:
               _currentFilters.gender,
         );
       }
 
-      if (_currentFilters.ageMin !=
-          null) {
-        query = query.where(
-          'flatmatePreferences.preferredFlatmateAge',
-          isGreaterThanOrEqualTo:
-              _currentFilters.ageMin,
-        );
-      }
-
-      if (_currentFilters.ageMax !=
-          null) {
-        query = query.where(
-          'flatmatePreferences.preferredFlatmateAge',
-          isLessThanOrEqualTo:
-              _currentFilters.ageMax,
-        );
-      }
-
-      if (_currentFilters.occupation !=
-              null &&
+      if (_currentFilters.occupation != null &&
           _currentFilters.occupation!
               .isNotEmpty) {
         query = query.where(
-          'flatmatePreferences.preferredOccupation',
+          'occupation',
           isEqualTo:
               _currentFilters.occupation,
         );
@@ -535,7 +1015,28 @@ if (widget.isExploreMode) {
     }
 
     final QuerySnapshot querySnapshot =
-        await query.get();
+        await query
+            .limit(_pageSize)
+            .get();
+ debugPrint(
+  'FIRESTORE RETURNED ${querySnapshot.docs.length} DOCS',
+);
+
+for (final doc in querySnapshot.docs) {
+  debugPrint(
+    'CITY FROM FIRESTORE => ${doc['city']}',
+  );
+}
+
+    if (querySnapshot.docs.isNotEmpty) {
+
+      _lastDocument =
+          querySnapshot.docs.last;
+    }
+
+    _hasMoreProfiles =
+        querySnapshot.docs.length ==
+        _pageSize;
 
     final likedSnapshot =
         await _firestore
@@ -556,17 +1057,7 @@ if (widget.isExploreMode) {
       'LIKED IDS COUNT: ${likedIds.length}',
     );
 
-    for (final id in likedIds) {
-      debugPrint(
-        'ALREADY LIKED => $id',
-      );
-    }
-
-    debugPrint(
-      'TOTAL SEEKING FLATMATES FROM FIRESTORE: ${querySnapshot.docs.length}',
-    );
-
-    final List<dynamic>
+    final List<SeekingFlatmateProfile>
         fetchedProfiles =
         querySnapshot.docs
             .where(
@@ -588,15 +1079,110 @@ if (widget.isExploreMode) {
             )
             .toList();
 
+    // BUDGET FILTER
+   // BUDGET FILTER
+
+if (_currentFilters.budgetMin != null) {
+  fetchedProfiles.removeWhere(
+    (profile) =>
+        profile.budgetMax == null ||
+        profile.budgetMax! <
+            _currentFilters.budgetMin!,
+  );
+}
+
+if (_currentFilters.budgetMax != null) {
+  fetchedProfiles.removeWhere(
+    (profile) =>
+        profile.budgetMin == null ||
+        profile.budgetMin! >
+            _currentFilters.budgetMax!,
+  );
+}
+
+// AGE FILTER
+// REMOVE COMPLETELY
+
+    // LOCATION RADIUS FILTER
+    if (_currentFilters.latitude != null &&
+        _currentFilters.longitude != null) {
+
+      fetchedProfiles.removeWhere(
+        (profile) {
+
+          if (profile.latitude == null ||
+              profile.longitude == null) {
+            return true;
+          }
+
+          final distance =
+              _calculateDistanceKm(
+            _currentFilters.latitude!,
+            _currentFilters.longitude!,
+            profile.latitude!,
+            profile.longitude!,
+          );
+
+          return distance >
+              _currentFilters
+                  .searchRadiusKm;
+        },
+      );
+    }
+
+    // SORT NEAREST
+    if (_currentFilters.sortByNearest &&
+        _currentFilters.latitude != null &&
+        _currentFilters.longitude != null) {
+
+      fetchedProfiles.sort(
+        (a, b) {
+
+          final distanceA =
+              _calculateDistanceKm(
+            _currentFilters.latitude!,
+            _currentFilters.longitude!,
+            a.latitude ?? 0,
+            a.longitude ?? 0,
+          );
+
+          final distanceB =
+              _calculateDistanceKm(
+            _currentFilters.latitude!,
+            _currentFilters.longitude!,
+            b.latitude ?? 0,
+            b.longitude ?? 0,
+          );
+
+          return distanceA.compareTo(
+            distanceB,
+          );
+        },
+      );
+    }
+
+    // PHOTOS ONLY
+    if (_currentFilters
+        .profilesWithPhotosOnly) {
+
+      fetchedProfiles.removeWhere(
+        (profile) =>
+            profile.imageUrls == null ||
+profile.imageUrls!.isEmpty,
+      );
+    }
+
     debugPrint(
       'AFTER FILTERING LIKED SEEKING FLATMATES: ${fetchedProfiles.length}',
     );
 
     setState(() {
-  _profiles = fetchedProfiles;
-  _isLoading = false;
-});
+      _profiles = fetchedProfiles;
+      _isLoading = false;
+    });
+
   } catch (e) {
+
     debugPrint(
       'FETCH SEEKING FLATMATE ERROR: $e',
     );
@@ -606,6 +1192,241 @@ if (widget.isExploreMode) {
       'Failed to load seeking flatmate profiles: $e',
       () {},
     );
+  }
+}
+Future<void> _loadMoreSeekingFlatmates() async {
+
+  if (_isLoadingMore ||
+      !_hasMoreProfiles ||
+      _lastDocument == null) {
+    return;
+  }
+
+  setState(() {
+    _isLoadingMore = true;
+  });
+
+  try {
+
+    Query query = _firestore
+        .collectionGroup(
+          'seekingFlatmateProfiles',
+        )
+        .where(
+          'uid',
+          isNotEqualTo:
+              _currentUser!.uid,
+        );
+
+    // APPLY SAME FILTERS
+    if (_currentUserParsedProfile
+        is FlatListingProfile) {
+
+      if (_defaultCity != null &&
+    _defaultCity!.isNotEmpty) {
+
+  query = query.where(
+    'city',
+    isEqualTo: _defaultCity,
+  );
+}
+
+      if (_currentFilters.moveInDate !=
+          null) {
+        query = query.where(
+          'moveInDate',
+          isLessThanOrEqualTo:
+              _currentFilters.moveInDate,
+        );
+      }
+
+      if (_currentFilters.gender != null &&
+          _currentFilters.gender!
+              .isNotEmpty) {
+        query = query.where(
+          'gender',
+          isEqualTo:
+              _currentFilters.gender,
+        );
+      }
+
+      if (_currentFilters.occupation != null &&
+          _currentFilters.occupation!
+              .isNotEmpty) {
+        query = query.where(
+          'occupation',
+          isEqualTo:
+              _currentFilters.occupation,
+        );
+      }
+    }
+
+    final QuerySnapshot snapshot =
+        await query
+            .startAfterDocument(
+              _lastDocument!,
+            )
+            .limit(_pageSize)
+            .get();
+
+    if (snapshot.docs.isNotEmpty) {
+      _lastDocument =
+          snapshot.docs.last;
+    }
+
+    _hasMoreProfiles =
+        snapshot.docs.length ==
+        _pageSize;
+
+    final likedSnapshot =
+        await _firestore
+            .collection('user_likes')
+            .doc(_currentUser!.uid)
+            .collection('likes')
+            .get();
+
+    final likedIds =
+        likedSnapshot.docs
+            .map(
+              (e) => e[
+                  'likedProfileDocumentId'],
+            )
+            .toSet();
+
+    List<SeekingFlatmateProfile>
+        newProfiles =
+        snapshot.docs
+            .where(
+              (doc) =>
+                  !likedIds.contains(
+                doc.id,
+              ),
+            )
+            .map(
+              (doc) =>
+                  SeekingFlatmateProfile
+                      .fromMap(
+                doc.data()
+                    as Map<String, dynamic>,
+                doc.id,
+              ),
+            )
+            .toList();
+
+    // BUDGET FILTER
+    // BUDGET FILTER
+
+if (_currentFilters.budgetMin != null) {
+  newProfiles.removeWhere(
+    (p) =>
+        p.budgetMax == null ||
+        p.budgetMax! <
+            _currentFilters.budgetMin!,
+  );
+}
+
+if (_currentFilters.budgetMax != null) {
+  newProfiles.removeWhere(
+    (p) =>
+        p.budgetMin == null ||
+        p.budgetMin! >
+            _currentFilters.budgetMax!,
+  );
+}
+
+// AGE FILTER
+// REMOVE COMPLETELY
+    
+
+    // LOCATION FILTER
+    if (_currentFilters.latitude != null &&
+        _currentFilters.longitude != null) {
+
+      newProfiles.removeWhere(
+        (p) {
+
+          if (p.latitude == null ||
+              p.longitude == null) {
+            return true;
+          }
+
+          final distance =
+              _calculateDistanceKm(
+            _currentFilters.latitude!,
+            _currentFilters.longitude!,
+            p.latitude!,
+            p.longitude!,
+          );
+
+          return distance >
+              _currentFilters
+                  .searchRadiusKm;
+        },
+      );
+    }
+
+    // SORT NEAREST
+    if (_currentFilters.sortByNearest &&
+        _currentFilters.latitude != null &&
+        _currentFilters.longitude != null) {
+
+      newProfiles.sort(
+        (a, b) {
+
+          final distanceA =
+              _calculateDistanceKm(
+            _currentFilters.latitude!,
+            _currentFilters.longitude!,
+            a.latitude ?? 0,
+            a.longitude ?? 0,
+          );
+
+          final distanceB =
+              _calculateDistanceKm(
+            _currentFilters.latitude!,
+            _currentFilters.longitude!,
+            b.latitude ?? 0,
+            b.longitude ?? 0,
+          );
+
+          return distanceA.compareTo(
+            distanceB,
+          );
+        },
+      );
+    }
+
+    // PHOTOS ONLY
+    if (_currentFilters
+        .profilesWithPhotosOnly) {
+
+      newProfiles.removeWhere(
+        (p) => p.imageUrls == null ||
+p.imageUrls!.isEmpty,
+      );
+    }
+
+    setState(() {
+      _profiles.addAll(
+        newProfiles,
+      );
+    });
+
+    debugPrint(
+      'LOADED ${newProfiles.length} MORE SEEKING FLATMATES',
+    );
+
+  } catch (e) {
+
+    debugPrint(
+      'LOAD MORE SEEKING FLATMATES ERROR: $e',
+    );
+
+  } finally {
+
+    setState(() {
+      _isLoadingMore = false;
+    });
   }
 }
 void _showCreateProfileRequiredDialog() {
@@ -1276,10 +2097,42 @@ void _showCreateProfileRequiredDialog() {
 
     // FIX: Remove the dismissed profile from the list to trigger a rebuild
     setState(() {
-      _profiles.removeAt(0);
-      _checkForBanner(); // Re-evaluate banner state
-    });
+  _profiles.removeAt(0);
+  _checkForBanner();
+});
 
+if (_profiles.length <= 10 &&
+    !_isLoadingMore &&
+    _hasMoreProfiles) {
+
+  if (widget.isExploreMode) {
+
+    if (widget.profileType ==
+        "flat_listing") {
+
+      _loadMoreFlatListings();
+
+    } else {
+
+      _loadMoreSeekingFlatmates();
+
+    }
+
+  } else {
+
+    if (_currentUserParsedProfile
+        is SeekingFlatmateProfile) {
+
+      _loadMoreFlatListings();
+
+    } else {
+
+      _loadMoreSeekingFlatmates();
+
+    }
+
+  }
+}
     if (_profiles.isEmpty) {
       // Show a message or fetch more profiles when the list is empty
       ScaffoldMessenger.of(context).showSnackBar(
