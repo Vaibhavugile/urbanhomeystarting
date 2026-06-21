@@ -3,7 +3,17 @@ import 'package:flutter/material.dart';
 import 'package:mytennat/screens/flatmate_profile_screen.dart';
 import 'package:mytennat/screens/flat_with_flatmate_profile_screen.dart';
 import 'profile_details_sheet.dart';
-class ProfileCard extends StatelessWidget {
+const LinearGradient kPrimaryGradient =
+    LinearGradient(
+  begin: Alignment.topLeft,
+  end: Alignment.bottomRight,
+  colors: [
+    Color(0xFF7C3AED),
+    Color(0xFF9333EA),
+    Color(0xFFEC4899),
+  ],
+);
+class ProfileCard extends StatefulWidget {
   final dynamic profile;
   final VoidCallback onLike;
   final VoidCallback onPass;
@@ -16,8 +26,25 @@ final String? distanceText;
   this.distanceText,
 });
 
+@override
+State<ProfileCard> createState() =>
+    _ProfileCardState();
+}
+class _ProfileCardState
+    extends State<ProfileCard> {
+
+  int _currentImageIndex = 0;
+
   @override
   Widget build(BuildContext context) {
+   final profile = widget.profile;
+
+    final onLike = widget.onLike;
+
+    final onPass = widget.onPass;
+
+    final distanceText =
+        widget.distanceText;
       debugPrint('========================');
   debugPrint('PROFILE CARD BUILDING');
   debugPrint('Profile Type: ${profile.runtimeType}');
@@ -31,6 +58,8 @@ String address = '';
 String age = '';
 String occupation = '';
 String? imageUrl;
+
+List<String> imageUrls = [];
 
 String budgetText = '';
 String propertyText = '';
@@ -122,9 +151,22 @@ print("rentPrice: ${profile.rentPrice}");
   }
 
   if (profile.imageUrls != null &&
-      profile.imageUrls!.isNotEmpty) {
-    imageUrl = profile.imageUrls!.first;
+    profile.imageUrls!.isNotEmpty) {
+
+  imageUrls =
+      List<String>.from(
+        profile.imageUrls!,
+      );
+
+  if (_currentImageIndex >=
+      imageUrls.length) {
+    _currentImageIndex = 0;
   }
+
+  imageUrl =
+      imageUrls[
+          _currentImageIndex];
+}
 }
 
 if (profile is SeekingFlatmateProfile) {
@@ -181,31 +223,43 @@ desiredAmenities = List<String>.from(
    propertyText = preferredFlatType;
 
     preferredGender =
-        profile.flatmatePreferences
-                .preferredFlatmateGender ??
-            '';
+    profile.preferredFlatmateGender ?? '';
 
-    preferredAge =
-        profile.flatmatePreferences
-                .preferredFlatmateAge ??
-            '';
+preferredAge =
+    profile.preferredFlatmateAge ?? '';
+
 
     tags = List<String>.from(
-      profile.flatmatePreferences
-              .preferredHabits ??
+      profile.preferredHabits ??
           [],
     );
 
-    if (profile.moveInDate != null) {
-      moveInDateText =
-          '${profile.moveInDate.day}/${profile.moveInDate.month}/${profile.moveInDate.year}';
-    }
+  final moveInDate =
+    profile.moveInDate;
+
+if (moveInDate != null) {
+  moveInDateText =
+      '${moveInDate.day}/${moveInDate.month}/${moveInDate.year}';
+}
   } catch (_) {}
 
   if (profile.imageUrls != null &&
-      profile.imageUrls!.isNotEmpty) {
-    imageUrl = profile.imageUrls!.first;
+    profile.imageUrls!.isNotEmpty) {
+
+  imageUrls =
+      List<String>.from(
+        profile.imageUrls!,
+      );
+
+  if (_currentImageIndex >=
+      imageUrls.length) {
+    _currentImageIndex = 0;
   }
+
+  imageUrl =
+      imageUrls[
+          _currentImageIndex];
+}
   print("===== SEEKING PROFILE =====");
 print(profile.preferredFlatType);
 print(profile.preferredRoomType);
@@ -224,25 +278,135 @@ print(profile.preferredFlatmateAge);
         clipBehavior: Clip.antiAlias,
         child: Stack(
           children: [
+           
             // IMAGE
             Positioned.fill(
-              child: imageUrl != null
-                  ? Image.network(
-                      imageUrl,
-                      fit: BoxFit.cover,
-                    )
-                  : Container(
-                      color: Colors.grey.shade300,
-                      child: const Center(
-                        child: Icon(
-                          Icons.person,
-                          size: 140,
-                          color: Colors.white,
-                        ),
-                      ),
-                    ),
-            ),
+  child: Stack(
+    children: [
 
+      // IMAGE
+      Positioned.fill(
+        child: imageUrl != null
+            ? Image.network(
+                imageUrl,
+                fit: BoxFit.cover,
+              )
+            : Container(
+                color: Colors.grey.shade300,
+                child: const Center(
+                  child: Icon(
+                    Icons.person,
+                    size: 140,
+                    color: Colors.white,
+                  ),
+                ),
+              ),
+      ),
+
+      // LEFT TAP ZONE
+      Positioned(
+        left: 0,
+        top: 0,
+        bottom: 0,
+        width: 80,
+        child: Material(
+          color: Colors.transparent,
+          child: InkWell(
+            onTap: () {
+
+              debugPrint(
+                'LEFT IMAGE CLICK',
+              );
+
+              if (_currentImageIndex > 0) {
+
+                setState(() {
+
+                  _currentImageIndex--;
+                });
+              }
+            },
+          ),
+        ),
+      ),
+
+      // RIGHT TAP ZONE
+      Positioned(
+        right: 0,
+        top: 0,
+        bottom: 0,
+        width: 80,
+        child: Material(
+          color: Colors.transparent,
+          child: InkWell(
+            onTap: () {
+
+              debugPrint(
+                'RIGHT IMAGE CLICK',
+              );
+
+              if (_currentImageIndex <
+                  imageUrls.length - 1) {
+
+                setState(() {
+
+                  _currentImageIndex++;
+                });
+              }
+            },
+          ),
+        ),
+      ),
+    ],
+  ),
+),
+Positioned(
+  top: 16,
+  left: 16,
+  right: 16,
+  child: SafeArea(
+    child: Row(
+      children: List.generate(
+        imageUrls.isEmpty
+            ? 1
+            : imageUrls.length,
+        (index) => Expanded(
+          child: Container(
+            margin:
+                const EdgeInsets.symmetric(
+              horizontal: 3,
+            ),
+            height: 5,
+            decoration: BoxDecoration(
+              gradient:
+                  index ==
+                          _currentImageIndex
+                      ? kPrimaryGradient
+                      : null,
+              color:
+                  index ==
+                          _currentImageIndex
+                      ? null
+                      : Colors.white
+                          .withOpacity(
+                            0.45,
+                          ),
+              borderRadius:
+                  BorderRadius.circular(
+                999,
+              ),
+              border: Border.all(
+                color: Colors.white
+                    .withOpacity(0.25),
+                width: 0.5,
+              ),
+            ),
+          ),
+        ),
+      ),
+    ),
+  ),
+),
             // DARK OVERLAY
             Positioned.fill(
               child: Container(
@@ -260,6 +424,8 @@ print(profile.preferredFlatmateAge);
                 ),
               ),
             ),
+            
+
 Positioned(
   top: 20,
   left: 20,
