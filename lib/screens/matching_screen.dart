@@ -89,7 +89,7 @@ static const int _pageSize = 50;
   int _interactionCount = 0; // NEW: Counter for likes/dislikes
   int _remainingContacts = 0; // State to hold remaining contacts
   String? _currentPlanName; // State to hold current plan name
-
+dynamic _lastLikedProfile;
   // NEW: State variable to track the current view
   _ViewType _currentViewType = _ViewType.card;
 dynamic _lastPassedProfile;
@@ -1963,100 +1963,179 @@ void _showCreateProfileRequiredDialog() {
     }
   }
   // This function checks if the banner should be displayed
-  void _checkForBanner() async { // Make this function async
-    setState(() {
-      // Clear existing message first if you want the banner to re-evaluate entirely
-      // _bannerMessage = null;
-      // _lastLikedProfileName = null;
+  Future<void> _checkForBanner() async {
 
-      // NEW: Only show banner if interaction count is 2 or more
-      if (_interactionCount < 2 || _interactionCount % 2 != 0) {
-        return; // Exit if not enough interactions or if it's an odd count
-      }
-    });
+  debugPrint(
+    'CHECK BANNER => $_interactionCount',
+  );
 
-    final List<dynamic> currentOutgoingLikes = _outgoingLikes[widget.profileId] ?? [];
-    final List<dynamic> currentIncomingLikes = _incomingLikes[widget.profileId] ?? [];
-
-    // Find the first profile that the current user liked, but hasn't liked them back
-    dynamic pendingLikedProfile;
-    for (var outgoingProfile in currentOutgoingLikes) {
-      final bool hasLikedMe = currentIncomingLikes
-          .any((incomingProfile) => incomingProfile.documentId == outgoingProfile.documentId);
-
-      if (!hasLikedMe) {
-        // --- NEW ADDITION START ---
-        // Check Firestore to see if contact was already revealed for this like
-        final likeDocRef = _firestore
-            .collection('user_likes')
-            .doc(_currentUser!.uid) // Ensure _currentUser is not null here
-            .collection('likes')
-            .doc(outgoingProfile.documentId);
-
-        try {
-          final docSnapshot = await likeDocRef.get();
-          if (docSnapshot.exists && docSnapshot.data() != null) {
-            final data = docSnapshot.data()!;
-            final bool contactRevealed = data['contactRevealed'] ?? false;
-            if (contactRevealed) {
-              print("Skipping banner for ${outgoingProfile.documentId} as contact was already revealed.");
-              continue; // Skip this profile, move to the next one in the loop
-            }
-          }
-        } catch (e) {
-          print("Error checking contactRevealed status for ${outgoingProfile.documentId}: $e");
-          // Continue anyway, maybe assume contact not revealed to be safe, or handle error
-        }
-        // --- NEW ADDITION END ---
-
-        pendingLikedProfile = outgoingProfile;
-        break; // Found the first eligible one, no need to check further
-      }
-    }
-
-    if (pendingLikedProfile != null) {
-      _showBannerPopup(pendingLikedProfile);
-    }
+  if (_interactionCount < 2 ||
+      _interactionCount % 2 != 0) {
+    return;
   }
 
-  // NEW: Function to show the banner popup
-  Future<void> _showBannerPopup(dynamic pendingLikedProfile) {
-    if (_isBannerPopupShowing) {
-      return Future.value();
-    }
-
-    _isBannerPopupShowing = true;
-    final String profileName = _getProfileDisplayName(pendingLikedProfile);
-    final String message = 'You\'ve sent a Connect to $profileName!';
-    final String sub = 'Waiting for them to like you back.'; // The sub-message
-
-    String? imageUrl; // Get the actual image URL here
-    if (pendingLikedProfile is FlatListingProfile && pendingLikedProfile.imageUrls != null && pendingLikedProfile.imageUrls!.isNotEmpty) {
-      imageUrl = pendingLikedProfile.imageUrls!.first;
-    } else if (pendingLikedProfile is SeekingFlatmateProfile && pendingLikedProfile.imageUrls != null && pendingLikedProfile.imageUrls!.isNotEmpty) {
-      imageUrl = pendingLikedProfile.imageUrls!.first;
-    }
-    // If imageUrl is still null, the BannerPopupScreen will show the person icon.
-
-    return showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (BuildContext context) {
-        return BannerPopupScreen(
-          message: 'Wanna find another flatmate?',
-          subMessage: 'There are many other people waiting for you!',
-          buttonText: 'Show Ad',
-          onButtonPressed: () {
-            setState(() {
-              _isBannerPopupShowing = false;
-            });
-            Navigator.of(context).pop();
-            Navigator.push(context, MaterialPageRoute(builder: (context) => const AdPage()));
-          },
-        );
-      },
+  if (_lastLikedProfile == null) {
+    debugPrint(
+      'NO LAST LIKED PROFILE',
     );
-  } // --- NEW: Ad Banner Widget ---
+    return;
+  }
+
+  debugPrint(
+    'SHOWING BANNER FOR ${_lastLikedProfile.documentId}',
+  );
+
+  _showBannerPopup(
+    _lastLikedProfile,
+  );
+}
+
+  // NEW: Function to show the banner popup
+ Future<void> _showBannerPopup(
+  dynamic likedProfile,
+) {
+
+  if (_isBannerPopupShowing) {
+    return Future.value();
+  }
+
+  _isBannerPopupShowing = true;
+
+  final String profileName =
+      _getProfileDisplayName(
+    likedProfile,
+  );
+
+  String? imageUrl;
+
+  if (likedProfile
+          is FlatListingProfile &&
+      likedProfile.imageUrls != null &&
+      likedProfile.imageUrls!
+          .isNotEmpty) {
+
+    imageUrl =
+        likedProfile.imageUrls!.first;
+
+  } else if (likedProfile
+          is SeekingFlatmateProfile &&
+      likedProfile.imageUrls != null &&
+      likedProfile.imageUrls!
+          .isNotEmpty) {
+
+    imageUrl =
+        likedProfile.imageUrls!.first;
+  }
+
+  return showDialog(
+    context: context,
+    barrierDismissible: false,
+    builder: (
+      BuildContext context,
+    ) {
+
+      return BannerPopupScreen(
+
+  profileName: profileName,
+
+  profileImageUrl: imageUrl,
+
+  message:
+      'You liked $profileName',
+
+  subMessage:
+      'Start a conversation instantly and unlock contact details.',
+
+  buttonText:
+      'Start Conversation',
+
+  onButtonPressed: () async {
+
+    Navigator.of(
+      context,
+    ).pop();
+
+    setState(() {
+
+      _isBannerPopupShowing =
+          false;
+    });
+
+    // CHECK CONTACTS
+    if (_remainingContacts <= 0) {
+
+      _showOutOfContactsPopup();
+      return;
+    }
+
+    try {
+
+      // DEDUCT CONTACT
+      await _firestore
+          .collection('users')
+          .doc(_currentUser!.uid)
+          .update({
+        'remainingContacts':
+            FieldValue.increment(-1),
+      });
+
+      setState(() {
+
+        _remainingContacts--;
+      });
+
+      debugPrint(
+        'CONTACT DEDUCTED. REMAINING = $_remainingContacts',
+      );
+
+      // CREATE CHAT ROOM / MATCH
+      await _createMatchAndChatRoom(
+        _currentUser!.uid,
+        widget.profileId,
+        widget.profileType,
+        likedProfile.uid,
+        likedProfile.documentId!,
+        widget.profileType ==
+                'flat_listing'
+            ? 'seeking_flatmate'
+            : 'flat_listing',
+      );
+
+      debugPrint(
+        'CHAT ROOM CREATED SUCCESSFULLY',
+      );
+
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(
+        const SnackBar(
+          content: Text(
+            'Conversation started successfully',
+          ),
+        ),
+      );
+
+    } catch (e) {
+
+      debugPrint(
+        'START CONVERSATION ERROR: $e',
+      );
+
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(
+        SnackBar(
+          content: Text(
+            'Failed: $e',
+          ),
+        ),
+      );
+    }
+  },
+);
+    },
+  );
+}
 
   // This function is for creating a match document and a chat room
   Future<void> _createMatchAndChatRoom(
@@ -2163,8 +2242,15 @@ void _showCreateProfileRequiredDialog() {
     // NEW: Increment interaction count regardless of like or dislike
     _interactionCount++;
 
-   if (direction ==
+  if (direction ==
     DismissDirection.startToEnd) {
+
+  _lastLikedProfile =
+      dismissedProfile;
+
+  debugPrint(
+    'SAVING LAST LIKED PROFILE = ${dismissedProfile.documentId}',
+  );
 
   if (widget.isExploreMode) {
 
@@ -2178,7 +2264,9 @@ void _showCreateProfileRequiredDialog() {
     );
 
   }
-}else if (direction == DismissDirection.endToStart) {
+
+}
+else if (direction == DismissDirection.endToStart) {
 
   _lastPassedProfile = dismissedProfile;
   _canUndoPass = true;
@@ -2599,14 +2687,19 @@ Widget _buildCardView() {
             profile: profile,
  distanceText:
       _getDistanceText(profile),
-            onLike: () {
+          onLike: () {
 
   if (widget.isExploreMode) {
-
     _showCreateProfileRequiredDialog();
     return;
-
   }
+
+  _lastLikedProfile = profile;
+  
+
+  debugPrint(
+    'LAST LIKED PROFILE = ${profile.documentId}',
+  );
 
   _handleProfileDismissed(
     DismissDirection.startToEnd,

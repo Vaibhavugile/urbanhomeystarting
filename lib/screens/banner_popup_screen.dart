@@ -1,204 +1,327 @@
 import 'package:flutter/material.dart';
 
 class BannerPopupScreen extends StatelessWidget {
-  final String message;
-  final String? subMessage;
-  final String? profileImageUrl;
-  final String? buttonText;
-  final VoidCallback? onButtonPressed;
+final String message;
+final String? subMessage;
 
-  const BannerPopupScreen({
-    super.key,
-    required this.message,
-    this.subMessage,
-    this.profileImageUrl,
-    this.buttonText,
-    this.onButtonPressed,
-  });
+final String? profileName;
+final String? profileImageUrl;
 
-  @override
-  Widget build(BuildContext context) {
-    final screenHeight = MediaQuery.of(context).size.height;
-    final screenWidth = MediaQuery.of(context).size.width;
+final String? buttonText;
+final VoidCallback? onButtonPressed;
 
-    final double redBackgroundHeight = screenHeight * 0.6;
-    final double curveDipHeight = 90.0;
+const BannerPopupScreen({
+  super.key,
 
-    return Scaffold(
-      backgroundColor: Colors.white,
-      body: Stack(
-        children: [
-          // 1. Red Curved Background
-          Positioned(
-            top: 0,
-            left: 0,
-            right: 0,
-            height: redBackgroundHeight,
-            child: ClipPath(
-              clipper: BottomConcaveCurveClipper(curveHeight: curveDipHeight),
-              child: Container(
-                color: Colors.red,
+  required this.message,
+
+  this.subMessage,
+
+  this.profileName,
+  this.profileImageUrl,
+
+  this.buttonText,
+
+  this.onButtonPressed,
+});
+
+ @override
+Widget build(BuildContext context) {
+
+  final screenHeight =
+      MediaQuery.of(context).size.height;
+
+  final double headerHeight =
+      screenHeight * 0.55;
+
+  return Scaffold(
+    backgroundColor: Colors.white,
+
+    body: Stack(
+      children: [
+
+        // PURPLE HEADER
+        Positioned(
+          top: 0,
+          left: 0,
+          right: 0,
+          height: headerHeight,
+          child: ClipPath(
+            clipper:
+                BottomConcaveCurveClipper(
+              curveHeight: 90,
+            ),
+            child: Container(
+              decoration:
+                  const BoxDecoration(
+                gradient:
+                    LinearGradient(
+                  begin:
+                      Alignment.topLeft,
+                  end: Alignment
+                      .bottomRight,
+                  colors: [
+                    Color(0xFF7C3AED),
+                    Color(0xFF9333EA),
+                    Color(0xFFEC4899),
+                  ],
+                ),
               ),
             ),
           ),
+        ),
 
-          // 2. All Content (Close Button, Image, Texts, Action Button)
-          SafeArea(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                // Close Button (Top Right)
-                Padding(
-                  padding: const EdgeInsets.only(top: 16.0, right: 16.0),
-                  child: Align(
-                    alignment: Alignment.topRight,
-                    child: IconButton(
-                      icon: const Icon(Icons.close, color: Colors.white, size: 30),
-                      onPressed: () {
-                        Navigator.of(context).pop();
-                      },
-                    ),
+        SafeArea(
+          child: Column(
+            children: [
+
+              // CLOSE
+              Align(
+                alignment:
+                    Alignment.topRight,
+                child: IconButton(
+                  icon: const Icon(
+                    Icons.close,
+                    color: Colors.white,
+                    size: 30,
                   ),
+                  onPressed: () {
+                    Navigator.pop(
+                      context,
+                    );
+                  },
                 ),
-                SizedBox(height: screenHeight * 0.05),
+              ),
 
-                // Profile Image (Circular Avatar)
-                Center(
-                  child: Container(
-                    width: 120,
-                    height: 120,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      color: Colors.grey.shade300,
-                      border: Border.all(color: Colors.white, width: 4),
-                      image: profileImageUrl != null && profileImageUrl!.isNotEmpty
+              const SizedBox(
+                height: 20,
+              ),
+
+              // PROFILE IMAGE
+              Container(
+                width: 130,
+                height: 130,
+                decoration:
+                    BoxDecoration(
+                  shape:
+                      BoxShape.circle,
+                  border: Border.all(
+                    color:
+                        Colors.white,
+                    width: 4,
+                  ),
+                  image:
+                      profileImageUrl !=
+                                  null &&
+                              profileImageUrl!
+                                  .isNotEmpty
                           ? DecorationImage(
-                        image: NetworkImage(profileImageUrl!),
-                        fit: BoxFit.cover,
-                      )
+                              image:
+                                  NetworkImage(
+                                profileImageUrl!,
+                              ),
+                              fit: BoxFit
+                                  .cover,
+                            )
                           : null,
-                    ),
-                    child: (profileImageUrl == null || profileImageUrl!.isEmpty)
-                        ? const Icon(Icons.person, size: 60, color: Colors.white)
+                ),
+                child:
+                    profileImageUrl ==
+                                null ||
+                            profileImageUrl!
+                                .isEmpty
+                        ? const Icon(
+                            Icons.person,
+                            color: Colors.white,
+                            size: 60,
+                          )
                         : null,
+              ),
+
+              const SizedBox(
+                height: 12,
+              ),
+
+              if (profileName != null)
+                Text(
+                  profileName!,
+                  style:
+                      const TextStyle(
+                    color:
+                        Colors.white,
+                    fontSize: 24,
+                    fontWeight:
+                        FontWeight.bold,
                   ),
                 ),
-                const SizedBox(height: 20),
 
-                // Main Message Text
+              const SizedBox(
+                height: 24,
+              ),
+
+              Padding(
+                padding:
+                    const EdgeInsets
+                        .symmetric(
+                  horizontal: 24,
+                ),
+                child: Text(
+                  message,
+                  textAlign:
+                      TextAlign.center,
+                  style:
+                      const TextStyle(
+                    color:
+                        Colors.white,
+                    fontSize: 24,
+                    fontWeight:
+                        FontWeight.bold,
+                  ),
+                ),
+              ),
+
+              if (subMessage != null)
                 Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 30.0),
+                  padding:
+                      const EdgeInsets
+                          .all(20),
                   child: Text(
-                    message,
-                    textAlign: TextAlign.center,
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 22,
-                      fontWeight: FontWeight.bold,
+                    subMessage!,
+                    textAlign:
+                        TextAlign.center,
+                    style:
+                        const TextStyle(
+                      color:
+                          Colors.white,
                     ),
                   ),
                 ),
 
-                // Optional Sub-Message Text
-                if (subMessage != null && subMessage!.isNotEmpty)
-                  Padding(
-                    padding: const EdgeInsets.only(top: 8.0, left: 30.0, right: 30.0),
+              const Spacer(),
+
+              Padding(
+                padding:
+                    const EdgeInsets
+                        .symmetric(
+                  horizontal: 24,
+                ),
+                child: Text(
+                  profileName != null
+                      ? 'You liked $profileName'
+                      : 'You liked this profile',
+                  textAlign:
+                      TextAlign.center,
+                  style:
+                      const TextStyle(
+                    fontSize: 18,
+                    fontWeight:
+                        FontWeight.w600,
+                  ),
+                ),
+              ),
+
+              const SizedBox(
+                height: 10,
+              ),
+
+              const Text(
+                'Unlock contact & start chatting',
+                style: TextStyle(
+                  color:
+                      Color(0xFF7C3AED),
+                  fontSize: 20,
+                  fontWeight:
+                      FontWeight.bold,
+                ),
+              ),
+
+              const SizedBox(
+                height: 24,
+              ),
+
+              if (buttonText != null)
+                Padding(
+                  padding:
+                      const EdgeInsets
+                          .all(24),
+                  child:
+                      ElevatedButton(
+                    onPressed:
+                        onButtonPressed,
+                    style:
+                        ElevatedButton
+                            .styleFrom(
+                      backgroundColor:
+                          const Color(
+                        0xFF7C3AED,
+                      ),
+                      minimumSize:
+                          const Size
+                              .fromHeight(
+                        58,
+                      ),
+                    ),
                     child: Text(
-                      subMessage!,
-                      textAlign: TextAlign.center,
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 14,
-                      ),
-                    ),
-                  ),
-
-                const Spacer(), // Pushes content above to top, and new text/button to bottom
-
-                // New Text Elements - "Why wait? contact directly on"
-                const Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 30.0),
-                  child: Text(
-                    "Why wait? contact directly on",
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      color: Colors.black87, // Dark text color on white background
-                      fontSize: 16,
+                      buttonText!,
                     ),
                   ),
                 ),
-                const SizedBox(height: 8), // Spacing between the two new text lines
-
-                // New Text Elements - "+91xxxxxxxxx"
-                const Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 30.0),
-                  child: Text(
-                    "+91xxxxxxxxx",
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      color: Colors.red, // Prominent red color for the number
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 20), // Spacing between number and button
-
-                // Bottom Action Button
-                if (buttonText != null && buttonText!.isNotEmpty)
-                  Padding(
-                    padding: const EdgeInsets.only(left: 24.0, right: 24.0, bottom: 24.0),
-                    child: ElevatedButton(
-                      onPressed: onButtonPressed,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.white,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8.0),
-                        ),
-                        padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 16),
-                        minimumSize: const Size.fromHeight(50),
-                        elevation: 5,
-                      ),
-                      child: Text(
-                        buttonText!,
-                        style: const TextStyle(
-                          color: Colors.red,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 16,
-                        ),
-                      ),
-                    ),
-                  ),
-              ],
-            ),
+            ],
           ),
-        ],
-      ),
-    );
-  }
+        ),
+      ],
+    ),
+  );
+}
 }
 
 // Custom Clipper for creating the smooth, concave (U-shaped) bottom curve of the red background
-class BottomConcaveCurveClipper extends CustomClipper<Path> {
+class BottomConcaveCurveClipper
+    extends CustomClipper<Path> {
+
   final double curveHeight;
 
-  BottomConcaveCurveClipper({required this.curveHeight});
+  BottomConcaveCurveClipper({
+    required this.curveHeight,
+  });
 
   @override
   Path getClip(Size size) {
-    Path path = Path();
 
-    path.lineTo(0, 0);
-    path.lineTo(size.width, 0);
-    path.lineTo(size.width, size.height - curveHeight);
-    path.quadraticBezierTo(size.width / 2, size.height, 0, size.height - curveHeight);
+    final path = Path();
+
+    path.lineTo(
+      0,
+      size.height - curveHeight,
+    );
+
+    path.cubicTo(
+      size.width * 0.20,
+      size.height + 10,
+
+      size.width * 0.80,
+      size.height + 10,
+
+      size.width,
+      size.height - curveHeight,
+    );
+
+    path.lineTo(
+      size.width,
+      0,
+    );
+
     path.close();
 
     return path;
   }
 
   @override
-  bool shouldReclip(covariant CustomClipper<Path> oldClipper) {
-    return oldClipper is BottomConcaveCurveClipper && oldClipper.curveHeight != curveHeight;
+  bool shouldReclip(
+    covariant BottomConcaveCurveClipper
+        oldClipper,
+  ) {
+    return oldClipper.curveHeight !=
+        curveHeight;
   }
 }
