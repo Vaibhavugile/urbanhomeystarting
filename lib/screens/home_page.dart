@@ -22,7 +22,7 @@ import '../widgets/home/PopularCitiesSection.dart';
 import '../widgets/home/Success_Stories_Section.dart';
 import '../widgets/home/subscription_section.dart';
 import 'package:mytennat/screens/notification_screen.dart';
-
+import '../widgets/location_selector_widget.dart';
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
 
@@ -47,6 +47,15 @@ String get currentUserId =>
 
   int _selectedIndex = 0; // For Bottom Navigation Bar
 String _exploreType = "flat_listing";
+String? _exploreCity;
+
+String? _exploreLocationName;
+
+String? _explorePlaceId;
+
+double? _exploreLatitude;
+
+double? _exploreLongitude;
   @override
   void initState() {
     super.initState();
@@ -219,6 +228,21 @@ void _openExploreMode() {
         profileType: _exploreType,
         profileId: "",
         isExploreMode: true,
+
+        exploreCity:
+            _exploreCity,
+
+        exploreLocationName:
+            _exploreLocationName,
+
+        explorePlaceId:
+            _explorePlaceId,
+
+        exploreLatitude:
+            _exploreLatitude,
+
+        exploreLongitude:
+            _exploreLongitude,
       ),
     ),
   );
@@ -668,7 +692,40 @@ Container(
           ),
         ],
       ),
+const SizedBox(height: 16),
 
+LocationSelectorWidget(
+  googleApiKey:
+      'AIzaSyBK82kg-QdV1TdTrOoC3-jvbSstRhz1wZ0',
+
+  initialCity:
+      _exploreCity,
+
+  initialAddress:
+      _exploreLocationName,
+
+  onLocationSelected:
+      (LocationResult result) {
+
+    setState(() {
+
+      _exploreCity =
+          result.city;
+
+      _exploreLocationName =
+          result.address;
+
+      _explorePlaceId =
+          result.placeId;
+
+      _exploreLatitude =
+          result.latitude;
+
+      _exploreLongitude =
+          result.longitude;
+    });
+  },
+),
       const SizedBox(height: 16),
 
       SizedBox(

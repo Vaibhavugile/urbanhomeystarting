@@ -5,12 +5,21 @@ import 'package:mytennat/screens/flat_with_flatmate_profile_screen.dart';
 class ProfileListItem extends StatelessWidget {
   final dynamic profile;
   final VoidCallback onTap;
+  final String? distanceText;
 
-  const ProfileListItem({
-    super.key,
-    required this.profile,
-    required this.onTap,
-  });
+final VoidCallback? onLike;
+
+final VoidCallback? onPass;
+
+ const ProfileListItem({
+  super.key,
+  required this.profile,
+  required this.onTap,
+
+  this.distanceText,
+  this.onLike,
+  this.onPass,
+});
 
   @override
   Widget build(BuildContext context) {
@@ -270,6 +279,32 @@ class ProfileListItem extends StatelessWidget {
                           ),
                         ],
                       ),
+                      if (distanceText != null) ...[
+
+  const SizedBox(height: 6),
+
+  Row(
+    children: [
+
+      const Icon(
+        Icons.near_me_rounded,
+        color: Colors.greenAccent,
+        size: 15,
+      ),
+
+      const SizedBox(width: 4),
+
+      Text(
+        distanceText!,
+        style: const TextStyle(
+          color: Colors.greenAccent,
+          fontSize: 13,
+          fontWeight: FontWeight.w600,
+        ),
+      ),
+    ],
+  ),
+],
 
                       const SizedBox(height: 6),
 
@@ -443,33 +478,63 @@ class ProfileListItem extends StatelessWidget {
                                 .toList(),
                           ),
                         ),
+                        const SizedBox(height: 14),
+
+Row(
+  children: [
+
+    Expanded(
+      child: OutlinedButton.icon(
+        onPressed: onPass,
+        style: OutlinedButton.styleFrom(
+          side: const BorderSide(
+            color: Colors.white24,
+          ),
+          foregroundColor: Colors.white,
+          shape: RoundedRectangleBorder(
+            borderRadius:
+                BorderRadius.circular(16),
+          ),
+        ),
+        icon: const Icon(
+          Icons.close_rounded,
+        ),
+        label: const Text(
+          'Pass',
+        ),
+      ),
+    ),
+
+    const SizedBox(width: 12),
+
+    Expanded(
+      child: ElevatedButton.icon(
+        onPressed: onLike,
+        style: ElevatedButton.styleFrom(
+          backgroundColor:
+              const Color(0xFF22C55E),
+          foregroundColor:
+              Colors.white,
+          shape: RoundedRectangleBorder(
+            borderRadius:
+                BorderRadius.circular(16),
+          ),
+        ),
+        icon: const Icon(
+          Icons.favorite_rounded,
+        ),
+        label: const Text(
+          'Like',
+        ),
+      ),
+    ),
+  ],
+),
                     ],
                   ),
                 ),
 
-                const SizedBox(width: 10),
-
-                /// ARROW
-                Container(
-                  width: 48,
-                  height: 48,
-                  decoration:
-                      const BoxDecoration(
-                    shape: BoxShape.circle,
-                    gradient:
-                        LinearGradient(
-                      colors: [
-                        Color(0xFFFF4081),
-                        Color(0xFFE91E63),
-                      ],
-                    ),
-                  ),
-                  child: const Icon(
-                    Icons.arrow_forward_ios,
-                    color: Colors.white,
-                    size: 18,
-                  ),
-                ),
+                
               ],
             ),
           ),

@@ -7,13 +7,14 @@ class ProfileCard extends StatelessWidget {
   final dynamic profile;
   final VoidCallback onLike;
   final VoidCallback onPass;
-
-  const ProfileCard({
-    super.key,
-    required this.profile,
-    required this.onLike,
-    required this.onPass,
-  });
+final String? distanceText;
+ const ProfileCard({
+  super.key,
+  required this.profile,
+  required this.onLike,
+  required this.onPass,
+  this.distanceText,
+});
 
   @override
   Widget build(BuildContext context) {
@@ -422,6 +423,32 @@ Positioned(
                       ),
                     ],
                   ),
+                  if (distanceText != null) ...[
+
+  const SizedBox(height: 6),
+
+  Row(
+    children: [
+
+      const Icon(
+        Icons.near_me_rounded,
+        color: Colors.greenAccent,
+        size: 16,
+      ),
+
+      const SizedBox(width: 4),
+
+      Text(
+        distanceText!,
+        style: const TextStyle(
+          color: Colors.greenAccent,
+          fontSize: 14,
+          fontWeight: FontWeight.w600,
+        ),
+      ),
+    ],
+  ),
+],
 
                   const SizedBox(height: 8),
 

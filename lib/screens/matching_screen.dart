@@ -27,13 +27,28 @@ class MatchingScreen extends StatefulWidget {
   final String profileType;
   final String profileId;
   final bool isExploreMode;
+  final String? exploreCity;
 
-  const MatchingScreen({
-    super.key,
-    required this.profileType,
-    required this.profileId,
-    this.isExploreMode = false,
-  });
+final String? exploreLocationName;
+
+final String? explorePlaceId;
+
+final double? exploreLatitude;
+
+final double? exploreLongitude;
+
+const MatchingScreen({
+  super.key,
+  required this.profileType,
+  required this.profileId,
+  this.isExploreMode = false,
+
+  this.exploreCity,
+  this.exploreLocationName,
+  this.explorePlaceId,
+  this.exploreLatitude,
+  this.exploreLongitude,
+});
   @override
   State<MatchingScreen> createState() => _MatchingScreenState();
 }
@@ -78,7 +93,53 @@ static const int _pageSize = 50;
   // NEW: State variable to track the current view
   _ViewType _currentViewType = _ViewType.card;
 dynamic _lastPassedProfile;
+double? get _activeLatitude {
+
+  if (_currentFilters.latitude != null) {
+    return _currentFilters.latitude;
+  }
+
+  if (widget.isExploreMode) {
+    return widget.exploreLatitude;
+  }
+
+  if (_currentUserParsedProfile is FlatListingProfile) {
+    return (_currentUserParsedProfile as FlatListingProfile)
+        .latitude;
+  }
+
+  if (_currentUserParsedProfile is SeekingFlatmateProfile) {
+    return (_currentUserParsedProfile as SeekingFlatmateProfile)
+        .latitude;
+  }
+
+  return null;
+}
+
+double? get _activeLongitude {
+
+  if (_currentFilters.longitude != null) {
+    return _currentFilters.longitude;
+  }
+
+  if (widget.isExploreMode) {
+    return widget.exploreLongitude;
+  }
+
+  if (_currentUserParsedProfile is FlatListingProfile) {
+    return (_currentUserParsedProfile as FlatListingProfile)
+        .longitude;
+  }
+
+  if (_currentUserParsedProfile is SeekingFlatmateProfile) {
+    return (_currentUserParsedProfile as SeekingFlatmateProfile)
+        .longitude;
+  }
+
+  return null;
+}
 bool _canUndoPass = false;
+
   @override
   void initState() {
     super.initState();
@@ -179,13 +240,46 @@ if (widget.isExploreMode) {
 
   return earthRadius * c;
 }
+String? _getDistanceText(dynamic profile) {
+
+  if (_activeLatitude == null ||
+      _activeLongitude == null ||
+      profile.latitude == null ||
+      profile.longitude == null) {
+    return null;
+  }
+
+  final distance =
+      _calculateDistanceKm(
+    _activeLatitude!,
+    _activeLongitude!,
+    profile.latitude!,
+    profile.longitude!,
+  );
+
+  if (distance < 1) {
+    return '${(distance * 1000).round()} m away';
+  }
+
+  return '${distance.toStringAsFixed(1)} km away';
+}
 String? get _defaultCity {
 
+  // User selected filter wins
   if (_currentFilters.desiredCity != null &&
       _currentFilters.desiredCity!.isNotEmpty) {
     return _currentFilters.desiredCity;
   }
 
+  // Explore Mode city
+  if (widget.isExploreMode &&
+      widget.exploreCity != null &&
+      widget.exploreCity!.isNotEmpty) {
+
+    return widget.exploreCity;
+  }
+
+  // Normal Flat Listing Profile
   if (_currentUserParsedProfile
       is FlatListingProfile) {
 
@@ -194,6 +288,7 @@ String? get _defaultCity {
         .city;
   }
 
+  // Normal Seeking Flatmate Profile
   if (_currentUserParsedProfile
       is SeekingFlatmateProfile) {
 
@@ -584,8 +679,8 @@ _currentFilters.rentPriceMax!
       );
     }
  // LOCATION RADIUS FILTER
-if (_currentFilters.latitude != null &&
-    _currentFilters.longitude != null) {
+if (_activeLatitude != null &&
+    _activeLongitude != null) {
 
   fetchedProfiles.removeWhere(
     (profile) {
@@ -597,8 +692,8 @@ if (_currentFilters.latitude != null &&
 
       final distance =
           _calculateDistanceKm(
-        _currentFilters.latitude!,
-        _currentFilters.longitude!,
+        _activeLatitude!,
+        _activeLongitude!,
         profile.latitude!,
         profile.longitude!,
       );
@@ -609,24 +704,24 @@ if (_currentFilters.latitude != null &&
   );
 }
 if (_currentFilters.sortByNearest &&
-    _currentFilters.latitude != null &&
-    _currentFilters.longitude != null) {
+    _activeLatitude != null &&
+    _activeLongitude != null) {
 
   fetchedProfiles.sort(
     (a, b) {
 
       final distanceA =
           _calculateDistanceKm(
-        _currentFilters.latitude!,
-        _currentFilters.longitude!,
+        _activeLatitude!,
+        _activeLongitude!,
         a.latitude ?? 0,
         a.longitude ?? 0,
       );
 
       final distanceB =
           _calculateDistanceKm(
-        _currentFilters.latitude!,
-        _currentFilters.longitude!,
+        _activeLatitude!,
+        _activeLongitude!,
         b.latitude ?? 0,
         b.longitude ?? 0,
       );
@@ -894,8 +989,8 @@ p.imageUrls!.isEmpty,
       );
     }
 
-    if (_currentFilters.latitude != null &&
-        _currentFilters.longitude != null) {
+    if (_activeLatitude != null &&
+        _activeLongitude != null) {
 
       newProfiles.removeWhere(
         (p) {
@@ -907,8 +1002,8 @@ p.imageUrls!.isEmpty,
 
           final distance =
               _calculateDistanceKm(
-            _currentFilters.latitude!,
-            _currentFilters.longitude!,
+            _activeLatitude!,
+            _activeLongitude!,
             p.latitude!,
             p.longitude!,
           );
@@ -1104,8 +1199,8 @@ if (_currentFilters.budgetMax != null) {
 // REMOVE COMPLETELY
 
     // LOCATION RADIUS FILTER
-    if (_currentFilters.latitude != null &&
-        _currentFilters.longitude != null) {
+    if (_activeLatitude != null &&
+        _activeLongitude != null) {
 
       fetchedProfiles.removeWhere(
         (profile) {
@@ -1117,8 +1212,8 @@ if (_currentFilters.budgetMax != null) {
 
           final distance =
               _calculateDistanceKm(
-            _currentFilters.latitude!,
-            _currentFilters.longitude!,
+            _activeLatitude!,
+            _activeLongitude!,
             profile.latitude!,
             profile.longitude!,
           );
@@ -1132,24 +1227,24 @@ if (_currentFilters.budgetMax != null) {
 
     // SORT NEAREST
     if (_currentFilters.sortByNearest &&
-        _currentFilters.latitude != null &&
-        _currentFilters.longitude != null) {
+        _activeLatitude != null &&
+        _activeLongitude != null) {
 
       fetchedProfiles.sort(
         (a, b) {
 
           final distanceA =
               _calculateDistanceKm(
-            _currentFilters.latitude!,
-            _currentFilters.longitude!,
+            _activeLatitude!,
+            _activeLongitude!,
             a.latitude ?? 0,
             a.longitude ?? 0,
           );
 
           final distanceB =
               _calculateDistanceKm(
-            _currentFilters.latitude!,
-            _currentFilters.longitude!,
+            _activeLatitude!,
+            _activeLongitude!,
             b.latitude ?? 0,
             b.longitude ?? 0,
           );
@@ -1339,8 +1434,8 @@ if (_currentFilters.budgetMax != null) {
     
 
     // LOCATION FILTER
-    if (_currentFilters.latitude != null &&
-        _currentFilters.longitude != null) {
+    if (_activeLatitude != null &&
+        _activeLongitude != null) {
 
       newProfiles.removeWhere(
         (p) {
@@ -1352,8 +1447,8 @@ if (_currentFilters.budgetMax != null) {
 
           final distance =
               _calculateDistanceKm(
-            _currentFilters.latitude!,
-            _currentFilters.longitude!,
+            _activeLatitude!,
+            _activeLongitude!,
             p.latitude!,
             p.longitude!,
           );
@@ -1367,24 +1462,24 @@ if (_currentFilters.budgetMax != null) {
 
     // SORT NEAREST
     if (_currentFilters.sortByNearest &&
-        _currentFilters.latitude != null &&
-        _currentFilters.longitude != null) {
+        _activeLatitude != null &&
+        _activeLongitude != null) {
 
       newProfiles.sort(
         (a, b) {
 
           final distanceA =
               _calculateDistanceKm(
-            _currentFilters.latitude!,
-            _currentFilters.longitude!,
+            _activeLatitude!,
+            _activeLongitude!,
             a.latitude ?? 0,
             a.longitude ?? 0,
           );
 
           final distanceB =
               _calculateDistanceKm(
-            _currentFilters.latitude!,
-            _currentFilters.longitude!,
+            _activeLatitude!,
+            _activeLongitude!,
             b.latitude ?? 0,
             b.longitude ?? 0,
           );
@@ -2216,13 +2311,68 @@ if (_profiles.length <= 10 &&
 
        return ProfileListItem(
   profile: profile,
+
+  distanceText:
+      _getDistanceText(profile),
+
+  onLike: () {
+
+    if (widget.isExploreMode) {
+
+      _showCreateProfileRequiredDialog();
+      return;
+    }
+
+    final profileIndex =
+        _profiles.indexOf(profile);
+
+    if (profileIndex != -1) {
+
+      final selectedProfile =
+          _profiles[profileIndex];
+
+      _profiles.removeAt(
+        profileIndex,
+      );
+
+      _processLike(
+        selectedProfile.uid,
+        selectedProfile.documentId!,
+      );
+
+      setState(() {});
+    }
+  },
+
+  onPass: () {
+
+    final profileIndex =
+        _profiles.indexOf(profile);
+
+    if (profileIndex != -1) {
+
+      _lastPassedProfile =
+          _profiles[profileIndex];
+
+      _canUndoPass = true;
+
+      _profiles.removeAt(
+        profileIndex,
+      );
+
+      setState(() {});
+    }
+  },
+
   onTap: () {
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) => ViewProfileScreen(
+        builder: (context) =>
+            ViewProfileScreen(
           userId: profile.uid,
-          profileDocumentId: profile.documentId!,
+          profileDocumentId:
+              profile.documentId!,
         ),
       ),
     );
@@ -2447,13 +2597,21 @@ Widget _buildCardView() {
 
           child: ProfileCard(
             profile: profile,
-
+ distanceText:
+      _getDistanceText(profile),
             onLike: () {
-              _handleProfileDismissed(
-                DismissDirection
-                    .startToEnd,
-              );
-            },
+
+  if (widget.isExploreMode) {
+
+    _showCreateProfileRequiredDialog();
+    return;
+
+  }
+
+  _handleProfileDismissed(
+    DismissDirection.startToEnd,
+  );
+},
 
             onPass: () {
               _handleProfileDismissed(

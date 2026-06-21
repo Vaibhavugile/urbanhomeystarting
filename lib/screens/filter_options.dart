@@ -5,7 +5,7 @@ class FilterOptions {
 
   String? desiredCity;
   String? areaPreference;
-
+String? locationName;
   String? placeId;
 
   double? latitude;
@@ -83,7 +83,7 @@ FilterOptions({
 
   this.desiredCity,
   this.areaPreference,
-
+this.locationName,
   this.placeId,
 
   this.latitude,
@@ -165,7 +165,7 @@ FilterOptions({
 
       desiredCity != null ||
       areaPreference != null ||
-
+locationName != null ||
       placeId != null ||
 
       latitude != null ||
@@ -245,7 +245,7 @@ void clear() {
 
   desiredCity = null;
   areaPreference = null;
-
+locationName = null;
   placeId = null;
 
   latitude = null;
@@ -325,7 +325,7 @@ void clear() {
   String? desiredCity,
   String? areaPreference,
   String? placeId,
-
+String? locationName,
   double? latitude,
   double? longitude,
 
@@ -403,6 +403,9 @@ void clear() {
   areaPreference:
       areaPreference ??
           this.areaPreference,
+ locationName:
+    locationName ??
+        this.locationName,
 
   placeId:
       placeId ?? this.placeId,

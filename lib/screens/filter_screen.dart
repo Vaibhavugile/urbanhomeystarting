@@ -4,6 +4,7 @@ import 'package:flutter/services.dart'; // For TextInputFormatter
 import 'package:mytennat/screens/filter_options.dart'; // Make sure this path is correct
 import 'package:intl/intl.dart'; // For date formatting
 import 'package:mytennat/data/location_data.dart'; // Import the new location data
+import '../widgets/location_selector_widget.dart';
 
 const Color kPrimaryColor = Color(0xFF7C3AED);
 const Color kSecondaryColor = Color(0xFF9333EA);
@@ -479,25 +480,74 @@ void _clearAllFilters() {
 
           Expanded(
             child: Text(
-              _filters.placeId ?? 'Select Location',
-              style: TextStyle(
-                color: _filters.placeId == null
-                    ? kMediumText
-                    : kDarkText,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
+  _filters.locationName?.isNotEmpty == true
+      ? _filters.locationName!
+      : 'Select Location',
+),
           ),
 
           IconButton(
-            onPressed: () {
-              // Open Location Selector
-            },
-            icon: const Icon(
-              Icons.edit_location_alt_rounded,
-              color: kPrimaryColor,
+  onPressed: () async {
+
+  final result =
+      await Navigator.push<LocationResult>(
+    context,
+    MaterialPageRoute(
+      builder: (_) =>
+          Scaffold(
+            appBar: AppBar(
+              title: const Text(
+                'Select Location',
+              ),
+            ),
+            body: LocationSelectorWidget(
+              googleApiKey:
+                  'AIzaSyBK82kg-QdV1TdTrOoC3-jvbSstRhz1wZ0',
+
+              initialCity:
+                  _filters.desiredCity,
+
+              initialAddress:
+                  _filters.locationName,
+
+              onLocationSelected:
+                  (location) {
+                Navigator.pop(
+                  context,
+                  location,
+                );
+              },
             ),
           ),
+    ),
+  );
+
+  if (result != null) {
+
+    setState(() {
+
+      _filters.desiredCity =
+          result.city;
+
+      _filters.locationName =
+          result.address;
+
+      _filters.placeId =
+          result.placeId;
+
+      _filters.latitude =
+          result.latitude;
+
+      _filters.longitude =
+          result.longitude;
+    });
+  }
+},
+  icon: const Icon(
+    Icons.edit_location_alt_rounded,
+    color: kPrimaryColor,
+  ),
+),
         ],
       ),
     ),
