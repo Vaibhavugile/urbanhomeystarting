@@ -2220,12 +2220,31 @@ final bool? proceed =
 
             Expanded(
               child: OutlinedButton(
-                onPressed: () {
-                  Navigator.pop(
-                    context,
-                    false,
-                  );
-                },
+               onPressed: () {
+
+  if (_remainingContacts <= 0) {
+
+    Navigator.pop(
+      context,
+      false,
+    );
+
+    Navigator.push(
+      parentContext,
+      MaterialPageRoute(
+        builder: (_) =>
+            const PlansScreen(),
+      ),
+    );
+
+    return;
+  }
+
+  Navigator.pop(
+    context,
+    true,
+  );
+},
 
                 style:
                     OutlinedButton.styleFrom(
@@ -2308,6 +2327,63 @@ final bool? proceed =
 if (proceed != true) {
   return;
 }
+final sortedProfileIds = [
+  widget.profileId,
+  likedProfile.documentId!,
+]..sort();
+
+final matchDocId =
+    '${sortedProfileIds[0]}_${sortedProfileIds[1]}';
+
+final matchDoc =
+    await _firestore
+        .collection('matches')
+        .doc(matchDocId)
+        .get();
+
+if (matchDoc.exists) {
+
+  final data =
+      matchDoc.data()
+          as Map<String, dynamic>;
+
+  final bool alreadyUnlocked =
+      data['conversationUnlocked'] ??
+          false;
+
+  if (alreadyUnlocked) {
+
+    debugPrint(
+      'CONVERSATION ALREADY UNLOCKED',
+    );
+
+    final String chatRoomId =
+        data['chatRoomId'];
+
+    final String partnerName =
+        _getProfileDisplayName(
+      likedProfile,
+    );
+
+    if (!mounted) return;
+
+    Navigator.push(
+      parentContext,
+      MaterialPageRoute(
+        builder: (_) => ChatScreen(
+          chatRoomId:
+              chatRoomId,
+          chatPartnerId:
+              likedProfile.uid,
+          chatPartnerName:
+              partnerName,
+        ),
+      ),
+    );
+
+    return;
+  }
+}
     // CHECK CONTACTS
     if (_remainingContacts <= 0) {
 
@@ -2347,6 +2423,63 @@ if (proceed != true) {
             ? 'seeking_flatmate'
             : 'flat_listing',
       );
+      final sortedProfileIds = [
+  widget.profileId,
+  likedProfile.documentId!,
+]..sort();
+
+final matchDocId =
+    '${sortedProfileIds[0]}_${sortedProfileIds[1]}';
+
+await _firestore
+    .collection('matches')
+    .doc(matchDocId)
+    .update({
+
+  'conversationUnlocked': true,
+
+  'unlockedByUid':
+      _currentUser!.uid,
+
+  'unlockedByProfileId':
+      widget.profileId,
+
+  'unlockedAt':
+      FieldValue.serverTimestamp(),
+});
+
+debugPrint(
+  'MATCH UNLOCK STATUS SAVED',
+);
+final matchDoc =
+    await _firestore
+        .collection('matches')
+        .doc(matchDocId)
+        .get();
+
+final String chatRoomId =
+    matchDoc['chatRoomId'];
+
+await _firestore
+    .collection('chats')
+    .doc(chatRoomId)
+    .update({
+
+  'conversationUnlocked': true,
+
+  'unlockedByUid':
+      _currentUser!.uid,
+
+  'unlockedByProfileId':
+      widget.profileId,
+
+  'unlockedAt':
+      FieldValue.serverTimestamp(),
+});
+
+debugPrint(
+  'CHAT UNLOCK STATUS SAVED',
+);
 
       debugPrint(
         'CHAT ROOM CREATED SUCCESSFULLY',
@@ -2401,58 +2534,170 @@ Navigator.push(
 }
 
   // This function is for creating a match document and a chat room
-  Future<void> _createMatchAndChatRoom(
-      String user1Uid,
-      String user1ProfileId,
-      String user1ProfileType,
-      String user2Uid,
-      String user2ProfileId,
-      String user2ProfileType,
-      ) async {
-    // Create a unique ID for the match based on the two *profile* IDs
-    // This ensures a unique match document for each profile pair.
-    List<String> sortedProfileIds = [user1ProfileId, user2ProfileId]..sort();
-    String matchDocId = '${sortedProfileIds[0]}_${sortedProfileIds[1]}';
-    print("createMatchAndChatRoom: Attempting to check existence of match for profiles: $matchDocId");
-    try {
-      DocumentSnapshot matchDoc = await _firestore.collection('matches').doc(matchDocId).get();
-      print("createMatchAndChatRoom: Match document existence check result: ${matchDoc.exists}");
-      if (!matchDoc.exists) {
-        print("createMatchAndChatRoom: Match document for profiles does not exist. Proceeding to create chat and match.");
-        DocumentReference chatRef = await _firestore.collection('chats').add({
-          'participants': [user1Uid, user2Uid], // Keep UIDs for general chat participants
-          'participants_profile_ids': sortedProfileIds, // Store specific profile IDs that matched
-          'createdAt': FieldValue.serverTimestamp(),
+ Future<void> _createMatchAndChatRoom(
+  String user1Uid,
+  String user1ProfileId,
+  String user1ProfileType,
+  String user2Uid,
+  String user2ProfileId,
+  String user2ProfileType,
+) async {
+
+  List<String> sortedProfileIds = [
+    user1ProfileId,
+    user2ProfileId,
+  ]..sort();
+
+  String matchDocId =
+      '${sortedProfileIds[0]}_${sortedProfileIds[1]}';
+
+  print(
+    "createMatchAndChatRoom: Attempting to check existence of match for profiles: $matchDocId",
+  );
+
+  try {
+
+    DocumentSnapshot matchDoc =
+        await _firestore
+            .collection('matches')
+            .doc(matchDocId)
+            .get();
+
+    print(
+      "createMatchAndChatRoom: Match document existence check result: ${matchDoc.exists}",
+    );
+
+    if (!matchDoc.exists) {
+
+      print(
+        "createMatchAndChatRoom: Match document for profiles does not exist. Proceeding to create chat and match.",
+      );
+
+      // CHAT ID = phone_uid_phone_uid
+
+      List<String> participants = [
+        user1Uid,
+        user2Uid,
+      ]..sort();
+
+      String chatRoomId =
+          participants.join('_');
+
+      // CREATE CHAT ONLY IF NOT EXISTS
+
+      DocumentSnapshot chatDoc =
+          await _firestore
+              .collection('chats')
+              .doc(chatRoomId)
+              .get();
+
+      if (!chatDoc.exists) {
+
+        await _firestore
+            .collection('chats')
+            .doc(chatRoomId)
+            .set({
+
+          'participants': [
+            user1Uid,
+            user2Uid,
+          ],
+
+          'participants_profile_ids':
+              sortedProfileIds,
+
+          'createdAt':
+              FieldValue.serverTimestamp(),
+
           'lastMessage': '',
+
           'lastMessageSenderId': '',
-          'lastMessageTimestamp': null,
+
+          'lastMessageTimestamp':
+              null,
+
+          'conversationUnlocked':
+              false,
+
+          'unlockedByUid':
+              null,
+
+          'unlockedByProfileId':
+              null,
+
+          'unlockedAt':
+              null,
         });
-        String chatRoomId = chatRef.id;
-        print("createMatchAndChatRoom: Chat room created with ID: $chatRoomId");
-        // The _userProfileType print here refers to a class member, not the function parameter.
-        // print("user1profiletyppe: $_userProfileType"); // This line might be using a class variable, remove if not intended for user1ProfileType param
-        await _firestore.collection('matches').doc(matchDocId).set({
-          'user1_uid': user1Uid,
-          'user2_uid': user2Uid,
-          'user1_profile_id': user1ProfileId,
-          'user2_profile_id': user2ProfileId,
-          'user1_profile_type': user1ProfileType, // Add this line
-          'user2_profile_type': user2ProfileType, // Add this line
-          'chatRoomId': chatRoomId,
-          'createdAt': FieldValue.serverTimestamp(),
-        });
-        print("createMatchAndChatRoom: Match document created successfully for profiles: $matchDocId");
+
+        print(
+          "createMatchAndChatRoom: Chat created with ID: $chatRoomId",
+        );
+
       } else {
-        print("createMatchAndChatRoom: Match document for profiles already exists.");
-        // If match already exists, ensure chatRoomId is fetched
-        String chatRoomId = (matchDoc.data() as Map<String, dynamic>)['chatRoomId'];
-        print("createMatchAndChatRoom: Existing chatRoomId: $chatRoomId");
+
+        print(
+          "createMatchAndChatRoom: Chat already exists: $chatRoomId",
+        );
       }
-    } catch (e) {
-      print("createMatchAndChatRoom ERROR: $e");
-      rethrow; // Re-throw the error to be caught by the caller
+
+      await _firestore
+          .collection('matches')
+          .doc(matchDocId)
+          .set({
+
+        'user1_uid':
+            user1Uid,
+
+        'user2_uid':
+            user2Uid,
+
+        'user1_profile_id':
+            user1ProfileId,
+
+        'user2_profile_id':
+            user2ProfileId,
+
+        'user1_profile_type':
+            user1ProfileType,
+
+        'user2_profile_type':
+            user2ProfileType,
+
+        'chatRoomId':
+            chatRoomId,
+
+        'createdAt':
+            FieldValue.serverTimestamp(),
+      });
+
+      print(
+        "createMatchAndChatRoom: Match document created successfully for profiles: $matchDocId",
+      );
+
+    } else {
+
+      print(
+        "createMatchAndChatRoom: Match document for profiles already exists.",
+      );
+
+      String chatRoomId =
+          (matchDoc.data()
+              as Map<String, dynamic>)['chatRoomId'];
+
+      print(
+        "createMatchAndChatRoom: Existing chatRoomId: $chatRoomId",
+      );
     }
+
+  } catch (e) {
+
+    print(
+      "createMatchAndChatRoom ERROR: $e",
+    );
+
+    rethrow;
   }
+}
   void _showMatchDialog(String title, String message, VoidCallback onChatPressed) {
     showDialog(
       context: context,
