@@ -5,6 +5,7 @@ import 'package:intl/intl.dart'; // For date formatting
 import 'package:flutter/scheduler.dart'; // For post-frame callbacks
 import 'package:rxdart/rxdart.dart'; // Ensure rxdart is imported if not already
 import 'dart:async';
+import 'package:mytennat/screens/PlansScreen.dart';
 
 // Custom Colors for a modern look, aligned with your gradient theme
 // ======================================================
@@ -90,6 +91,11 @@ DocumentSnapshot? _lastDocument;
 
 bool _hasMoreMessages = true;
 bool _isLoadingMoreMessages = false;
+bool _conversationUnlocked = false;
+
+bool _checkingUnlockStatus = true;
+
+int _remainingContacts = 0;
 List<QueryDocumentSnapshot<Map<String, dynamic>>> _messages = [];
   @override
   void initState() {
@@ -97,6 +103,7 @@ List<QueryDocumentSnapshot<Map<String, dynamic>>> _messages = [];
     _currentUser = _auth.currentUser;
     WidgetsBinding.instance.addObserver(this);
     _initializeChatRoom(); // Call the new initialization method
+    _loadRemainingContacts();
 
     _scrollController.addListener(() {
   if (_scrollController.position.pixels >=
@@ -138,6 +145,7 @@ void dispose() {
       return;
     }
 
+
     // Determine a consistent chat room ID based on both UIDs
     List<String> participants = [_currentUser!.uid, widget.chatPartnerId];
     participants.sort(); // Sort to ensure consistent ID regardless of who initiated
@@ -152,7 +160,22 @@ void dispose() {
     try {
       // Check if the chat room document already exists
       DocumentSnapshot chatDoc = await _firestore.collection('chats').doc(_chatRoomId).get();
+if (chatDoc.exists) {
 
+  final data =
+      chatDoc.data()
+          as Map<String, dynamic>;
+
+  _conversationUnlocked =
+      data['conversationUnlocked'] ??
+          false;
+
+  debugPrint(
+    'CONVERSATION UNLOCKED = $_conversationUnlocked',
+  );
+}
+
+_checkingUnlockStatus = false;
       if (!chatDoc.exists) {
         // If it doesn't exist, create it with initial data
         print('[_initializeChatRoom] Chat room $_chatRoomId does not exist. Creating...');
@@ -192,6 +215,39 @@ void dispose() {
       });
     }
   }
+  Future<void> _loadRemainingContacts() async {
+
+  try {
+
+    final userDoc =
+        await _firestore
+            .collection('users')
+            .doc(_currentUser!.uid)
+            .get();
+
+    if (userDoc.exists) {
+
+      final data =
+          userDoc.data()!;
+
+      setState(() {
+
+        _remainingContacts =
+            data['remainingContacts'] ?? 0;
+      });
+
+      debugPrint(
+        'REMAINING CONTACTS = $_remainingContacts',
+      );
+    }
+
+  } catch (e) {
+
+    debugPrint(
+      'CONTACT LOAD ERROR: $e',
+    );
+  }
+}
 Future<void> _loadMoreMessages() async {
   if (_isLoadingMoreMessages || !_hasMoreMessages || _chatRoomId == null) {
     return;
@@ -364,6 +420,373 @@ void _listenForNewMessages() {
     }
   }
 
+Widget _buildLockedConversationScreen() {
+  return Center(
+    child: Padding(
+      padding: const EdgeInsets.all(24),
+      child: Column(
+        mainAxisAlignment:
+            MainAxisAlignment.center,
+        children: [
+
+          const Icon(
+            Icons.lock_rounded,
+            size: 90,
+            color: kPrimaryColor,
+          ),
+
+          const SizedBox(height: 24),
+
+          const Text(
+            'Start chatting instantly',
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              fontSize: 24,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+
+          const SizedBox(height: 12),
+
+         const Text(
+  'This conversation is locked.\n\nEither you or the other person can unlock it using 1 contact and start chatting instantly.',
+  textAlign: TextAlign.center,
+  style: TextStyle(
+    color: Color(0xFF64748B),
+    height: 1.6,
+    fontSize: 15,
+  ),
+),
+          const SizedBox(height: 20),
+
+Container(
+  padding: const EdgeInsets.symmetric(
+    horizontal: 16,
+    vertical: 12,
+  ),
+  decoration: BoxDecoration(
+    color: const Color(
+      0xFF7C3AED,
+    ).withOpacity(.08),
+    borderRadius:
+        BorderRadius.circular(16),
+  ),
+  child: Text(
+    'Contacts Remaining: $_remainingContacts',
+    style: const TextStyle(
+      fontWeight: FontWeight.w700,
+      fontSize: 16,
+    ),
+  ),
+),
+
+          const SizedBox(height: 32),
+
+        ElevatedButton(
+  onPressed: () async {
+
+    // NO CONTACTS
+
+    if (_remainingContacts <= 0) {
+
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (_) => const PlansScreen(),
+        ),
+      );
+
+      return;
+    }
+
+    final bool? confirmed =
+        await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) {
+
+        return Dialog(
+  backgroundColor: Colors.transparent,
+  child: Container(
+    padding: const EdgeInsets.all(24),
+    decoration: BoxDecoration(
+      color: Colors.white,
+      borderRadius: BorderRadius.circular(28),
+      boxShadow: [
+        BoxShadow(
+          color: Colors.black.withOpacity(.08),
+          blurRadius: 30,
+          offset: const Offset(0, 10),
+        ),
+      ],
+    ),
+    child: Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+
+        Container(
+          width: 90,
+          height: 90,
+          decoration: const BoxDecoration(
+            shape: BoxShape.circle,
+            gradient: LinearGradient(
+              colors: [
+                Color(0xFF7C3AED),
+                Color(0xFFEC4899),
+              ],
+            ),
+          ),
+          child: const Icon(
+            Icons.chat_bubble_rounded,
+            color: Colors.white,
+            size: 42,
+          ),
+        ),
+
+        const SizedBox(height: 20),
+
+        const Text(
+          'Unlock Conversation',
+          textAlign: TextAlign.center,
+          style: TextStyle(
+            fontSize: 24,
+            fontWeight: FontWeight.w800,
+          ),
+        ),
+
+        const SizedBox(height: 12),
+
+        Text(
+          _remainingContacts > 0
+              ? 'You have $_remainingContacts contacts remaining.\n\nUnlock this conversation and start chatting instantly.'
+              : 'You have no contacts remaining.',
+          textAlign: TextAlign.center,
+          style: const TextStyle(
+            color: Color(0xFF64748B),
+            height: 1.5,
+          ),
+        ),
+
+        const SizedBox(height: 24),
+
+        Container(
+          padding: const EdgeInsets.symmetric(
+            horizontal: 16,
+            vertical: 12,
+          ),
+          decoration: BoxDecoration(
+            color: const Color(
+              0xFF7C3AED,
+            ).withOpacity(.08),
+            borderRadius:
+                BorderRadius.circular(16),
+          ),
+          child: Row(
+            mainAxisAlignment:
+                MainAxisAlignment.center,
+            children: [
+
+              const Icon(
+                Icons.local_fire_department,
+                color: Color(0xFF7C3AED),
+              ),
+
+              const SizedBox(width: 8),
+
+              Text(
+                'Remaining Contacts: $_remainingContacts',
+                style: const TextStyle(
+                  fontWeight:
+                      FontWeight.w700,
+                ),
+              ),
+            ],
+          ),
+        ),
+
+        const SizedBox(height: 24),
+
+        Row(
+          children: [
+
+            Expanded(
+              child: OutlinedButton(
+                onPressed: () {
+                  Navigator.pop(
+                    dialogContext,
+                    false,
+                  );
+                },
+                child: const Text(
+                  'Cancel',
+                ),
+              ),
+            ),
+
+            const SizedBox(width: 12),
+
+            Expanded(
+              child: ElevatedButton(
+                onPressed: () {
+                  Navigator.pop(
+                    dialogContext,
+                    true,
+                  );
+                },
+                style:
+                    ElevatedButton.styleFrom(
+                  backgroundColor:
+                      const Color(
+                    0xFF7C3AED,
+                  ),
+                  foregroundColor:
+                      Colors.white,
+                ),
+                child: Text(
+                  _remainingContacts > 0
+                      ? 'Unlock'
+                      : 'Get Contacts',
+                ),
+              ),
+            ),
+          ],
+        ),
+      ],
+    ),
+  ),
+);
+      },
+    );
+
+    if (confirmed != true) {
+      return;
+    }
+
+final chatDoc =
+    await _firestore
+        .collection('chats')
+        .doc(_chatRoomId)
+        .get();
+
+if (chatDoc.exists) {
+
+  final data =
+      chatDoc.data()
+          as Map<String, dynamic>;
+
+  final bool alreadyUnlocked =
+      data['conversationUnlocked'] ??
+          false;
+
+  if (alreadyUnlocked) {
+
+    debugPrint(
+      'CHAT ALREADY UNLOCKED',
+    );
+
+    setState(() {
+
+      _conversationUnlocked =
+          true;
+    });
+
+    return;
+  }
+}
+    // DEDUCT CONTACT
+
+    await _firestore
+        .collection('users')
+        .doc(_currentUser!.uid)
+        .update({
+
+      'remainingContacts':
+          FieldValue.increment(-1),
+    });
+
+    setState(() {
+
+      _remainingContacts--;
+    });
+
+    // UNLOCK CHAT
+
+    await _firestore
+        .collection('chats')
+        .doc(_chatRoomId)
+        .update({
+
+      'conversationUnlocked': true,
+
+      'unlockedByUid':
+          _currentUser!.uid,
+
+      'unlockedAt':
+          FieldValue.serverTimestamp(),
+    });
+
+    setState(() {
+
+      _conversationUnlocked =
+          true;
+    });
+    final matchQuery =
+    await _firestore
+        .collection('matches')
+        .where(
+          'chatRoomId',
+          isEqualTo: _chatRoomId,
+        )
+        .limit(1)
+        .get();
+
+if (matchQuery.docs.isNotEmpty) {
+
+  await matchQuery.docs.first.reference
+      .update({
+
+    'conversationUnlocked':
+        true,
+
+    'unlockedByUid':
+        _currentUser!.uid,
+
+    'unlockedAt':
+        FieldValue.serverTimestamp(),
+  });
+
+  debugPrint(
+    'MATCH UPDATED',
+  );
+}
+
+    debugPrint(
+      'CHAT UNLOCKED SUCCESSFULLY',
+    );
+  },
+
+  style: ElevatedButton.styleFrom(
+    backgroundColor:
+        const Color(0xFF7C3AED),
+    foregroundColor:
+        Colors.white,
+    minimumSize:
+        const Size.fromHeight(56),
+    shape:
+        RoundedRectangleBorder(
+      borderRadius:
+          BorderRadius.circular(16),
+    ),
+  ),
+
+  child: const Text(
+    'Start Conversation',
+  ),
+),
+        ],
+      ),
+    ),
+  );
+}
   void _markVisibleMessagesAsRead() {
     print('[_markVisibleMessagesAsRead] Checking for visible messages to mark as read...');
     print('[_markVisibleMessagesAsRead] Current User UID: ${_currentUser?.uid}');
@@ -608,12 +1031,26 @@ if (_isMarkingRead) return;
     ),
   ),
 ),
-      body: _isLoadingChat // Show loading indicator while chat room is being initialized
-          ? const Center(child: CircularProgressIndicator(valueColor: AlwaysStoppedAnimation<Color>(kAccentColor)))
-          : Stack(
-        children: [
-          Column(
+      body: _isLoadingChat ||
+        _checkingUnlockStatus
+    ? const Center(
+        child: CircularProgressIndicator(
+          valueColor:
+              AlwaysStoppedAnimation<Color>(
+            kAccentColor,
+          ),
+        ),
+      )
+    
+
+    : !_conversationUnlocked
+
+        ? _buildLockedConversationScreen()
+
+        : Stack(
             children: [
+              Column(
+                children: [
              Expanded(
   child: Builder(
     builder: (context) {// Explicitly typing QuerySnapshot
