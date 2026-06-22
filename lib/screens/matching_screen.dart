@@ -2050,7 +2050,7 @@ void _showCreateProfileRequiredDialog() {
       'Start Conversation',
 
   onButtonPressed: () async {
-
+ final parentContext = this.context;
     Navigator.of(
       context,
     ).pop();
@@ -2060,7 +2060,254 @@ void _showCreateProfileRequiredDialog() {
       _isBannerPopupShowing =
           false;
     });
+final bool? proceed =
+    await showDialog<bool>(
+  context: parentContext,
+  builder: (context) {
+    return Dialog(
+  backgroundColor: Colors.transparent,
+  insetPadding:
+      const EdgeInsets.symmetric(
+    horizontal: 24,
+  ),
 
+  child: Container(
+    padding: const EdgeInsets.all(24),
+
+    decoration: BoxDecoration(
+      color: Colors.white,
+
+      borderRadius:
+          BorderRadius.circular(
+        28,
+      ),
+
+      boxShadow: [
+        BoxShadow(
+          color: Colors.black.withOpacity(
+            .12,
+          ),
+          blurRadius: 30,
+          offset: const Offset(
+            0,
+            12,
+          ),
+        ),
+      ],
+    ),
+
+    child: Column(
+      mainAxisSize: MainAxisSize.min,
+
+      children: [
+
+        Container(
+          width: 72,
+          height: 72,
+
+          decoration:
+              const BoxDecoration(
+            shape: BoxShape.circle,
+
+            gradient:
+                LinearGradient(
+              colors: [
+                Color(0xFF7C3AED),
+                Color(0xFF9333EA),
+                Color(0xFFEC4899),
+              ],
+            ),
+          ),
+
+          child: const Icon(
+            Icons.chat_bubble_rounded,
+            color: Colors.white,
+            size: 34,
+          ),
+        ),
+
+        const SizedBox(height: 20),
+
+        const Text(
+          'Start Conversation',
+          style: TextStyle(
+            fontSize: 24,
+            fontWeight:
+                FontWeight.w800,
+            color: Color(
+              0xFF111827,
+            ),
+          ),
+        ),
+
+        const SizedBox(height: 16),
+
+        Container(
+          width: double.infinity,
+
+          padding:
+              const EdgeInsets.all(
+            16,
+          ),
+
+          decoration: BoxDecoration(
+            color:
+                const Color(
+              0xFFF8FAFC,
+            ),
+
+            borderRadius:
+                BorderRadius.circular(
+              18,
+            ),
+          ),
+
+          child: Column(
+            children: [
+
+              Text(
+                _remainingContacts
+                    .toString(),
+                style:
+                    const TextStyle(
+                  fontSize: 34,
+                  fontWeight:
+                      FontWeight
+                          .w900,
+                  color: Color(
+                    0xFF7C3AED,
+                  ),
+                ),
+              ),
+
+              const SizedBox(
+                height: 4,
+              ),
+
+              const Text(
+                'Contacts Remaining',
+                style: TextStyle(
+                  color: Color(
+                    0xFF64748B,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+
+        const SizedBox(height: 18),
+
+        Text(
+          _remainingContacts > 0
+              ? 'Starting this conversation will use 1 contact.'
+              : 'You have no contacts remaining.',
+          textAlign:
+              TextAlign.center,
+          style: const TextStyle(
+            fontSize: 15,
+            height: 1.5,
+            color: Color(
+              0xFF64748B,
+            ),
+          ),
+        ),
+
+        const SizedBox(height: 24),
+
+        Row(
+          children: [
+
+            Expanded(
+              child: OutlinedButton(
+                onPressed: () {
+                  Navigator.pop(
+                    context,
+                    false,
+                  );
+                },
+
+                style:
+                    OutlinedButton.styleFrom(
+                  minimumSize:
+                      const Size(
+                    0,
+                    54,
+                  ),
+
+                  shape:
+                      RoundedRectangleBorder(
+                    borderRadius:
+                        BorderRadius.circular(
+                      16,
+                    ),
+                  ),
+                ),
+
+                child: const Text(
+                  'Cancel',
+                ),
+              ),
+            ),
+
+            const SizedBox(width: 12),
+
+            Expanded(
+              child: ElevatedButton(
+                onPressed: () {
+                  Navigator.pop(
+                    context,
+                    true,
+                  );
+                },
+
+                style:
+                    ElevatedButton.styleFrom(
+                  backgroundColor:
+                      const Color(
+                    0xFF7C3AED,
+                  ),
+
+                  foregroundColor:
+                      Colors.white,
+
+                  elevation: 0,
+
+                  minimumSize:
+                      const Size(
+                    0,
+                    54,
+                  ),
+
+                  shape:
+                      RoundedRectangleBorder(
+                    borderRadius:
+                        BorderRadius.circular(
+                      16,
+                    ),
+                  ),
+                ),
+
+                child: Text(
+                  _remainingContacts >
+                          0
+                      ? 'Continue'
+                      : 'Get Contacts',
+                ),
+              ),
+            ),
+          ],
+        ),
+      ],
+    ),
+  ),
+);
+  },
+);
+
+if (proceed != true) {
+  return;
+}
     // CHECK CONTACTS
     if (_remainingContacts <= 0) {
 
@@ -2105,15 +2352,37 @@ void _showCreateProfileRequiredDialog() {
         'CHAT ROOM CREATED SUCCESSFULLY',
       );
 
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(
-        const SnackBar(
-          content: Text(
-            'Conversation started successfully',
-          ),
-        ),
-      );
+   final String partnerName =
+    _getProfileDisplayName(
+  likedProfile,
+);
+
+debugPrint(
+  'OPENING CHAT SCREEN...',
+);
+
+if (!mounted) {
+  debugPrint(
+    'WIDGET NOT MOUNTED',
+  );
+  return;
+}
+
+if (!mounted) return;
+
+Navigator.push(
+  parentContext,
+  MaterialPageRoute(
+    builder: (_) => ChatScreen(
+      chatPartnerId: likedProfile.uid,
+      chatPartnerName: partnerName,
+    ),
+  ),
+);
+
+     debugPrint(
+  'CONVERSATION STARTED SUCCESSFULLY',
+);
 
     } catch (e) {
 
@@ -2121,15 +2390,9 @@ void _showCreateProfileRequiredDialog() {
         'START CONVERSATION ERROR: $e',
       );
 
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(
-        SnackBar(
-          content: Text(
-            'Failed: $e',
-          ),
-        ),
-      );
+      debugPrint(
+  'FAILED: $e',
+);
     }
   },
 );
