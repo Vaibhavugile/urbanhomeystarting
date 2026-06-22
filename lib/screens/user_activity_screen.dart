@@ -6,7 +6,7 @@ import 'package:mytennat/screens/flat_with_flatmate_profile_screen.dart'; // For
 import 'package:mytennat/screens/chat_screen.dart'; // For ChatScreen
 import 'package:mytennat/screens/view_profile_screen.dart'; // For ViewProfileScreen
 import 'package:url_launcher/url_launcher.dart'; // Import for making phone calls
-import 'package:mytennat/screens/home_page.dart'; // Import HomePage
+import 'package:mytennat/screens/home_page.dart' hide FlatListingProfile, SeekingFlatmateProfile;
 import 'package:mytennat/screens/matching_screen.dart'; // Import MatchingScreen
 import 'package:mytennat/screens/matches_list_screen.dart'; // Import MatchesListScreen
 import 'package:mytennat/screens/more_profile_screen.dart'; // Import MoreProfileScreen
@@ -345,14 +345,26 @@ class _UserActivityScreenState extends State<UserActivityScreen> {
     return null;
   }
 
-  String _getProfileDisplayName(dynamic profile) {
-    if (profile is FlatListingProfile) {
-      return profile.ownerName ?? 'Flat Listing';
-    } else if (profile is SeekingFlatmateProfile) {
-      return profile.name ?? 'Seeking Flatmate';
-    }
-    return 'Unknown Profile';
+String _getProfileDisplayName(dynamic profile) {
+
+  if (profile is FlatListingProfile) {
+
+    return profile.userProfile.name != null &&
+            profile.userProfile.name!.isNotEmpty
+        ? profile.userProfile.name!
+        : 'Room Listing';
   }
+
+  if (profile is SeekingFlatmateProfile) {
+
+    return profile.userProfile.name != null &&
+            profile.userProfile.name!.isNotEmpty
+        ? profile.userProfile.name!
+        : 'Seeking Flatmate';
+  }
+
+  return 'Unknown Profile';
+}
 
   String _getProfileTypeDisplay(dynamic profile) {
     if (profile is FlatListingProfile) {
@@ -500,371 +512,948 @@ class _UserActivityScreenState extends State<UserActivityScreen> {
   }
 
 
-  @override
-  Widget build(BuildContext context) {
-    return DefaultTabController( // Outer Tab Controller for "Room Listings" and "Seeking Flatmates"
-      length: 2,
-      child: Scaffold(
-        appBar: AppBar(
-          title: const Text(
-            'My Connections',
-            style: TextStyle(
-              color: Colors.white,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          centerTitle: true,
-          elevation: 0,
-          iconTheme: const IconThemeData(color: Colors.white),
-          flexibleSpace: Container(
-            decoration: const BoxDecoration(
-              gradient: LinearGradient(
-                colors: [Color(0xFF6A1B9A), Color(0xFFAD1457)],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-              ),
-            ),
-          ),
-          bottom: const TabBar( // The main tabs in the AppBar
-            indicatorColor: Colors.white,
-            labelColor: Colors.white,
-            unselectedLabelColor: Colors.white70,
-            tabs: [
-              Tab(text: 'Room Listings', icon: Icon(Icons.home)),
-              Tab(text: 'Seeking Flatmates', icon: Icon(Icons.group)),
-            ],
+ @override
+Widget build(BuildContext context) {
+  return DefaultTabController(
+    length: 2,
+    child: Scaffold(
+      backgroundColor: kBackgroundColor,
+
+      appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        centerTitle: true,
+
+        iconTheme: const IconThemeData(
+          color: Colors.white,
+        ),
+
+        title: const Text(
+          'My Connections',
+          style: TextStyle(
+            color: Colors.white,
+            fontSize: 22,
+            fontWeight: FontWeight.w800,
+            letterSpacing: -0.5,
           ),
         ),
-        body: _isLoading
-            ? const Center(child: CircularProgressIndicator())
-            : TabBarView( // Outer TabBarView corresponding to the AppBar tabs
-          children: [
-            // Content for "Room Listings" tab
-            _buildProfileActivityView(
-              profileType: 'flat_listing',
-              emptyMessage: 'No Room Listing profiles available.',
+
+        flexibleSpace: Container(
+          decoration: const BoxDecoration(
+            gradient: kPrimaryGradient,
+          ),
+        ),
+
+        bottom: TabBar(
+          indicatorColor: Colors.white,
+          indicatorWeight: 3,
+
+          labelColor: Colors.white,
+
+          unselectedLabelColor:
+              Colors.white.withOpacity(.75),
+
+          labelStyle: const TextStyle(
+            fontWeight: FontWeight.w700,
+            fontSize: 14,
+          ),
+
+          unselectedLabelStyle:
+              const TextStyle(
+            fontWeight: FontWeight.w500,
+            fontSize: 14,
+          ),
+
+          tabs: const [
+
+            Tab(
+              icon: Icon(
+                Icons.home_rounded,
+              ),
+              text: 'Room Listings',
             ),
-            // Content for "Seeking Flatmates" tab
-            _buildProfileActivityView(
-              profileType: 'seeking_flatmate',
-              emptyMessage: 'No Seeking Flatmate profiles available.',
+
+            Tab(
+              icon: Icon(
+                Icons.people_alt_rounded,
+              ),
+              text: 'Flatmates',
             ),
           ],
         ),
-        bottomNavigationBar: BottomNavigationBar(
-          backgroundColor: Colors.white,
-          type: BottomNavigationBarType.fixed,
-          selectedItemColor: const Color(0xFFAD1457),
-          unselectedItemColor: Colors.grey[600],
-          items: const <BottomNavigationBarItem>[
+      ),
+
+      body: _isLoading
+          ? const Center(
+              child:
+                  CircularProgressIndicator(
+                color: kPrimaryColor,
+              ),
+            )
+          : TabBarView(
+              children: [
+
+                _buildProfileActivityView(
+                  profileType:
+                      'flat_listing',
+                  emptyMessage:
+                      'No Room Listings found.',
+                ),
+
+                _buildProfileActivityView(
+                  profileType:
+                      'seeking_flatmate',
+                  emptyMessage:
+                      'No Flatmate Profiles found.',
+                ),
+              ],
+            ),
+
+      bottomNavigationBar:
+          Container(
+        decoration: BoxDecoration(
+          color: Colors.white,
+          boxShadow: [
+
+            BoxShadow(
+              color:
+                  Colors.black.withOpacity(
+                .06,
+              ),
+              blurRadius: 20,
+              offset:
+                  const Offset(0, -4),
+            ),
+          ],
+        ),
+        child: BottomNavigationBar(
+          backgroundColor:
+              Colors.white,
+
+          elevation: 0,
+
+          type:
+              BottomNavigationBarType
+                  .fixed,
+
+          selectedItemColor:
+              kPrimaryColor,
+
+          unselectedItemColor:
+              kLightText,
+
+          selectedLabelStyle:
+              const TextStyle(
+            fontWeight:
+                FontWeight.w700,
+          ),
+
+          currentIndex:
+              _selectedIndex,
+
+          onTap:
+              _onItemTapped,
+
+          items: const [
+
             BottomNavigationBarItem(
-              icon: Icon(Icons.home),
+              icon: Icon(
+                Icons.home_rounded,
+              ),
               label: 'Home',
             ),
+
             BottomNavigationBarItem(
-              icon: Icon(Icons.group), // Matches icon
+              icon: Icon(
+                Icons.favorite_rounded,
+              ),
               label: 'Matches',
             ),
+
             BottomNavigationBarItem(
-              icon: Icon(Icons.chat_bubble_outline), // Chat icon
+              icon: Icon(
+                Icons.chat_bubble_rounded,
+              ),
               label: 'Chat',
             ),
+
             BottomNavigationBarItem(
-              icon: Icon(Icons.local_activity), // Activity icon
+              icon: Icon(
+                Icons.local_activity_rounded,
+              ),
               label: 'Activity',
             ),
+
             BottomNavigationBarItem(
-              icon: Icon(Icons.more_horiz), // More icon
+              icon: Icon(
+                Icons.more_horiz_rounded,
+              ),
               label: 'More',
             ),
           ],
-          currentIndex: _selectedIndex,
-          onTap: _onItemTapped,
         ),
       ),
-    );
-  }
+    ),
+  );
+}
 
   // Renamed from _buildMainProfileSection to represent the content of each main tab
-  Widget _buildProfileActivityView({
-    required String profileType,
-    required String emptyMessage,
-  }) {
-    // Filter profiles belonging to this type
-    final List<dynamic> profilesOfType = _userProfilesList.where((p) => _getProfileTypeDisplay(p) == profileType).toList();
+Widget _buildProfileActivityView({
+  required String profileType,
+  required String emptyMessage,
+}) {
 
-    return DefaultTabController( // Inner Tab Controller for "Liked Me", "Liked By Me", "Matches"
-        length: 3,
-        child: Column(
-            children: [
-            // Optional: You can add a small header here if you want text like "Activity for Room Listings"
-            // but the top level tab already gives context.
-            if (profilesOfType.isEmpty)
-        Expanded( // Use Expanded to ensure it takes available space in the column
-    child: Center(
-    child: Text(emptyMessage, style: const TextStyle(color: Colors.grey, fontSize: 16)),
-    ),
-    )
-    else ...[
-    TabBar( // Inner TabBar
-    indicatorColor: const Color(0xFFAD1457), // Match app bar accent
-    labelColor: const Color(0xFF6A1B9A), // Match app bar primary
-    unselectedLabelColor: Colors.grey[600],
-    tabs: const [
-    Tab(text: 'Liked Me', icon: Icon(Icons.favorite)),
-    Tab(text: 'Liked By Me', icon: Icon(Icons.thumb_up)),
-    Tab(text: 'Matches', icon: Icon(Icons.handshake)),
-    ],
-    ),
-    Expanded( // Crucial: Expanded makes TabBarView fill remaining space
-    child: TabBarView( // Inner TabBarView
-    children: [
-    _buildSectionContent(
-    profiles: _getAggregatedIncomingLikes(profileType),
-    emptyMessage: 'No one has liked these profiles yet.',
-    isMatchSection: false,
-    isLikedByMeSection: false,
-    profileTypeFilter: profileType,
-    ),
-    _buildSectionContent(
-    profiles: _getAggregatedOutgoingLikes(profileType),
-    emptyMessage: 'These profiles have not liked anyone yet.',
-    isMatchSection: false,
-    isLikedByMeSection: true,
-    profileTypeFilter: profileType,
-    ),
-    _buildSectionContent(
-    profiles: _getAggregatedMatches(profileType),
-    emptyMessage: 'No matches for these profiles yet.',
-    isMatchSection: true,
-    isLikedByMeSection: false,
-    profileTypeFilter: profileType,
-    ),
-    ],
-    ),
-    ),
-    ],
-
-    ]
-        )
-    );
-  }
-
-  // Re-designed _buildSectionContent to be more generic and use aggregated data
-  Widget _buildSectionContent({
-    List<dynamic>? profiles, // This can now be List<dynamic> (for incoming/outgoing) or List<Map<String, dynamic>> (for matches)
-    required String emptyMessage,
-    required bool isMatchSection,
-    required bool isLikedByMeSection,
-    required String profileTypeFilter, // The type of profiles this section is displaying activities for
-  }) {
-    if (profiles == null || profiles.isEmpty) {
-      return Center(
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Text(emptyMessage, style: const TextStyle(color: Colors.grey, fontSize: 16)),
-        ),
-      );
-    }
-
-    return ListView.builder(
-      // Important: Use AlwaysScrollableScrollPhysics if the content within the inner tab
-      // might exceed the TabBarView's height. This will make only this inner list scrollable.
-      physics: const AlwaysScrollableScrollPhysics(),
-      shrinkWrap: true, // This is crucial for ListView.builder inside an Expanded
-      itemCount: profiles.length,
-      itemBuilder: (context, index) {
-        dynamic profile;
-        String? chatRoomId;
-        String? currentOwnerProfileId;
-
-        if (isMatchSection) {
-          final Map<String, dynamic> matchEntry = profiles[index];
-          profile = matchEntry['profile'];
-          chatRoomId = matchEntry['chatRoomId'];
-          currentOwnerProfileId = matchEntry['currentOwnerProfileId'];
-        } else {
-          profile = profiles[index];
-        }
-
-
-        String name = _getProfileDisplayName(profile);
-        String typeDisplay = _getProfileTypeDisplay(profile); // Still used for icon/label
-        String? profileImageUrl;
-        String? phoneNumber;
-
-        if (profile is FlatListingProfile) {
-          // profileImageUrl = profile.ownerImageUrl; // Uncomment if you have this field
-          phoneNumber = profile.ownerPhonenumber;
-        } else if (profile is SeekingFlatmateProfile) {
-          // profileImageUrl = profile.profileImageUrl; // Uncomment if you have this field
-          phoneNumber = profile.phoneNumber;
-        }
-
-
-        return _buildProfileCard(
-          profile: profile,
-          onTap: () {
-            Navigator.push(context, MaterialPageRoute(builder: (context) => ViewProfileScreen(
-              userId: profile.uid!,
-              profileDocumentId: profile.documentId!,
-            )));
-          },
-          showChatButton: isMatchSection && chatRoomId != null && currentOwnerProfileId != null,
-          showCallButton: isLikedByMeSection && phoneNumber != null && phoneNumber.isNotEmpty,
-          chatRoomId: chatRoomId,
-          currentOwnerProfileId: currentOwnerProfileId,
-        );
-      },
-    );
-  }
-
-  // Reusable card widget for displaying profiles in lists
-  Widget _buildProfileCard({
-    required dynamic profile,
-    required VoidCallback onTap,
-    required bool showChatButton,
-    required bool showCallButton,
-    String? chatRoomId,
-    String? currentOwnerProfileId, // The ID of the user's own profile involved in this match
-  }) {
-    String name = _getProfileDisplayName(profile);
-    String typeDisplay = _getProfileTypeDisplay(profile); // Still used for icon/label
-    String? profileImageUrl;
-    String? phoneNumber;
-
-    if (profile is FlatListingProfile) {
-      // profileImageUrl = profile.ownerImageUrl; // Uncomment if you have this field
-      phoneNumber = profile.ownerPhonenumber;
-    } else if (profile is SeekingFlatmateProfile) {
-      // profileImageUrl = profile.profileImageUrl; // Uncomment if you have this field
-      phoneNumber = profile.phoneNumber;
-    }
-
-    return Card(
-      margin: const EdgeInsets.symmetric(vertical: 4.0, horizontal: 8.0), // Added horizontal margin
-      elevation: 2.0,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.0)),
-      child: ListTile(
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-        leading: CircleAvatar(
-          backgroundColor: Colors.blueAccent,
-          backgroundImage: profileImageUrl != null && profileImageUrl.isNotEmpty
-              ? NetworkImage(profileImageUrl)
-              : null,
-          child: profileImageUrl == null || profileImageUrl.isEmpty
-              ? Icon(
-            typeDisplay == 'flat_listing' ? Icons.home : Icons.group,
-            color: Colors.white,
+  final List<dynamic> profilesOfType =
+      _userProfilesList
+          .where(
+            (p) =>
+                _getProfileTypeDisplay(
+                  p,
+                ) ==
+                profileType,
           )
-              : null,
-        ),
-        title: Text(name, style: const TextStyle(fontWeight: FontWeight.w600)),
-        subtitle: Text(
-          typeDisplay == 'flat_listing' ? 'Room Listing' : 'Seeking Flatmate',
-          style: const TextStyle(color: Colors.grey),
-        ),
-        trailing: Row(
-          mainAxisSize: MainAxisSize.min,
+          .toList();
+
+  final incomingLikes =
+      _getAggregatedIncomingLikes(
+    profileType,
+  );
+
+  final outgoingLikes =
+      _getAggregatedOutgoingLikes(
+    profileType,
+  );
+
+  final matches =
+      _getAggregatedMatches(
+    profileType,
+  );
+
+  return DefaultTabController(
+    length: 3,
+    child: Column(
+      children: [
+
+        if (profilesOfType.isEmpty)
+
+          Expanded(
+            child: Center(
+              child: Column(
+                mainAxisAlignment:
+                    MainAxisAlignment.center,
+                children: [
+
+                  Container(
+                    width: 90,
+                    height: 90,
+                    decoration:
+                        BoxDecoration(
+                      color:
+                          kPrimaryColor
+                              .withOpacity(
+                        .08,
+                      ),
+                      shape:
+                          BoxShape.circle,
+                    ),
+                    child: const Icon(
+                      Icons.people_alt_rounded,
+                      size: 42,
+                      color:
+                          kPrimaryColor,
+                    ),
+                  ),
+
+                  const SizedBox(
+                    height: 20,
+                  ),
+
+                  Text(
+                    emptyMessage,
+                    textAlign:
+                        TextAlign.center,
+                    style:
+                        const TextStyle(
+                      color:
+                          kMediumText,
+                      fontSize: 16,
+                      fontWeight:
+                          FontWeight.w600,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          )
+
+        else ...[
+
+          Container(
+            margin:
+                const EdgeInsets.only(
+              top: 8,
+              left: 12,
+              right: 12,
+            ),
+
+            decoration:
+                BoxDecoration(
+              color: Colors.white,
+              borderRadius:
+                  BorderRadius.circular(
+                18,
+              ),
+              border: Border.all(
+                color:
+                    kBorderColor,
+              ),
+            ),
+
+            child: TabBar(
+              dividerColor:
+                  Colors.transparent,
+
+              indicator: BoxDecoration(
+  gradient: kPrimaryGradient,
+  borderRadius: BorderRadius.circular(18),
+),
+indicatorSize: TabBarIndicatorSize.tab,
+
+              labelColor:
+                  Colors.white,
+
+              unselectedLabelColor:
+                  kMediumText,
+
+              labelStyle:
+                  const TextStyle(
+                fontWeight:
+                    FontWeight.w700,
+                fontSize: 13,
+              ),
+
+              tabs: [
+
+                Tab(
+                  icon: const Icon(
+                    Icons.favorite,
+                    size: 18,
+                  ),
+                  text:
+                      'Liked Me (${incomingLikes.length})',
+                ),
+
+                Tab(
+                  icon: const Icon(
+                    Icons.thumb_up,
+                    size: 18,
+                  ),
+                  text:
+                      'Liked (${outgoingLikes.length})',
+                ),
+
+                Tab(
+                  icon: const Icon(
+                    Icons.chat_bubble_rounded,
+                    size: 18,
+                  ),
+                  text:
+                      'Matches (${matches.length})',
+                ),
+              ],
+            ),
+          ),
+
+          const SizedBox(
+            height: 12,
+          ),
+
+          Expanded(
+            child: TabBarView(
+              children: [
+
+                _buildSectionContent(
+                  profiles:
+                      incomingLikes,
+
+                  emptyMessage:
+                      'Nobody has liked your profiles yet.',
+
+                  isMatchSection:
+                      false,
+
+                  isLikedByMeSection:
+                      false,
+
+                  profileTypeFilter:
+                      profileType,
+                ),
+
+                _buildSectionContent(
+                  profiles:
+                      outgoingLikes,
+
+                  emptyMessage:
+                      'You have not liked anyone yet.',
+
+                  isMatchSection:
+                      false,
+
+                  isLikedByMeSection:
+                      true,
+
+                  profileTypeFilter:
+                      profileType,
+                ),
+
+                _buildSectionContent(
+                  profiles:
+                      matches,
+
+                  emptyMessage:
+                      'No matches yet.',
+
+                  isMatchSection:
+                      true,
+
+                  isLikedByMeSection:
+                      false,
+
+                  profileTypeFilter:
+                      profileType,
+                ),
+              ],
+            ),
+          ),
+        ],
+      ],
+    ),
+  );
+}
+  // Re-designed _buildSectionContent to be more generic and use aggregated data
+ Widget _buildSectionContent({
+  List<dynamic>? profiles,
+  required String emptyMessage,
+  required bool isMatchSection,
+  required bool isLikedByMeSection,
+  required String profileTypeFilter,
+}) {
+
+  if (profiles == null ||
+      profiles.isEmpty) {
+
+    return Center(
+      child: Padding(
+        padding:
+            const EdgeInsets.all(24),
+        child: Column(
+          mainAxisAlignment:
+              MainAxisAlignment.center,
           children: [
-            if (showChatButton) // chatRoomId and currentOwnerProfileId checked in _buildSectionContent
-              ElevatedButton.icon(
-                onPressed: () {
-                  // Ensure chatRoomId and currentOwnerProfileId are non-null here
-                  if (chatRoomId != null && currentOwnerProfileId != null) {
-                    Navigator.push(context, MaterialPageRoute(builder: (context) => ChatScreen(
-                      chatPartnerId: profile.uid!,
-                      chatPartnerName: name,
-                      chatRoomId: chatRoomId,
-                    )));
-                  }
-                },
-                icon: const Icon(Icons.chat),
-                label: const Text('Chat'),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.green,
-                  foregroundColor: Colors.white,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-                ),
+
+            Icon(
+              isMatchSection
+                  ? Icons.chat_bubble_outline_rounded
+                  : Icons.favorite_border_rounded,
+              size: 60,
+              color: kLightText,
+            ),
+
+            const SizedBox(
+              height: 16,
+            ),
+
+            Text(
+              emptyMessage,
+              textAlign:
+                  TextAlign.center,
+              style:
+                  const TextStyle(
+                color:
+                    kMediumText,
+                fontSize: 16,
+                fontWeight:
+                    FontWeight.w500,
               ),
-            if (showCallButton && phoneNumber != null && phoneNumber.isNotEmpty)
-              Padding(
-                padding: EdgeInsets.only(left: showChatButton ? 8.0 : 0.0),
-                child: IconButton(
-                  icon: const Icon(Icons.call, color: Colors.blue),
-                  onPressed: () => _makePhoneCall(phoneNumber!),
-                  tooltip: 'Call $name',
-                ),
-              ),
+            ),
           ],
         ),
-        onTap: onTap,
       ),
     );
+  }
+
+  return ListView.separated(
+    physics:
+        const BouncingScrollPhysics(),
+
+    padding:
+        const EdgeInsets.only(
+      top: 4,
+      bottom: 20,
+    ),
+
+    itemCount:
+        profiles.length,
+
+    separatorBuilder:
+        (_, __) =>
+            const SizedBox(
+      height: 2,
+    ),
+
+    itemBuilder:
+        (context, index) {
+
+      dynamic profile;
+
+      String? chatRoomId;
+
+      String?
+          currentOwnerProfileId;
+
+      if (isMatchSection) {
+
+        final Map<String, dynamic>
+            matchEntry =
+            profiles[index];
+
+        profile =
+            matchEntry['profile'];
+
+        chatRoomId =
+            matchEntry['chatRoomId'];
+
+        currentOwnerProfileId =
+            matchEntry[
+                'currentOwnerProfileId'];
+
+      } else {
+
+        profile =
+            profiles[index];
+      }
+
+      return _buildProfileCard(
+        profile: profile,
+
+        isMatchSection:
+            isMatchSection,
+
+        isLikedMeSection:
+            !isMatchSection &&
+                !isLikedByMeSection,
+
+        isLikedByMeSection:
+            isLikedByMeSection,
+
+        onTap: () {
+
+          Navigator.push(
+            context,
+
+            MaterialPageRoute(
+              builder:
+                  (context) =>
+                      ViewProfileScreen(
+                userId:
+                    profile.uid!,
+                profileDocumentId:
+                    profile
+                        .documentId!,
+              ),
+            ),
+          );
+        },
+
+        showChatButton:
+            isMatchSection &&
+                chatRoomId != null,
+
+        showCallButton:
+            false,
+
+        chatRoomId:
+            chatRoomId,
+
+        currentOwnerProfileId:
+            currentOwnerProfileId,
+      );
+    },
+  );
+}
+
+  // Reusable card widget for displaying profiles in lists
+Widget _buildProfileCard({
+  required dynamic profile,
+
+  required bool isMatchSection,
+
+  required bool isLikedMeSection,
+
+  required bool isLikedByMeSection,
+
+  required VoidCallback onTap,
+
+  required bool showChatButton,
+
+  required bool showCallButton,
+
+  String? chatRoomId,
+
+  String? currentOwnerProfileId,
+}) {
+    String name = _getProfileDisplayName(profile);
+    String typeDisplay = _getProfileTypeDisplay(profile); // Still used for icon/label
+  String? profileImageUrl;
+
+if (profile is FlatListingProfile) {
+
+  if (profile.imageUrls != null &&
+      profile.imageUrls!.isNotEmpty) {
+    profileImageUrl =
+        profile.imageUrls!.first;
+  }
+
+} else if (profile is SeekingFlatmateProfile) {
+
+  if (profile.imageUrls != null &&
+      profile.imageUrls!.isNotEmpty) {
+    profileImageUrl =
+        profile.imageUrls!.first;
+  }
+}
+   return Card(
+  margin: const EdgeInsets.symmetric(
+    horizontal: 12,
+    vertical: 6,
+  ),
+
+  elevation: 0,
+
+  color: kCardColor,
+
+  shadowColor: Colors.transparent,
+
+  shape: RoundedRectangleBorder(
+    borderRadius:
+        BorderRadius.circular(20),
+    side: const BorderSide(
+      color: kBorderColor,
+    ),
+  ),
+
+  child: InkWell(
+    borderRadius:
+        BorderRadius.circular(20),
+
+    onTap: onTap,
+
+    child: Padding(
+      padding:
+          const EdgeInsets.all(14),
+
+      child: Row(
+        children: [
+
+          CircleAvatar(
+            radius: 30,
+
+            backgroundColor:
+                kPrimaryColor
+                    .withOpacity(.08),
+
+            backgroundImage:
+                profileImageUrl != null
+                    ? NetworkImage(
+                        profileImageUrl,
+                      )
+                    : null,
+
+            child:
+                profileImageUrl == null
+                    ? Icon(
+                        profile is FlatListingProfile
+                            ? Icons.home_rounded
+                            : Icons.person_rounded,
+                        color:
+                            kPrimaryColor,
+                        size: 28,
+                      )
+                    : null,
+          ),
+
+          const SizedBox(width: 14),
+
+          Expanded(
+            child: Column(
+              crossAxisAlignment:
+                  CrossAxisAlignment
+                      .start,
+
+              children: [
+
+                Text(
+                  name,
+                  maxLines: 1,
+                  overflow:
+                      TextOverflow
+                          .ellipsis,
+
+                  style:
+                      const TextStyle(
+                    fontSize: 16,
+                    fontWeight:
+                        FontWeight
+                            .w700,
+                    color:
+                        kDarkText,
+                  ),
+                ),
+
+                const SizedBox(
+                  height: 4,
+                ),
+
+                Row(
+                  children: [
+
+                    const Icon(
+                      Icons
+                          .location_on_rounded,
+                      size: 14,
+                      color:
+                          kMediumText,
+                    ),
+
+                    const SizedBox(
+                      width: 4,
+                    ),
+
+                    Expanded(
+                      child: Text(
+                        profile.city ??
+                            '',
+                        maxLines: 1,
+                        overflow:
+                            TextOverflow
+                                .ellipsis,
+
+                        style:
+                            const TextStyle(
+                          color:
+                              kMediumText,
+                          fontSize:
+                              13,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+
+                const SizedBox(
+                  height: 8,
+                ),
+
+                Container(
+                  padding:
+                      const EdgeInsets
+                          .symmetric(
+                    horizontal: 10,
+                    vertical: 4,
+                  ),
+
+                  decoration:
+                      BoxDecoration(
+                    color:
+                        kPrimaryColor
+                            .withOpacity(
+                      .08,
+                    ),
+
+                    borderRadius:
+                        BorderRadius
+                            .circular(
+                      30,
+                    ),
+                  ),
+
+                  child: Text(
+                    profile
+                            is FlatListingProfile
+                        ? 'Room Listing'
+                        : 'Seeking Flatmate',
+
+                    style:
+                        const TextStyle(
+                      color:
+                          kPrimaryColor,
+                      fontSize: 12,
+                      fontWeight:
+                          FontWeight
+                              .w600,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+
+          const SizedBox(width: 12),
+
+          if (isMatchSection &&
+              chatRoomId != null)
+
+            ElevatedButton.icon(
+              onPressed: () {
+
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder:
+                        (context) =>
+                            ChatScreen(
+                      chatPartnerId:
+                          profile.uid!,
+                      chatPartnerName:
+                          name,
+                      chatRoomId:
+                          chatRoomId,
+                    ),
+                  ),
+                );
+              },
+
+              icon: const Icon(
+                Icons
+                    .chat_bubble_rounded,
+                size: 16,
+              ),
+
+              label: const Text(
+                'Chat',
+              ),
+
+              style:
+                  ElevatedButton
+                      .styleFrom(
+                backgroundColor:
+                    kOnlineColor,
+
+                foregroundColor:
+                    Colors.white,
+
+                elevation: 0,
+
+                shape:
+                    RoundedRectangleBorder(
+                  borderRadius:
+                      BorderRadius
+                          .circular(
+                    14,
+                  ),
+                ),
+              ),
+            ),
+
+          if (isLikedMeSection)
+
+            ElevatedButton.icon(
+              onPressed: () async {
+
+                // Like Back
+
+              },
+
+              icon: const Icon(
+                Icons.favorite,
+                size: 16,
+              ),
+
+              label: const Text(
+                'Like',
+              ),
+
+              style:
+                  ElevatedButton
+                      .styleFrom(
+                backgroundColor:
+                    kAccentColor,
+
+                foregroundColor:
+                    Colors.white,
+
+                elevation: 0,
+
+                shape:
+                    RoundedRectangleBorder(
+                  borderRadius:
+                      BorderRadius
+                          .circular(
+                    14,
+                  ),
+                ),
+              ),
+            ),
+
+          if (isLikedByMeSection)
+
+            ElevatedButton.icon(
+              onPressed: () {
+
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder:
+                        (context) =>
+                            ViewProfileScreen(
+                      userId:
+                          profile.uid!,
+                      profileDocumentId:
+                          profile
+                              .documentId!,
+                    ),
+                  ),
+                );
+              },
+
+              icon: const Icon(
+                Icons.lock_open,
+                size: 16,
+              ),
+
+              label: const Text(
+                'Start',
+              ),
+
+              style:
+                  ElevatedButton
+                      .styleFrom(
+                backgroundColor:
+                    kPrimaryColor,
+
+                foregroundColor:
+                    Colors.white,
+
+                elevation: 0,
+
+                shape:
+                    RoundedRectangleBorder(
+                  borderRadius:
+                      BorderRadius
+                          .circular(
+                    14,
+                  ),
+                ),
+              ),
+            ),
+        ],
+      ),
+    ),
+  ),
+);
   }
 }
 
 // Dummy classes for FlatListingProfile and SeekingFlatmateProfile
 // (Ensure these match your actual implementations, potentially in a shared models file)
 // Make sure these classes have a 'uid' field if you are using it for navigation.
-class FlatListingProfile {
-  final String documentId;
-  final String? ownerName;
-  final String? ownerPhonenumber;
-  final String? uid; // Add UID
-  // Add other fields from your FlatListingProfile here
-
-  FlatListingProfile({required this.documentId, this.ownerName, this.ownerPhonenumber, this.uid});
-
-  factory FlatListingProfile.fromMap(Map<String, dynamic> data, String id) {
-    return FlatListingProfile(
-      documentId: id,
-      ownerName: data['ownerName'],
-      ownerPhonenumber: data['ownerPhonenumber'],
-      uid: data['uid'], // Assuming 'uid' is stored in Firestore document
-    );
-  }
-
-  // Override hashCode and equals for proper deduplication with toSet()
-  @override
-  bool operator ==(Object other) =>
-      identical(this, other) ||
-          other is FlatListingProfile &&
-              runtimeType == other.runtimeType &&
-              documentId == other.documentId &&
-              uid == other.uid; // Also compare UID for uniqueness
-
-  @override
-  int get hashCode => documentId.hashCode ^ uid.hashCode; // Combine hash codes
-}
-
-class SeekingFlatmateProfile {
-  final String documentId;
-  final String? name;
-  final String? phoneNumber;
-  final String? uid; // Add UID
-  // Add other fields from your SeekingFlatmateProfile here
-
-  SeekingFlatmateProfile({required this.documentId, this.name, this.phoneNumber, this.uid});
-
-  factory SeekingFlatmateProfile.fromMap(Map<String, dynamic> data, String id) {
-    return SeekingFlatmateProfile(
-      documentId: id,
-      name: data['name'],
-      phoneNumber: data['phoneNumber'],
-      uid: data['uid'], // Assuming 'uid' is stored in Firestore document
-    );
-  }
-
-  // Override hashCode and equals for proper deduplication with toSet()
-  @override
-  bool operator ==(Object other) =>
-      identical(this, other) ||
-          other is SeekingFlatmateProfile &&
-              runtimeType == other.runtimeType &&
-              documentId == other.documentId &&
-              uid == other.uid; // Also compare UID for uniqueness
-
-  @override
-  int get hashCode => documentId.hashCode ^ uid.hashCode; // Combine hash codes
-}
