@@ -2200,6 +2200,3 @@ if (isLikedByMeSection &&
   }
 }
 
-// Dummy classes for FlatListingProfile and SeekingFlatmateProfile
-// (Ensure these match your actual implementations, potentially in a shared models file)
-// Make sure these classes have a 'uid' field if you are using it for navigation.
