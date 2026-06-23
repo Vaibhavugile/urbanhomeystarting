@@ -87,6 +87,11 @@
 	Select profile photos and property photos from your gallery.
 	</string>
 
+	<key>NSUserTrackingUsageDescription</key>
+<string>
+UrbanHomey may use notifications and analytics to improve your experience.
+</string>
+
 	<key>NSPhotoLibraryAddUsageDescription</key>
 	<string>
 	Save images generated or downloaded from UrbanHomey.
