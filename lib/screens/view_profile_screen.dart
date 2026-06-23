@@ -1408,98 +1408,116 @@ return Scaffold(
         ? SafeArea(
             child: Container(
               padding: const EdgeInsets.all(16),
-              child: SizedBox(
-                height: 56,
-                child: ElevatedButton.icon(
-                  onPressed: () async {
+             child: Row(
+  children: [
 
-  if (_conversationUnlocked &&
-      _existingChatRoomId != null) {
+    Expanded(
+      child: SizedBox(
+        height: 56,
+        child: ElevatedButton.icon(
 
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (_) => ChatScreen(
-          chatRoomId:
-              _existingChatRoomId!,
-          chatPartnerId:
-              widget.userId!,
-          chatPartnerName:
-              _userProfile
-                      ?.userProfile
-                      .name ??
-                  'User',
+          onPressed: () async {
+
+            if (_alreadyLiked) return;
+
+            await _processLike();
+
+            setState(() {
+              _alreadyLiked = true;
+            });
+          },
+
+          icon: Icon(
+            _alreadyMatched
+                ? Icons.favorite
+                : Icons.favorite_border,
+          ),
+
+          label: Text(
+
+            _alreadyMatched
+                ? "Match"
+
+                : _alreadyLiked
+                    ? "Liked"
+
+                    : "Like",
+
+          ),
+
+          style: ElevatedButton.styleFrom(
+            backgroundColor: kAccentColor,
+            foregroundColor: Colors.white,
+            shape: RoundedRectangleBorder(
+              borderRadius:
+                  BorderRadius.circular(16),
+            ),
+          ),
         ),
       ),
-    );
+    ),
 
-    return;
-  }
+    const SizedBox(width: 12),
 
-  if (_alreadyMatched) {
+    Expanded(
+      child: SizedBox(
+        height: 56,
+        child: ElevatedButton.icon(
 
-  await _showBannerPopup(
-    _userProfile,
-    _myProfileId!,
-  );
+          onPressed: () async {
 
-  await _checkLikeStatus();
+            if (_conversationUnlocked &&
+                _existingChatRoomId != null) {
 
-  if (mounted) {
-    setState(() {});
-  }
-
-  return;
-}
-
-  if (_alreadyLiked) {
-    return;
-  }
-
-  await _processLike();
-
-  setState(() {
-
-    _alreadyLiked = true;
-
-  });
-},
-
-                  icon: const Icon(
-                    Icons.favorite,
-                  ),
-
-               label: Text(
-
-  _conversationUnlocked
-      ? "Chat"
-
-      : _alreadyMatched
-          ? "Start Conversation"
-
-          : _alreadyLiked
-              ? "Already Liked"
-
-              : "Like Profile",
-
-),
-
-                  style:
-                      ElevatedButton.styleFrom(
-                    backgroundColor:
-                        kAccentColor,
-                    foregroundColor:
-                        Colors.white,
-                    shape:
-                        RoundedRectangleBorder(
-                      borderRadius:
-                          BorderRadius.circular(
-                        16,
-                      ),
-                    ),
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => ChatScreen(
+                    chatRoomId:
+                        _existingChatRoomId!,
+                    chatPartnerId:
+                        widget.userId!,
+                    chatPartnerName:
+                        _userProfile
+                                ?.userProfile
+                                .name ??
+                            'User',
                   ),
                 ),
-              ),
+              );
+
+              return;
+            }
+
+            await _showBannerPopup(
+              _userProfile,
+              _myProfileId!,
+            );
+          },
+
+          icon: const Icon(
+            Icons.chat_bubble_rounded,
+          ),
+
+          label: Text(
+            _conversationUnlocked
+                ? "Open Chat"
+                : "Chat",
+          ),
+
+          style: ElevatedButton.styleFrom(
+            backgroundColor: kPrimaryColor,
+            foregroundColor: Colors.white,
+            shape: RoundedRectangleBorder(
+              borderRadius:
+                  BorderRadius.circular(16),
+            ),
+          ),
+        ),
+      ),
+    ),
+  ],
+),
             ),
           )
         : null,
