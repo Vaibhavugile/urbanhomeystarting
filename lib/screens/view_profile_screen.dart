@@ -6,6 +6,19 @@ import 'package:mytennat/widgets/profile_display_widgets.dart';
 import 'package:mytennat/screens/flatmate_profile_screen.dart';
 import 'package:mytennat/screens/flat_with_flatmate_profile_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import '../services/chat_unlock_service.dart';
+import 'package:mytennat/screens/banner_popup_screen.dart'; // NEW: Import the banner popup screen
+import 'package:mytennat/screens/PlansScreen.dart';
+
+import 'package:mytennat/screens/chat_screen.dart'
+    hide kBackgroundColor,
+         kPrimaryColor,
+         kAccentColor,
+         kPrimaryGradient,
+         kErrorColor,
+         kDarkText,
+         kMediumText;
+
 
 class ViewProfileScreen extends StatefulWidget {
   final String? userId;
@@ -23,11 +36,22 @@ class _ViewProfileScreenState extends State<ViewProfileScreen> {
   String? _userType;
   bool _isLoading = true;
   String? _errorMessage;
-
   List<FlatListingProfile> _flatListingProfiles = [];
   List<SeekingFlatmateProfile> _seekingFlatmateProfiles = [];
   String? _currentDisplayProfileId;
+String? _myProfileType;
+String? _myProfileId;
+bool _alreadyLiked = false;
+bool _alreadyMatched = false;
+bool _isBannerPopupShowing = false;
 
+int _remainingContacts = 0;
+bool _conversationUnlocked = false;
+User? get _currentUser =>
+    FirebaseAuth.instance.currentUser;
+String? _existingChatRoomId;
+final FirebaseFirestore _firestore =
+    FirebaseFirestore.instance;
   static const String _lastSelectedProfileKey = 'lastSelectedProfileId_';
 
   @override
@@ -35,7 +59,34 @@ class _ViewProfileScreenState extends State<ViewProfileScreen> {
     super.initState();
     _fetchUserProfile();
   }
+String _getProfileDisplayName(
+  dynamic profile,
+) {
 
+  if (profile is FlatListingProfile) {
+    return profile.userProfile.name;
+  }
+
+  if (profile is SeekingFlatmateProfile) {
+    return profile.userProfile.name;
+  }
+
+  return 'User';
+}
+String _getProfileTypeDisplay(
+  dynamic profile,
+) {
+
+  if (profile is FlatListingProfile) {
+    return 'flat_listing';
+  }
+
+  if (profile is SeekingFlatmateProfile) {
+    return 'seeking_flatmate';
+  }
+
+  return '';
+}
   Future<void> _fetchUserProfile() async {
     setState(() {
       _isLoading = true;
@@ -161,14 +212,36 @@ class _ViewProfileScreenState extends State<ViewProfileScreen> {
         }
       }
     } catch (e) {
-      _errorMessage = 'Error fetching profile for $targetUserId: ${e.toString()}';
-      print('[_fetchUserProfile] Error fetching profile for $targetUserId: $e');
-    } finally {
-      setState(() {
-        _isLoading = false;
-        print('[_fetchUserProfile] Loading complete. _userType: $_userType, _currentDisplayProfileId: $_currentDisplayProfileId');
-      });
-    }
+
+  _errorMessage =
+      'Error fetching profile for $targetUserId: ${e.toString()}';
+
+  print(
+    '[_fetchUserProfile] Error fetching profile for $targetUserId: $e',
+  );
+
+}
+
+await _determineMyProfileType();
+await _checkLikeStatus();
+await _determineMyProfileType();
+
+await _loadRemainingContacts();
+
+await _checkLikeStatus();
+
+if (mounted) {
+
+  setState(() {
+
+    _isLoading = false;
+
+    print(
+      '[_fetchUserProfile] Loading complete. _userType: $_userType, _currentDisplayProfileId: $_currentDisplayProfileId',
+    );
+  });
+}
+    
   }
 
   void _switchProfile(String profileIdentifier) async {
@@ -232,7 +305,921 @@ class _ViewProfileScreenState extends State<ViewProfileScreen> {
       });
     }
   }
+  Future<void> _checkLikeStatus() async {
 
+  final currentUser =
+      FirebaseAuth.instance.currentUser;
+
+  if (currentUser == null ||
+      widget.profileDocumentId == null) {
+    return;
+  }
+
+  final likeDoc =
+      await FirebaseFirestore.instance
+          .collection('user_likes')
+          .doc(currentUser.uid)
+          .collection('likes')
+          .doc(widget.profileDocumentId!)
+          .get();
+
+  if (likeDoc.exists) {
+
+    _alreadyLiked = true;
+  }
+
+  if (_myProfileId != null) {
+
+    List<String> ids = [
+      _myProfileId!,
+      widget.profileDocumentId!,
+    ]..sort();
+
+    final matchDocId =
+        '${ids[0]}_${ids[1]}';
+
+    final matchDoc =
+        await FirebaseFirestore.instance
+            .collection('matches')
+            .doc(matchDocId)
+            .get();
+
+   if (matchDoc.exists) {
+
+  _alreadyMatched = true;
+
+  final data =
+      matchDoc.data()
+          as Map<String, dynamic>;
+
+  _conversationUnlocked =
+      data['conversationUnlocked'] ??
+          false;
+
+  _existingChatRoomId =
+      data['chatRoomId'];
+
+  print(
+    'MATCH FOUND',
+  );
+
+  print(
+    'CONVERSATION UNLOCKED = $_conversationUnlocked',
+  );
+
+  print(
+    'CHAT ROOM ID = $_existingChatRoomId',
+  );
+}
+  }
+
+  if (mounted) {
+    setState(() {});
+  }
+}
+
+Future<void> _determineMyProfileType() async {
+
+  final currentUser =
+      FirebaseAuth.instance.currentUser;
+
+  if (currentUser == null) return;
+
+  if (_userType == 'flat_listing') {
+
+    _myProfileType =
+        'seeking_flatmate';
+
+    final profiles =
+        await FirebaseFirestore.instance
+            .collection('users')
+            .doc(currentUser.uid)
+            .collection(
+              'seekingFlatmateProfiles',
+            )
+            .limit(1)
+            .get();
+
+    if (profiles.docs.isNotEmpty) {
+
+      _myProfileId =
+          profiles.docs.first.id;
+    }
+
+  } else {
+
+    _myProfileType =
+        'flat_listing';
+
+    final profiles =
+        await FirebaseFirestore.instance
+            .collection('users')
+            .doc(currentUser.uid)
+            .collection(
+              'flatListings',
+            )
+            .limit(1)
+            .get();
+
+    if (profiles.docs.isNotEmpty) {
+
+      _myProfileId =
+          profiles.docs.first.id;
+    }
+  }
+
+  print(
+    'VIEWED PROFILE TYPE = $_userType',
+  );
+
+  print(
+    'MY PROFILE TYPE = $_myProfileType',
+  );
+
+  print(
+    'MY PROFILE ID = $_myProfileId',
+  );
+}
+
+Future<void> _loadRemainingContacts() async {
+
+  final currentUser =
+      FirebaseAuth.instance.currentUser;
+
+  if (currentUser == null) return;
+
+  final userDoc =
+      await FirebaseFirestore.instance
+          .collection('users')
+          .doc(currentUser.uid)
+          .get();
+
+  if (!userDoc.exists) return;
+
+  _remainingContacts =
+      userDoc.data()?[
+          'remainingContacts'] ??
+      0;
+
+  print(
+    'REMAINING CONTACTS = $_remainingContacts',
+  );
+}
+Future<void> _processLike() async {
+
+  final currentUser =
+      FirebaseAuth.instance.currentUser;
+
+  if (currentUser == null) {
+    print(
+      "_processLike: Current user is null.",
+    );
+    return;
+  }
+
+  final String currentUserId =
+      currentUser.uid;
+
+  final String currentUserProfileId =
+      _myProfileId!;
+
+  final String currentUserProfileType =
+      _myProfileType!;
+
+  final String likedUserId =
+      widget.userId!;
+
+  final String likedProfileDocumentId =
+      widget.profileDocumentId!;
+
+  final String likedUserProfileType =
+      _userType!;
+
+  try {
+
+    print(
+      "_processLike: Saving like...",
+    );
+
+    await _firestore
+        .collection('user_likes')
+        .doc(currentUserId)
+        .collection('likes')
+        .doc(likedProfileDocumentId)
+        .set({
+
+      'timestamp':
+          FieldValue.serverTimestamp(),
+
+      'likedUserId':
+          likedUserId,
+
+      'likedProfileDocumentId':
+          likedProfileDocumentId,
+
+      'likingUserProfileId':
+          currentUserProfileId,
+
+      'likingUserId':
+          currentUserId,
+
+      'likingUserProfileType':
+          currentUserProfileType,
+
+      'likedUserProfileType':
+          likedUserProfileType,
+    });
+
+    print(
+      "_processLike: Like saved.",
+    );
+
+    print(
+      "_processLike: Checking mutual like...",
+    );
+
+    final otherUserLikesOurProfile =
+        await _firestore
+            .collection('user_likes')
+            .doc(likedUserId)
+            .collection('likes')
+            .where(
+              'likedUserId',
+              isEqualTo:
+                  currentUserId,
+            )
+            .where(
+              'likedProfileDocumentId',
+              isEqualTo:
+                  currentUserProfileId,
+            )
+            .get();
+
+    if (otherUserLikesOurProfile
+        .docs
+        .isNotEmpty) {
+
+      print(
+        "_processLike: MATCH FOUND",
+      );
+
+      await ChatUnlockService
+          .createMatchAndChatRoom(
+
+        currentUserId,
+
+        currentUserProfileId,
+
+        currentUserProfileType,
+
+        likedUserId,
+
+        likedProfileDocumentId,
+
+        likedUserProfileType,
+      );
+
+      print(
+        "_processLike: Match + Chat created",
+      );
+
+      final participants = [
+        currentUserId,
+        likedUserId,
+      ]..sort();
+
+      final chatRoomId =
+          participants.join('_');
+
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(
+
+        const SnackBar(
+          content: Text(
+            "It's a Match! 🎉",
+          ),
+        ),
+      );
+
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (_) => ChatScreen(
+            chatRoomId:
+                chatRoomId,
+            chatPartnerId:
+                likedUserId,
+            chatPartnerName:
+                _userProfile
+                        ?.userProfile
+                        .name ??
+                    'User',
+          ),
+        ),
+      );
+
+    } else {
+
+      print(
+        "_processLike: No match yet",
+      );
+
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(
+
+        const SnackBar(
+          content: Text(
+            "Profile Liked!",
+          ),
+        ),
+      );
+    }
+
+  } catch (e) {
+
+    print(
+      "_processLike ERROR: $e",
+    );
+
+    if (!mounted) return;
+
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(
+
+      SnackBar(
+        content: Text(
+          e.toString(),
+        ),
+      ),
+    );
+  }
+}
+void _showOutOfContactsPopup() {
+  Navigator.push(
+    context,
+    MaterialPageRoute(
+      builder: (_) => PlansScreen(),
+    ),
+  );
+}
+Future<void> _showBannerPopup(
+  dynamic likedProfile,
+  String myProfileId,
+) {
+
+  if (_isBannerPopupShowing) {
+    return Future.value();
+  }
+
+  _isBannerPopupShowing = true;
+
+  final String profileName =
+      _getProfileDisplayName(
+    likedProfile,
+  );
+
+  String? imageUrl;
+
+  if (likedProfile
+          is FlatListingProfile &&
+      likedProfile.imageUrls != null &&
+      likedProfile.imageUrls!
+          .isNotEmpty) {
+
+    imageUrl =
+        likedProfile.imageUrls!.first;
+
+  } else if (likedProfile
+          is SeekingFlatmateProfile &&
+      likedProfile.imageUrls != null &&
+      likedProfile.imageUrls!
+          .isNotEmpty) {
+
+    imageUrl =
+        likedProfile.imageUrls!.first;
+  }
+
+  return showDialog(
+    context: context,
+    barrierDismissible: false,
+    builder: (
+      BuildContext context,
+    ) {
+
+      return BannerPopupScreen(
+
+  profileName: profileName,
+
+  profileImageUrl: imageUrl,
+
+  message:
+      'You liked $profileName',
+
+  subMessage:
+      'Start a conversation instantly and unlock contact details.',
+
+  buttonText:
+      'Start Conversation',
+
+  onButtonPressed: () async {
+ final parentContext = this.context;
+    Navigator.of(
+      context,
+    ).pop();
+
+    setState(() {
+
+      _isBannerPopupShowing =
+          false;
+    });
+final bool? proceed =
+    await showDialog<bool>(
+  context: parentContext,
+  builder: (context) {
+    return Dialog(
+  backgroundColor: Colors.transparent,
+  insetPadding:
+      const EdgeInsets.symmetric(
+    horizontal: 24,
+  ),
+
+  child: Container(
+    padding: const EdgeInsets.all(24),
+
+    decoration: BoxDecoration(
+      color: Colors.white,
+
+      borderRadius:
+          BorderRadius.circular(
+        28,
+      ),
+
+      boxShadow: [
+        BoxShadow(
+          color: Colors.black.withOpacity(
+            .12,
+          ),
+          blurRadius: 30,
+          offset: const Offset(
+            0,
+            12,
+          ),
+        ),
+      ],
+    ),
+
+    child: Column(
+      mainAxisSize: MainAxisSize.min,
+
+      children: [
+
+        Container(
+          width: 72,
+          height: 72,
+
+          decoration:
+              const BoxDecoration(
+            shape: BoxShape.circle,
+
+            gradient:
+                LinearGradient(
+              colors: [
+                Color(0xFF7C3AED),
+                Color(0xFF9333EA),
+                Color(0xFFEC4899),
+              ],
+            ),
+          ),
+
+          child: const Icon(
+            Icons.chat_bubble_rounded,
+            color: Colors.white,
+            size: 34,
+          ),
+        ),
+
+        const SizedBox(height: 20),
+
+        const Text(
+          'Start Conversation',
+          style: TextStyle(
+            fontSize: 24,
+            fontWeight:
+                FontWeight.w800,
+            color: Color(
+              0xFF111827,
+            ),
+          ),
+        ),
+
+        const SizedBox(height: 16),
+
+        Container(
+          width: double.infinity,
+
+          padding:
+              const EdgeInsets.all(
+            16,
+          ),
+
+          decoration: BoxDecoration(
+            color:
+                const Color(
+              0xFFF8FAFC,
+            ),
+
+            borderRadius:
+                BorderRadius.circular(
+              18,
+            ),
+          ),
+
+          child: Column(
+            children: [
+
+              Text(
+                _remainingContacts
+                    .toString(),
+                style:
+                    const TextStyle(
+                  fontSize: 34,
+                  fontWeight:
+                      FontWeight
+                          .w900,
+                  color: Color(
+                    0xFF7C3AED,
+                  ),
+                ),
+              ),
+
+              const SizedBox(
+                height: 4,
+              ),
+
+              const Text(
+                'Contacts Remaining',
+                style: TextStyle(
+                  color: Color(
+                    0xFF64748B,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+
+        const SizedBox(height: 18),
+
+        Text(
+          _remainingContacts > 0
+              ? 'Starting this conversation will use 1 contact.'
+              : 'You have no contacts remaining.',
+          textAlign:
+              TextAlign.center,
+          style: const TextStyle(
+            fontSize: 15,
+            height: 1.5,
+            color: Color(
+              0xFF64748B,
+            ),
+          ),
+        ),
+
+        const SizedBox(height: 24),
+
+        Row(
+          children: [
+
+            Expanded(
+              child: OutlinedButton(
+               onPressed: () {
+
+  if (_remainingContacts <= 0) {
+
+    Navigator.pop(
+      context,
+      false,
+    );
+
+    Navigator.push(
+      parentContext,
+      MaterialPageRoute(
+        builder: (_) =>
+            const PlansScreen(),
+      ),
+    );
+
+    return;
+  }
+
+  Navigator.pop(
+    context,
+    true,
+  );
+},
+
+                style:
+                    OutlinedButton.styleFrom(
+                  minimumSize:
+                      const Size(
+                    0,
+                    54,
+                  ),
+
+                  shape:
+                      RoundedRectangleBorder(
+                    borderRadius:
+                        BorderRadius.circular(
+                      16,
+                    ),
+                  ),
+                ),
+
+                child: const Text(
+                  'Cancel',
+                ),
+              ),
+            ),
+
+            const SizedBox(width: 12),
+
+            Expanded(
+              child: ElevatedButton(
+                onPressed: () {
+                  Navigator.pop(
+                    context,
+                    true,
+                  );
+                },
+
+                style:
+                    ElevatedButton.styleFrom(
+                  backgroundColor:
+                      const Color(
+                    0xFF7C3AED,
+                  ),
+
+                  foregroundColor:
+                      Colors.white,
+
+                  elevation: 0,
+
+                  minimumSize:
+                      const Size(
+                    0,
+                    54,
+                  ),
+
+                  shape:
+                      RoundedRectangleBorder(
+                    borderRadius:
+                        BorderRadius.circular(
+                      16,
+                    ),
+                  ),
+                ),
+
+                child: Text(
+                  _remainingContacts >
+                          0
+                      ? 'Continue'
+                      : 'Get Contacts',
+                ),
+              ),
+            ),
+          ],
+        ),
+      ],
+    ),
+  ),
+);
+  },
+);
+
+if (proceed != true) {
+  return;
+}
+final sortedProfileIds = [
+  myProfileId,
+  likedProfile.documentId!,
+]..sort();
+
+final matchDocId =
+    '${sortedProfileIds[0]}_${sortedProfileIds[1]}';
+
+final matchDoc =
+    await _firestore
+        .collection('matches')
+        .doc(matchDocId)
+        .get();
+
+if (matchDoc.exists) {
+
+  final data =
+      matchDoc.data()
+          as Map<String, dynamic>;
+
+  final bool alreadyUnlocked =
+      data['conversationUnlocked'] ??
+          false;
+
+  if (alreadyUnlocked) {
+
+    debugPrint(
+      'CONVERSATION ALREADY UNLOCKED',
+    );
+
+    final String chatRoomId =
+        data['chatRoomId'];
+
+    final String partnerName =
+        _getProfileDisplayName(
+      likedProfile,
+    );
+
+    if (!mounted) return;
+
+    Navigator.push(
+      parentContext,
+      MaterialPageRoute(
+        builder: (_) => ChatScreen(
+          chatRoomId:
+              chatRoomId,
+          chatPartnerId:
+              likedProfile.uid,
+          chatPartnerName:
+              partnerName,
+        ),
+      ),
+    );
+
+    return;
+  }
+}
+    // CHECK CONTACTS
+    if (_remainingContacts <= 0) {
+
+      _showOutOfContactsPopup();
+      return;
+    }
+
+    try {
+
+      // DEDUCT CONTACT
+      await _firestore
+          .collection('users')
+          .doc(_currentUser!.uid)
+          .update({
+        'remainingContacts':
+            FieldValue.increment(-1),
+      });
+
+      setState(() {
+
+        _remainingContacts--;
+      });
+
+      debugPrint(
+        'CONTACT DEDUCTED. REMAINING = $_remainingContacts',
+      );
+
+      // CREATE CHAT ROOM / MATCH
+      await ChatUnlockService
+    .createMatchAndChatRoom(
+
+  _currentUser!.uid,
+
+  myProfileId,
+
+  _getProfileTypeDisplay(
+              likedProfile) ==
+          'flat_listing'
+      ? 'seeking_flatmate'
+      : 'flat_listing',
+
+  likedProfile.uid,
+
+  likedProfile.documentId!,
+
+  _getProfileTypeDisplay(
+      likedProfile),
+);
+      final sortedProfileIds = [
+  myProfileId,
+  likedProfile.documentId!,
+]..sort();
+
+final matchDocId =
+    '${sortedProfileIds[0]}_${sortedProfileIds[1]}';
+
+await _firestore
+    .collection('matches')
+    .doc(matchDocId)
+    .update({
+
+  'conversationUnlocked': true,
+
+  'unlockedByUid':
+      _currentUser!.uid,
+
+  'unlockedByProfileId':
+      myProfileId,
+
+  'unlockedAt':
+      FieldValue.serverTimestamp(),
+});
+
+debugPrint(
+  'MATCH UNLOCK STATUS SAVED',
+);
+final matchDoc =
+    await _firestore
+        .collection('matches')
+        .doc(matchDocId)
+        .get();
+
+final String chatRoomId =
+    matchDoc['chatRoomId'];
+
+await _firestore
+    .collection('chats')
+    .doc(chatRoomId)
+    .update({
+
+  'conversationUnlocked': true,
+
+  'unlockedByUid':
+      _currentUser!.uid,
+
+  'unlockedByProfileId':
+      myProfileId,
+
+  'unlockedAt':
+      FieldValue.serverTimestamp(),
+});
+
+debugPrint(
+  'CHAT UNLOCK STATUS SAVED',
+);
+
+      debugPrint(
+        'CHAT ROOM CREATED SUCCESSFULLY',
+      );
+
+   final String partnerName =
+    _getProfileDisplayName(
+  likedProfile,
+);
+
+debugPrint(
+  'OPENING CHAT SCREEN...',
+);
+
+if (!mounted) {
+  debugPrint(
+    'WIDGET NOT MOUNTED',
+  );
+  return;
+}
+
+if (!mounted) return;
+
+Navigator.push(
+  parentContext,
+  MaterialPageRoute(
+    builder: (_) => ChatScreen(
+      chatPartnerId: likedProfile.uid,
+      chatPartnerName: partnerName,
+    ),
+  ),
+);
+
+     debugPrint(
+  'CONVERSATION STARTED SUCCESSFULLY',
+);
+
+    } catch (e) {
+
+      debugPrint(
+        'START CONVERSATION ERROR: $e',
+      );
+
+      debugPrint(
+  'FAILED: $e',
+);
+    }
+  },
+);
+    },
+  );
+}
   @override
   Widget build(BuildContext context) {
     print('[build] Rebuilding ViewProfileScreen. IsLoading: $_isLoading, Error: $_errorMessage, UserType: $_userType');
@@ -416,6 +1403,106 @@ return Scaffold(
         ),
     ],
   ),
+  bottomNavigationBar:
+    widget.userId != null
+        ? SafeArea(
+            child: Container(
+              padding: const EdgeInsets.all(16),
+              child: SizedBox(
+                height: 56,
+                child: ElevatedButton.icon(
+                  onPressed: () async {
+
+  if (_conversationUnlocked &&
+      _existingChatRoomId != null) {
+
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => ChatScreen(
+          chatRoomId:
+              _existingChatRoomId!,
+          chatPartnerId:
+              widget.userId!,
+          chatPartnerName:
+              _userProfile
+                      ?.userProfile
+                      .name ??
+                  'User',
+        ),
+      ),
+    );
+
+    return;
+  }
+
+  if (_alreadyMatched) {
+
+  await _showBannerPopup(
+    _userProfile,
+    _myProfileId!,
+  );
+
+  await _checkLikeStatus();
+
+  if (mounted) {
+    setState(() {});
+  }
+
+  return;
+}
+
+  if (_alreadyLiked) {
+    return;
+  }
+
+  await _processLike();
+
+  setState(() {
+
+    _alreadyLiked = true;
+
+  });
+},
+
+                  icon: const Icon(
+                    Icons.favorite,
+                  ),
+
+               label: Text(
+
+  _conversationUnlocked
+      ? "Chat"
+
+      : _alreadyMatched
+          ? "Start Conversation"
+
+          : _alreadyLiked
+              ? "Already Liked"
+
+              : "Like Profile",
+
+),
+
+                  style:
+                      ElevatedButton.styleFrom(
+                    backgroundColor:
+                        kAccentColor,
+                    foregroundColor:
+                        Colors.white,
+                    shape:
+                        RoundedRectangleBorder(
+                      borderRadius:
+                          BorderRadius.circular(
+                        16,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          )
+        : null,
 
   body: _isLoading
       ? const Center(

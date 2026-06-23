@@ -458,20 +458,61 @@ String _getProfileDisplayName(dynamic profile) {
   }
 
   // --- New Aggregation Methods ---
+List<dynamic> _getAggregatedIncomingLikes(
+  String profileType,
+) {
 
-  List<dynamic> _getAggregatedIncomingLikes(String profileType) {
-    List<dynamic> aggregatedProfiles = [];
-    for (var profile in _userProfilesList) {
-      if (_getProfileTypeDisplay(profile) == profileType) {
-        final profileId = profile.documentId!;
-        if (_incomingLikes.containsKey(profileId)) {
-          aggregatedProfiles.addAll(_incomingLikes[profileId]!);
+  List<dynamic> aggregatedProfiles = [];
+
+  for (var profile
+      in _userProfilesList) {
+
+    if (_getProfileTypeDisplay(
+            profile) ==
+        profileType) {
+
+      final profileId =
+          profile.documentId!;
+
+      if (_incomingLikes
+          .containsKey(
+              profileId)) {
+
+        for (var likedProfile
+            in _incomingLikes[
+                profileId]!) {
+
+          final sortedIds = [
+            profileId,
+            likedProfile.documentId!,
+          ]..sort();
+
+          final matchId =
+              '${sortedIds[0]}_${sortedIds[1]}';
+
+          aggregatedProfiles.add({
+
+            'profile':
+                likedProfile,
+
+            'myProfileId':
+                profileId,
+
+            'hasMatch':
+                _matchLookup.containsKey(
+                    matchId),
+
+            'chatRoomId':
+                _matchLookup[matchId]
+                    ?['chatRoomId'],
+          });
         }
       }
     }
-    // You might want to remove duplicates if the same 'liking' profile liked multiple of your profiles of the same type.
-    return aggregatedProfiles.toSet().toList(); // Using toSet().toList() for basic deduplication
   }
+
+  return aggregatedProfiles;
+}
 
 List<dynamic> _getAggregatedOutgoingLikes(
   String profileType,
@@ -1362,7 +1403,119 @@ Navigator.push(
   );
 }
 
+Future<void> _likeBackProfile(
+  dynamic profile,
+  String myProfileId,
+) async {
 
+  try {
+
+    await _firestore
+        .collection('user_likes')
+        .doc(_currentUser!.uid)
+        .collection('likes')
+        .doc(profile.documentId!)
+        .set({
+
+      'timestamp':
+          FieldValue.serverTimestamp(),
+
+      'likedUserId':
+          profile.uid,
+
+      'likedProfileDocumentId':
+          profile.documentId,
+
+      'likingUserProfileId':
+          myProfileId,
+
+      'likingUserId':
+          _currentUser!.uid,
+
+      'likingUserProfileType':
+          profile is FlatListingProfile
+              ? 'seeking_flatmate'
+              : 'flat_listing',
+
+      'likedUserProfileType':
+          profile is FlatListingProfile
+              ? 'flat_listing'
+              : 'seeking_flatmate',
+    });
+
+    print(
+      'LIKE BACK SAVED',
+    );
+    await ChatUnlockService
+    .createMatchAndChatRoom(
+
+  _currentUser!.uid,
+
+  myProfileId,
+
+  profile is FlatListingProfile
+      ? 'seeking_flatmate'
+      : 'flat_listing',
+
+  profile.uid,
+
+  profile.documentId!,
+
+  profile is FlatListingProfile
+      ? 'flat_listing'
+      : 'seeking_flatmate',
+);
+
+print(
+  'MATCH CREATED',
+);
+final participants = [
+  _currentUser!.uid,
+  profile.uid,
+]..sort();
+
+final chatRoomId =
+    participants.join('_');
+
+if (!mounted) return;
+
+Navigator.push(
+  context,
+  MaterialPageRoute(
+    builder: (_) => ChatScreen(
+      chatRoomId: chatRoomId,
+      chatPartnerId: profile.uid!,
+      chatPartnerName:
+          _getProfileDisplayName(
+        profile,
+      ),
+    ),
+  ),
+);
+
+return;
+await _fetchUserActivities();
+
+if (!mounted) return;
+
+ScaffoldMessenger.of(
+  context,
+).showSnackBar(
+
+  const SnackBar(
+    content: Text(
+      "It's a Match! 🎉",
+    ),
+  ),
+);
+
+  } catch (e) {
+
+    print(
+      'LIKE BACK ERROR: $e',
+    );
+  }
+}
   // Renamed from _buildMainProfileSection to represent the content of each main tab
 Widget _buildProfileActivityView({
   required String profileType,
@@ -1719,7 +1872,23 @@ indicatorSize: TabBarIndicatorSize.tab,
 
   } else {
 
-    profile = profiles[index];
+    // LIKED ME TAB
+
+    final Map<String, dynamic>
+        entry =
+        profiles[index];
+
+    profile =
+    entry['profile'];
+
+myProfileId =
+    entry['myProfileId'];
+
+conversationUnlocked =
+    entry['hasMatch'] ?? false;
+
+unlockedChatRoomId =
+    entry['chatRoomId'];
   }
 
   return _buildProfileCard(
@@ -1755,7 +1924,8 @@ indicatorSize: TabBarIndicatorSize.tab,
         isMatchSection &&
             chatRoomId != null,
 
-    showCallButton: false,
+    showCallButton:
+        false,
 
     chatRoomId:
         chatRoomId,
@@ -2055,45 +2225,102 @@ if (profile is FlatListingProfile) {
               ),
             ),
 
-          if (isLikedMeSection)
+         // NOT MATCHED YET
 
-            ElevatedButton.icon(
-              onPressed: () async {
+if (isLikedMeSection &&
+    !conversationUnlocked)
 
-                // Like Back
+  ElevatedButton.icon(
+    onPressed: () async {
 
-              },
+      await _likeBackProfile(
+        profile,
+        myProfileId!,
+      );
+    },
 
-              icon: const Icon(
-                Icons.favorite,
-                size: 16,
-              ),
+    icon: const Icon(
+      Icons.favorite,
+      size: 16,
+    ),
 
-              label: const Text(
-                'Like',
-              ),
+    label: const Text(
+      'Like Back',
+    ),
 
-              style:
-                  ElevatedButton
-                      .styleFrom(
-                backgroundColor:
-                    kAccentColor,
+    style:
+        ElevatedButton.styleFrom(
+      backgroundColor:
+          kAccentColor,
 
-                foregroundColor:
-                    Colors.white,
+      foregroundColor:
+          Colors.white,
 
-                elevation: 0,
+      elevation: 0,
 
-                shape:
-                    RoundedRectangleBorder(
-                  borderRadius:
-                      BorderRadius
-                          .circular(
-                    14,
-                  ),
-                ),
-              ),
+      shape:
+          RoundedRectangleBorder(
+        borderRadius:
+            BorderRadius.circular(
+          14,
+        ),
+      ),
+    ),
+  ),
+
+// ALREADY MATCHED
+
+if (isLikedMeSection &&
+    conversationUnlocked)
+
+  ElevatedButton.icon(
+    onPressed: () {
+
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (_) => ChatScreen(
+            chatRoomId:
+                unlockedChatRoomId!,
+            chatPartnerId:
+                profile.uid!,
+            chatPartnerName:
+                _getProfileDisplayName(
+              profile,
             ),
+          ),
+        ),
+      );
+    },
+
+    icon: const Icon(
+      Icons.chat_bubble_rounded,
+      size: 16,
+    ),
+
+    label: const Text(
+      'Chat',
+    ),
+
+    style:
+        ElevatedButton.styleFrom(
+      backgroundColor:
+          kOnlineColor,
+
+      foregroundColor:
+          Colors.white,
+
+      elevation: 0,
+
+      shape:
+          RoundedRectangleBorder(
+        borderRadius:
+            BorderRadius.circular(
+          14,
+        ),
+      ),
+    ),
+  ),
 
      // LOCKED PROFILE
 
