@@ -10,7 +10,9 @@ import 'package:mytennat/screens/home_page.dart' hide FlatListingProfile, Seekin
 import 'package:mytennat/screens/matching_screen.dart'; // Import MatchingScreen
 import 'package:mytennat/screens/matches_list_screen.dart'; // Import MatchesListScreen
 import 'package:mytennat/screens/more_profile_screen.dart'; // Import MoreProfileScreen
-
+import 'package:mytennat/services/chat_unlock_service.dart';
+import 'package:mytennat/screens/banner_popup_screen.dart'; // NEW: Import the banner popup screen
+import 'package:mytennat/screens/PlansScreen.dart';
 
 class UserActivityScreen extends StatefulWidget {
   const UserActivityScreen({super.key});
@@ -33,11 +35,15 @@ class _UserActivityScreenState extends State<UserActivityScreen> {
   final Map<String, List<dynamic>> _outgoingLikes = {};
   // key: userProfileId, value: list of matched profiles with chatRoomId
   final Map<String, List<Map<String, dynamic>>> _matches = {};
+  final Map<String, Map<String, dynamic>>
+    _matchLookup = {};
 
   // Bottom Navigation Bar state
   int _selectedIndex = 3; // Set initial index to 3 for 'Activity'
 
+bool _isBannerPopupShowing = false;
 
+int _remainingContacts = 0;
   @override
   void initState() {
     super.initState();
@@ -55,6 +61,7 @@ class _UserActivityScreenState extends State<UserActivityScreen> {
       });
     } else {
       _fetchUserActivities();
+      _loadRemainingContacts();
     }
   }
 
@@ -103,6 +110,44 @@ class _UserActivityScreenState extends State<UserActivityScreen> {
       print('Finished fetching user activities. Is loading: $_isLoading');
     }
   }
+  Future<void> _loadRemainingContacts() async {
+
+  if (_currentUser == null) {
+    return;
+  }
+
+  try {
+
+    final userDoc =
+        await FirebaseFirestore
+            .instance
+            .collection('users')
+            .doc(_currentUser!.uid)
+            .get();
+
+    if (!userDoc.exists) {
+      return;
+    }
+
+    setState(() {
+
+      _remainingContacts =
+          userDoc.data()?[
+                  'remainingContacts'] ??
+              0;
+    });
+
+    debugPrint(
+      'REMAINING CONTACTS = $_remainingContacts',
+    );
+
+  } catch (e) {
+
+    debugPrint(
+      'LOAD CONTACT ERROR: $e',
+    );
+  }
+}
 
   Future<void> _fetchAllUserProfiles(String userId) async {
     _userProfilesList.clear();
@@ -271,6 +316,21 @@ class _UserActivityScreenState extends State<UserActivityScreen> {
       final String user1ProfileType = data['user1_profile_type'];
       final String user2ProfileType = data['user2_profile_type'];
       final String chatRoomId = data['chatRoomId'];
+      final sortedIds = [
+  user1ProfileId,
+  user2ProfileId,
+]..sort();
+
+final matchId =
+    '${sortedIds[0]}_${sortedIds[1]}';
+
+_matchLookup[matchId] = {
+  'conversationUnlocked':
+      data['conversationUnlocked'] ??
+          false,
+  'chatRoomId':
+      data['chatRoomId'],
+};
 
       String currentUserProfileIdInMatch;
       String otherUserUid;
@@ -344,7 +404,14 @@ class _UserActivityScreenState extends State<UserActivityScreen> {
     }
     return null;
   }
-
+void _showOutOfContactsPopup() {
+  Navigator.push(
+    context,
+    MaterialPageRoute(
+      builder: (_) => PlansScreen(),
+    ),
+  );
+}
 String _getProfileDisplayName(dynamic profile) {
 
   if (profile is FlatListingProfile) {
@@ -406,18 +473,64 @@ String _getProfileDisplayName(dynamic profile) {
     return aggregatedProfiles.toSet().toList(); // Using toSet().toList() for basic deduplication
   }
 
-  List<dynamic> _getAggregatedOutgoingLikes(String profileType) {
-    List<dynamic> aggregatedProfiles = [];
-    for (var profile in _userProfilesList) {
-      if (_getProfileTypeDisplay(profile) == profileType) {
-        final profileId = profile.documentId!;
-        if (_outgoingLikes.containsKey(profileId)) {
-          aggregatedProfiles.addAll(_outgoingLikes[profileId]!);
+List<dynamic> _getAggregatedOutgoingLikes(
+  String profileType,
+) {
+
+  List<dynamic> aggregatedProfiles = [];
+
+  for (var profile
+      in _userProfilesList) {
+
+    if (_getProfileTypeDisplay(
+            profile) ==
+        profileType) {
+
+      final profileId =
+          profile.documentId!;
+
+      if (_outgoingLikes
+          .containsKey(
+              profileId)) {
+
+        for (var likedProfile
+            in _outgoingLikes[
+                profileId]!) {
+
+          final sortedIds = [
+            profileId,
+            likedProfile.documentId!,
+          ]..sort();
+
+          final matchId =
+              '${sortedIds[0]}_${sortedIds[1]}';
+
+          
+
+          aggregatedProfiles.add({
+
+  'profile':
+      likedProfile,
+
+  'myProfileId':
+      profileId,
+
+  'conversationUnlocked':
+    _matchLookup[matchId]
+            ?['conversationUnlocked'] ??
+        false,
+
+'chatRoomId':
+    _matchLookup[matchId]
+        ?['chatRoomId'],
+});
         }
       }
     }
-    return aggregatedProfiles.toSet().toList();
   }
+
+  return aggregatedProfiles;
+}
 
   List<Map<String, dynamic>> _getAggregatedMatches(String profileType) {
     List<Map<String, dynamic>> aggregatedMatches = [];
@@ -696,6 +809,559 @@ Widget build(BuildContext context) {
     ),
   );
 }
+
+Future<void> _showBannerPopup(
+  dynamic likedProfile,
+  String myProfileId,
+) {
+
+  if (_isBannerPopupShowing) {
+    return Future.value();
+  }
+
+  _isBannerPopupShowing = true;
+
+  final String profileName =
+      _getProfileDisplayName(
+    likedProfile,
+  );
+
+  String? imageUrl;
+
+  if (likedProfile
+          is FlatListingProfile &&
+      likedProfile.imageUrls != null &&
+      likedProfile.imageUrls!
+          .isNotEmpty) {
+
+    imageUrl =
+        likedProfile.imageUrls!.first;
+
+  } else if (likedProfile
+          is SeekingFlatmateProfile &&
+      likedProfile.imageUrls != null &&
+      likedProfile.imageUrls!
+          .isNotEmpty) {
+
+    imageUrl =
+        likedProfile.imageUrls!.first;
+  }
+
+  return showDialog(
+    context: context,
+    barrierDismissible: false,
+    builder: (
+      BuildContext context,
+    ) {
+
+      return BannerPopupScreen(
+
+  profileName: profileName,
+
+  profileImageUrl: imageUrl,
+
+  message:
+      'You liked $profileName',
+
+  subMessage:
+      'Start a conversation instantly and unlock contact details.',
+
+  buttonText:
+      'Start Conversation',
+
+  onButtonPressed: () async {
+ final parentContext = this.context;
+    Navigator.of(
+      context,
+    ).pop();
+
+    setState(() {
+
+      _isBannerPopupShowing =
+          false;
+    });
+final bool? proceed =
+    await showDialog<bool>(
+  context: parentContext,
+  builder: (context) {
+    return Dialog(
+  backgroundColor: Colors.transparent,
+  insetPadding:
+      const EdgeInsets.symmetric(
+    horizontal: 24,
+  ),
+
+  child: Container(
+    padding: const EdgeInsets.all(24),
+
+    decoration: BoxDecoration(
+      color: Colors.white,
+
+      borderRadius:
+          BorderRadius.circular(
+        28,
+      ),
+
+      boxShadow: [
+        BoxShadow(
+          color: Colors.black.withOpacity(
+            .12,
+          ),
+          blurRadius: 30,
+          offset: const Offset(
+            0,
+            12,
+          ),
+        ),
+      ],
+    ),
+
+    child: Column(
+      mainAxisSize: MainAxisSize.min,
+
+      children: [
+
+        Container(
+          width: 72,
+          height: 72,
+
+          decoration:
+              const BoxDecoration(
+            shape: BoxShape.circle,
+
+            gradient:
+                LinearGradient(
+              colors: [
+                Color(0xFF7C3AED),
+                Color(0xFF9333EA),
+                Color(0xFFEC4899),
+              ],
+            ),
+          ),
+
+          child: const Icon(
+            Icons.chat_bubble_rounded,
+            color: Colors.white,
+            size: 34,
+          ),
+        ),
+
+        const SizedBox(height: 20),
+
+        const Text(
+          'Start Conversation',
+          style: TextStyle(
+            fontSize: 24,
+            fontWeight:
+                FontWeight.w800,
+            color: Color(
+              0xFF111827,
+            ),
+          ),
+        ),
+
+        const SizedBox(height: 16),
+
+        Container(
+          width: double.infinity,
+
+          padding:
+              const EdgeInsets.all(
+            16,
+          ),
+
+          decoration: BoxDecoration(
+            color:
+                const Color(
+              0xFFF8FAFC,
+            ),
+
+            borderRadius:
+                BorderRadius.circular(
+              18,
+            ),
+          ),
+
+          child: Column(
+            children: [
+
+              Text(
+                _remainingContacts
+                    .toString(),
+                style:
+                    const TextStyle(
+                  fontSize: 34,
+                  fontWeight:
+                      FontWeight
+                          .w900,
+                  color: Color(
+                    0xFF7C3AED,
+                  ),
+                ),
+              ),
+
+              const SizedBox(
+                height: 4,
+              ),
+
+              const Text(
+                'Contacts Remaining',
+                style: TextStyle(
+                  color: Color(
+                    0xFF64748B,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+
+        const SizedBox(height: 18),
+
+        Text(
+          _remainingContacts > 0
+              ? 'Starting this conversation will use 1 contact.'
+              : 'You have no contacts remaining.',
+          textAlign:
+              TextAlign.center,
+          style: const TextStyle(
+            fontSize: 15,
+            height: 1.5,
+            color: Color(
+              0xFF64748B,
+            ),
+          ),
+        ),
+
+        const SizedBox(height: 24),
+
+        Row(
+          children: [
+
+            Expanded(
+              child: OutlinedButton(
+               onPressed: () {
+
+  if (_remainingContacts <= 0) {
+
+    Navigator.pop(
+      context,
+      false,
+    );
+
+    Navigator.push(
+      parentContext,
+      MaterialPageRoute(
+        builder: (_) =>
+            const PlansScreen(),
+      ),
+    );
+
+    return;
+  }
+
+  Navigator.pop(
+    context,
+    true,
+  );
+},
+
+                style:
+                    OutlinedButton.styleFrom(
+                  minimumSize:
+                      const Size(
+                    0,
+                    54,
+                  ),
+
+                  shape:
+                      RoundedRectangleBorder(
+                    borderRadius:
+                        BorderRadius.circular(
+                      16,
+                    ),
+                  ),
+                ),
+
+                child: const Text(
+                  'Cancel',
+                ),
+              ),
+            ),
+
+            const SizedBox(width: 12),
+
+            Expanded(
+              child: ElevatedButton(
+                onPressed: () {
+                  Navigator.pop(
+                    context,
+                    true,
+                  );
+                },
+
+                style:
+                    ElevatedButton.styleFrom(
+                  backgroundColor:
+                      const Color(
+                    0xFF7C3AED,
+                  ),
+
+                  foregroundColor:
+                      Colors.white,
+
+                  elevation: 0,
+
+                  minimumSize:
+                      const Size(
+                    0,
+                    54,
+                  ),
+
+                  shape:
+                      RoundedRectangleBorder(
+                    borderRadius:
+                        BorderRadius.circular(
+                      16,
+                    ),
+                  ),
+                ),
+
+                child: Text(
+                  _remainingContacts >
+                          0
+                      ? 'Continue'
+                      : 'Get Contacts',
+                ),
+              ),
+            ),
+          ],
+        ),
+      ],
+    ),
+  ),
+);
+  },
+);
+
+if (proceed != true) {
+  return;
+}
+final sortedProfileIds = [
+  myProfileId,
+  likedProfile.documentId!,
+]..sort();
+
+final matchDocId =
+    '${sortedProfileIds[0]}_${sortedProfileIds[1]}';
+
+final matchDoc =
+    await _firestore
+        .collection('matches')
+        .doc(matchDocId)
+        .get();
+
+if (matchDoc.exists) {
+
+  final data =
+      matchDoc.data()
+          as Map<String, dynamic>;
+
+  final bool alreadyUnlocked =
+      data['conversationUnlocked'] ??
+          false;
+
+  if (alreadyUnlocked) {
+
+    debugPrint(
+      'CONVERSATION ALREADY UNLOCKED',
+    );
+
+    final String chatRoomId =
+        data['chatRoomId'];
+
+    final String partnerName =
+        _getProfileDisplayName(
+      likedProfile,
+    );
+
+    if (!mounted) return;
+
+    Navigator.push(
+      parentContext,
+      MaterialPageRoute(
+        builder: (_) => ChatScreen(
+          chatRoomId:
+              chatRoomId,
+          chatPartnerId:
+              likedProfile.uid,
+          chatPartnerName:
+              partnerName,
+        ),
+      ),
+    );
+
+    return;
+  }
+}
+    // CHECK CONTACTS
+    if (_remainingContacts <= 0) {
+
+      _showOutOfContactsPopup();
+      return;
+    }
+
+    try {
+
+      // DEDUCT CONTACT
+      await _firestore
+          .collection('users')
+          .doc(_currentUser!.uid)
+          .update({
+        'remainingContacts':
+            FieldValue.increment(-1),
+      });
+
+      setState(() {
+
+        _remainingContacts--;
+      });
+
+      debugPrint(
+        'CONTACT DEDUCTED. REMAINING = $_remainingContacts',
+      );
+
+      // CREATE CHAT ROOM / MATCH
+      await ChatUnlockService
+    .createMatchAndChatRoom(
+
+  _currentUser!.uid,
+
+  myProfileId,
+
+  _getProfileTypeDisplay(
+              likedProfile) ==
+          'flat_listing'
+      ? 'seeking_flatmate'
+      : 'flat_listing',
+
+  likedProfile.uid,
+
+  likedProfile.documentId!,
+
+  _getProfileTypeDisplay(
+      likedProfile),
+);
+      final sortedProfileIds = [
+  myProfileId,
+  likedProfile.documentId!,
+]..sort();
+
+final matchDocId =
+    '${sortedProfileIds[0]}_${sortedProfileIds[1]}';
+
+await _firestore
+    .collection('matches')
+    .doc(matchDocId)
+    .update({
+
+  'conversationUnlocked': true,
+
+  'unlockedByUid':
+      _currentUser!.uid,
+
+  'unlockedByProfileId':
+      myProfileId,
+
+  'unlockedAt':
+      FieldValue.serverTimestamp(),
+});
+
+debugPrint(
+  'MATCH UNLOCK STATUS SAVED',
+);
+final matchDoc =
+    await _firestore
+        .collection('matches')
+        .doc(matchDocId)
+        .get();
+
+final String chatRoomId =
+    matchDoc['chatRoomId'];
+
+await _firestore
+    .collection('chats')
+    .doc(chatRoomId)
+    .update({
+
+  'conversationUnlocked': true,
+
+  'unlockedByUid':
+      _currentUser!.uid,
+
+  'unlockedByProfileId':
+      myProfileId,
+
+  'unlockedAt':
+      FieldValue.serverTimestamp(),
+});
+
+debugPrint(
+  'CHAT UNLOCK STATUS SAVED',
+);
+
+      debugPrint(
+        'CHAT ROOM CREATED SUCCESSFULLY',
+      );
+
+   final String partnerName =
+    _getProfileDisplayName(
+  likedProfile,
+);
+
+debugPrint(
+  'OPENING CHAT SCREEN...',
+);
+
+if (!mounted) {
+  debugPrint(
+    'WIDGET NOT MOUNTED',
+  );
+  return;
+}
+
+if (!mounted) return;
+
+Navigator.push(
+  parentContext,
+  MaterialPageRoute(
+    builder: (_) => ChatScreen(
+      chatPartnerId: likedProfile.uid,
+      chatPartnerName: partnerName,
+    ),
+  ),
+);
+
+     debugPrint(
+  'CONVERSATION STARTED SUCCESSFULLY',
+);
+
+    } catch (e) {
+
+      debugPrint(
+        'START CONVERSATION ERROR: $e',
+      );
+
+      debugPrint(
+  'FAILED: $e',
+);
+    }
+  },
+);
+    },
+  );
+}
+
 
   // Renamed from _buildMainProfileSection to represent the content of each main tab
 Widget _buildProfileActivityView({
@@ -1001,84 +1667,112 @@ indicatorSize: TabBarIndicatorSize.tab,
       height: 2,
     ),
 
-    itemBuilder:
-        (context, index) {
+    itemBuilder: (context, index) {
 
-      dynamic profile;
+  dynamic profile;
 
-      String? chatRoomId;
+  String? chatRoomId;
 
-      String?
-          currentOwnerProfileId;
+  String? currentOwnerProfileId;
 
-      if (isMatchSection) {
+  String? myProfileId;
 
-        final Map<String, dynamic>
-            matchEntry =
-            profiles[index];
+  bool conversationUnlocked = false;
 
-        profile =
-            matchEntry['profile'];
+  String? unlockedChatRoomId;
 
-        chatRoomId =
-            matchEntry['chatRoomId'];
+  if (isMatchSection) {
 
-        currentOwnerProfileId =
-            matchEntry[
-                'currentOwnerProfileId'];
+    final Map<String, dynamic>
+        matchEntry =
+        profiles[index];
 
-      } else {
+    profile =
+        matchEntry['profile'];
 
-        profile =
-            profiles[index];
-      }
+    chatRoomId =
+        matchEntry['chatRoomId'];
 
-      return _buildProfileCard(
-        profile: profile,
+    currentOwnerProfileId =
+        matchEntry[
+            'currentOwnerProfileId'];
 
-        isMatchSection:
-            isMatchSection,
+  } else if (isLikedByMeSection) {
 
-        isLikedMeSection:
-            !isMatchSection &&
-                !isLikedByMeSection,
+    final Map<String, dynamic>
+        entry =
+        profiles[index];
 
-        isLikedByMeSection:
-            isLikedByMeSection,
+    profile =
+        entry['profile'];
 
-        onTap: () {
+    myProfileId =
+        entry['myProfileId'];
 
-          Navigator.push(
-            context,
+    conversationUnlocked =
+        entry[
+            'conversationUnlocked'] ??
+        false;
 
-            MaterialPageRoute(
-              builder:
-                  (context) =>
-                      ViewProfileScreen(
-                userId:
-                    profile.uid!,
-                profileDocumentId:
-                    profile
-                        .documentId!,
-              ),
-            ),
-          );
-        },
+    unlockedChatRoomId =
+        entry['chatRoomId'];
 
-        showChatButton:
-            isMatchSection &&
-                chatRoomId != null,
+  } else {
 
-        showCallButton:
-            false,
+    profile = profiles[index];
+  }
 
-        chatRoomId:
-            chatRoomId,
+  return _buildProfileCard(
+    profile: profile,
 
-        currentOwnerProfileId:
-            currentOwnerProfileId,
+    isMatchSection:
+        isMatchSection,
+
+    isLikedMeSection:
+        !isMatchSection &&
+            !isLikedByMeSection,
+
+    isLikedByMeSection:
+        isLikedByMeSection,
+
+    onTap: () {
+
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) =>
+              ViewProfileScreen(
+            userId:
+                profile.uid!,
+            profileDocumentId:
+                profile.documentId!,
+          ),
+        ),
       );
     },
+
+    showChatButton:
+        isMatchSection &&
+            chatRoomId != null,
+
+    showCallButton: false,
+
+    chatRoomId:
+        chatRoomId,
+
+    currentOwnerProfileId:
+        currentOwnerProfileId,
+
+    myProfileId:
+        myProfileId,
+
+    conversationUnlocked:
+        conversationUnlocked,
+
+    unlockedChatRoomId:
+        unlockedChatRoomId,
+  );
+},
   );
 }
 
@@ -1098,9 +1792,15 @@ Widget _buildProfileCard({
 
   required bool showCallButton,
 
+  required bool conversationUnlocked,
+
+  String? unlockedChatRoomId,
+
   String? chatRoomId,
 
   String? currentOwnerProfileId,
+
+  String? myProfileId,
 }) {
     String name = _getProfileDisplayName(profile);
     String typeDisplay = _getProfileTypeDisplay(profile); // Still used for icon/label
@@ -1395,57 +2095,103 @@ if (profile is FlatListingProfile) {
               ),
             ),
 
-          if (isLikedByMeSection)
+     // LOCKED PROFILE
 
-            ElevatedButton.icon(
-              onPressed: () {
+if (isLikedByMeSection &&
+    !conversationUnlocked)
 
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder:
-                        (context) =>
-                            ViewProfileScreen(
-                      userId:
-                          profile.uid!,
-                      profileDocumentId:
-                          profile
-                              .documentId!,
-                    ),
-                  ),
-                );
-              },
+  ElevatedButton.icon(
+    onPressed: () async {
 
-              icon: const Icon(
-                Icons.lock_open,
-                size: 16,
-              ),
+      await _showBannerPopup(
+        profile,
+        myProfileId!,
+      );
 
-              label: const Text(
-                'Start',
-              ),
+    },
 
-              style:
-                  ElevatedButton
-                      .styleFrom(
-                backgroundColor:
-                    kPrimaryColor,
+    icon: const Icon(
+      Icons.lock_open_rounded,
+      size: 16,
+    ),
 
-                foregroundColor:
-                    Colors.white,
+    label: const Text(
+      'Start',
+    ),
 
-                elevation: 0,
+    style:
+        ElevatedButton.styleFrom(
+      backgroundColor:
+          kPrimaryColor,
 
-                shape:
-                    RoundedRectangleBorder(
-                  borderRadius:
-                      BorderRadius
-                          .circular(
-                    14,
-                  ),
-                ),
-              ),
+      foregroundColor:
+          Colors.white,
+
+      elevation: 0,
+
+      shape:
+          RoundedRectangleBorder(
+        borderRadius:
+            BorderRadius.circular(
+          14,
+        ),
+      ),
+    ),
+  ),
+
+// UNLOCKED PROFILE
+
+if (isLikedByMeSection &&
+    conversationUnlocked)
+
+  ElevatedButton.icon(
+    onPressed: () {
+
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (_) => ChatScreen(
+            chatRoomId:
+                unlockedChatRoomId!,
+            chatPartnerId:
+                profile.uid!,
+            chatPartnerName:
+                _getProfileDisplayName(
+              profile,
             ),
+          ),
+        ),
+      );
+    },
+
+    icon: const Icon(
+      Icons.chat_bubble_rounded,
+      size: 16,
+    ),
+
+    label: const Text(
+      'Chat',
+    ),
+
+    style:
+        ElevatedButton.styleFrom(
+      backgroundColor:
+          kOnlineColor,
+
+      foregroundColor:
+          Colors.white,
+
+      elevation: 0,
+
+      shape:
+          RoundedRectangleBorder(
+        borderRadius:
+            BorderRadius.circular(
+          14,
+        ),
+      ),
+    ),
+  ),
         ],
       ),
     ),
