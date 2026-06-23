@@ -2,48 +2,51 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
+
 	<key>CFBundleDevelopmentRegion</key>
 	<string>$(DEVELOPMENT_LANGUAGE)</string>
+
 	<key>CFBundleDisplayName</key>
-	<string>Mytennat</string>
+	<string>UrbanHomey</string>
+
 	<key>CFBundleExecutable</key>
 	<string>$(EXECUTABLE_NAME)</string>
+
 	<key>CFBundleIdentifier</key>
 	<string>$(PRODUCT_BUNDLE_IDENTIFIER)</string>
-	<key>CFBundleInfoDictionaryVersion</key>
 
+	<key>CFBundleInfoDictionaryVersion</key>
 	<string>6.0</string>
+
 	<key>CFBundleName</key>
-	<string>mytennat</string>
+	<string>UrbanHomey</string>
+
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
+
 	<key>CFBundleShortVersionString</key>
 	<string>$(FLUTTER_BUILD_NAME)</string>
-	<key>NSLocationWhenInUseUsageDescription</key>
-<string>
-We use your location to find nearby flats and flatmates.
-</string>
 
-<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
-<string>
-We use your location to improve nearby matching.
-</string>
 	<key>CFBundleSignature</key>
 	<string>????</string>
+
 	<key>CFBundleVersion</key>
 	<string>$(FLUTTER_BUILD_NUMBER)</string>
+
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
+
 	<key>UILaunchStoryboardName</key>
 	<string>LaunchScreen</string>
+
 	<key>UIMainStoryboardFile</key>
 	<string>Main</string>
+
 	<key>UISupportedInterfaceOrientations</key>
 	<array>
 		<string>UIInterfaceOrientationPortrait</string>
-		<string>UIInterfaceOrientationLandscapeLeft</string>
-		<string>UIInterfaceOrientationLandscapeRight</string>
 	</array>
+
 	<key>UISupportedInterfaceOrientations~ipad</key>
 	<array>
 		<string>UIInterfaceOrientationPortrait</string>
@@ -51,9 +54,48 @@ We use your location to improve nearby matching.
 		<string>UIInterfaceOrientationLandscapeLeft</string>
 		<string>UIInterfaceOrientationLandscapeRight</string>
 	</array>
+
 	<key>CADisableMinimumFrameDurationOnPhone</key>
 	<true/>
+
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
+
+	<!-- LOCATION -->
+
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>
+	We use your location to find nearby flats, properties, and flatmates.
+	</string>
+
+	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+	<string>
+	We use your location to improve nearby recommendations and matching.
+	</string>
+
+	<!-- CAMERA -->
+
+	<key>NSCameraUsageDescription</key>
+	<string>
+	Upload profile photos, property photos, and verification images.
+	</string>
+
+	<!-- PHOTO LIBRARY -->
+
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>
+	Select profile photos and property photos from your gallery.
+	</string>
+
+	<key>NSPhotoLibraryAddUsageDescription</key>
+	<string>
+	Save images generated or downloaded from UrbanHomey.
+	</string>
+
+	<!-- FIREBASE -->
+
+	<key>FirebaseAppDelegateProxyEnabled</key>
+	<true/>
+
 </dict>
 </plist>
