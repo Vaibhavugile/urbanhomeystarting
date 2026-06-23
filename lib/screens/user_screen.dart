@@ -6,6 +6,14 @@ import 'package:mytennat/screens/complete_user_profile_screen.dart';
 import 'package:mytennat/screens/my_listings_screen.dart';
 import 'package:mytennat/screens/view_profile_screen.dart';
 import 'package:mytennat/screens/verification_screen.dart';
+import 'package:mytennat/screens/login_screen.dart'  hide kBackgroundColor,
+         kPrimaryColor,
+         kAccentColor,
+         kPrimaryGradient,
+         kErrorColor,
+         kDarkText,
+         kOnlineColor,
+         kMediumText;
 class UserScreen extends StatefulWidget {
   const UserScreen({Key? key}) : super(key: key);
 
@@ -375,7 +383,110 @@ _buildActionButton(
     );
   },
 ),
+const SizedBox(height: 12),
 
+_buildActionButton(
+  label: 'Sign Out',
+  icon: Icons.logout_rounded,
+  onPressed: () async {
+
+    final confirm =
+        await showDialog<bool>(
+      context: context,
+      builder: (_) => AlertDialog(
+        title: const Text(
+          'Sign Out',
+        ),
+        content: const Text(
+          'Are you sure you want to sign out?',
+        ),
+        actions: [
+
+          TextButton(
+            onPressed: () {
+              Navigator.pop(
+                context,
+                false,
+              );
+            },
+            child: const Text(
+              'Cancel',
+            ),
+          ),
+
+          ElevatedButton(
+            onPressed: () {
+              Navigator.pop(
+                context,
+                true,
+              );
+            },
+            child: const Text(
+              'Sign Out',
+            ),
+          ),
+        ],
+      ),
+    );
+
+    if (confirm != true) return;
+
+    await FirebaseAuth.instance
+        .signOut();
+
+    if (!mounted) return;
+
+    Navigator.pushAndRemoveUntil(
+      context,
+      MaterialPageRoute(
+        builder: (_) =>
+            const LoginScreen(),
+      ),
+      (route) => false,
+    );
+  },
+),
+
+const SizedBox(height: 12),
+
+_buildActionButton(
+  label: 'Request Account Deletion',
+  icon: Icons.delete_forever_rounded,
+  onPressed: () async {
+
+    final user =
+    FirebaseAuth.instance.currentUser;
+
+await FirebaseFirestore.instance
+    .collection(
+        'accountDeletionRequests')
+    .doc(user!.uid)
+    .set({
+
+  'userId': user.uid,
+
+  'phoneNumber':
+      user.phoneNumber,
+
+  'status': 'pending',
+
+  'createdAt':
+      FieldValue.serverTimestamp(),
+});
+
+    if (!mounted) return;
+
+    ScaffoldMessenger.of(context)
+        .showSnackBar(
+
+      const SnackBar(
+        content: Text(
+          'Account deletion request submitted.',
+        ),
+      ),
+    );
+  },
+),
 const SizedBox(height: 12),
 
 _buildActionButton(
@@ -409,6 +520,7 @@ _buildActionButton(
               ),
   );
 }
+
 Widget _buildActionButton({
   required String label,
   required IconData icon,
