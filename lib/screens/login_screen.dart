@@ -671,10 +671,66 @@ Widget _buildMobileLoginUi(BuildContext context) {
                 ),
               ),
 
-              const SizedBox(height: 30),
+              const SizedBox(height: 20),
 
-              TextButton(
-                onPressed: () {
+SizedBox(
+  width: double.infinity,
+  height: 56,
+  child: OutlinedButton.icon(
+
+   onPressed: () async {
+
+  try {
+
+    await FirebaseAuth.instance
+        .signInAnonymously();
+
+    Navigator.of(context)
+        .pushReplacement(
+      MaterialPageRoute(
+        builder: (_) =>
+            const HomePage(),
+      ),
+    );
+
+  } catch (e) {
+
+    print(
+      'GUEST LOGIN ERROR: $e',
+    );
+  }
+},
+    icon: const Icon(
+      Icons.person_outline_rounded,
+    ),
+
+    label: const Text(
+      'Continue as Guest',
+      style: TextStyle(
+        fontSize: 16,
+        fontWeight: FontWeight.w700,
+      ),
+    ),
+
+    style: OutlinedButton.styleFrom(
+      foregroundColor: kPrimaryColor,
+
+      side: BorderSide(
+        color: kPrimaryColor.withOpacity(.25),
+      ),
+
+      shape: RoundedRectangleBorder(
+        borderRadius:
+            BorderRadius.circular(18),
+      ),
+    ),
+  ),
+),
+
+const SizedBox(height: 24),
+
+TextButton(
+  onPressed: () {
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(
                       content: Text('Opening feedback form...'),
