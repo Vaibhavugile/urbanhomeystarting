@@ -17,10 +17,8 @@ Future<void> _firebaseMessagingBackgroundHandler(
   RemoteMessage message,
 ) async {
   await Firebase.initializeApp(
-    options: kIsWeb
-        ? DefaultFirebaseOptions.web
-        : DefaultFirebaseOptions.android,
-  );
+  options: DefaultFirebaseOptions.currentPlatform,
+);
 
   debugPrint(
     'Background Message: ${message.messageId}',
@@ -40,10 +38,8 @@ void main() async {
 
   try {
     await Firebase.initializeApp(
-      options: kIsWeb
-          ? DefaultFirebaseOptions.web
-          : DefaultFirebaseOptions.android,
-    );
+  options: DefaultFirebaseOptions.currentPlatform,
+);
   } on FirebaseException catch (e) {
     if (e.code != 'duplicate-app') {
       rethrow;
