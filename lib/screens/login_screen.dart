@@ -179,10 +179,18 @@ Future<void> _verifyOtpAndSignIn() async {
   });
 
   try {
+    debugPrint(
+      "========== VERIFY OTP START ==========",
+    );
+
     final callable =
         FirebaseFunctions.instance
             .httpsCallable(
       'verifyOtp',
+    );
+
+    debugPrint(
+      "Calling verifyOtp cloud function...",
     );
 
     final result =
@@ -193,8 +201,16 @@ Future<void> _verifyOtpAndSignIn() async {
           _otpController.text.trim(),
     });
 
+    debugPrint(
+      "Cloud function success",
+    );
+
     final token =
         result.data['token'];
+
+    debugPrint(
+      "Custom token received",
+    );
 
     await FirebaseAuth.instance
         .signInWithCustomToken(
@@ -202,14 +218,69 @@ Future<void> _verifyOtpAndSignIn() async {
     );
 
     debugPrint(
-      'Custom token login successful',
+      "Firebase custom token login successful",
     );
-    await NotificationService.initialize();
+
+    // -------------------------------
+    // Notification initialization
+    // Should NEVER block login
+    // -------------------------------
+    try {
+      debugPrint(
+        "Initializing notifications...",
+      );
+
+      await NotificationService.initialize();
+
+      debugPrint(
+        "Notification initialization completed",
+      );
+    } catch (e, stackTrace) {
+      debugPrint(
+        "Notification initialization failed",
+      );
+
+      debugPrint(
+        e.toString(),
+      );
+
+      debugPrintStack(
+        stackTrace: stackTrace,
+      );
+    }
+
+    debugPrint(
+      "Creating/updating user...",
+    );
 
     await _createOrUpdateUser();
 
+    debugPrint(
+      "User document created",
+    );
+
+    debugPrint(
+      "Navigating to HomePage...",
+    );
+
     _navigateToNextScreen();
-  } catch (e) {
+
+    debugPrint(
+      "========== LOGIN COMPLETE ==========",
+    );
+  } catch (e, stackTrace) {
+    debugPrint(
+      "========== LOGIN FAILED ==========",
+    );
+
+    debugPrint(
+      e.toString(),
+    );
+
+    debugPrintStack(
+      stackTrace: stackTrace,
+    );
+
     setState(() {
       _loading = false;
     });
@@ -218,7 +289,7 @@ Future<void> _verifyOtpAndSignIn() async {
         .showSnackBar(
       SnackBar(
         content: Text(
-          'Invalid OTP: $e',
+          e.toString(),
         ),
       ),
     );
