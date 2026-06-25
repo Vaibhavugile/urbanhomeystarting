@@ -3,11 +3,10 @@ import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
-
+import 'dart:ui';
 import 'firebase_options.dart';
 import 'screens/login_screen.dart';
 import 'screens/home_page.dart';
-import 'services/notification_service.dart';
 
 final GlobalKey<ScaffoldMessengerState>
     messengerKey =
@@ -54,6 +53,12 @@ void main() async {
     }
   };
 
+PlatformDispatcher.instance.onError = (error, stack) {
+  debugPrint("========== PLATFORM ERROR ==========");
+  debugPrint(error.toString());
+  debugPrint(stack.toString());
+  return true;
+};
   try {
     debugPrint(
       "========== MAIN START ==========",
