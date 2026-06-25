@@ -3,10 +3,11 @@ import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
-import 'dart:ui';
+
 import 'firebase_options.dart';
 import 'screens/login_screen.dart';
 import 'screens/home_page.dart';
+import 'services/notification_service.dart';
 
 final GlobalKey<ScaffoldMessengerState>
     messengerKey =
@@ -35,141 +36,185 @@ Future<void> _firebaseMessagingBackgroundHandler(
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  FlutterError.onError = (FlutterErrorDetails details) {
-    FlutterError.presentError(details);
-
-    debugPrint(
-      "========== FLUTTER ERROR ==========",
-    );
-
-    debugPrint(
-      details.exceptionAsString(),
-    );
-
-    if (details.stack != null) {
-      debugPrint(
-        details.stack.toString(),
-      );
-    }
-  };
-
-PlatformDispatcher.instance.onError = (error, stack) {
-  debugPrint("========== PLATFORM ERROR ==========");
-  debugPrint(error.toString());
-  debugPrint(stack.toString());
-  return true;
-};
   try {
-    debugPrint(
-      "========== MAIN START ==========",
-    );
-
-    debugPrint(
-      "STEP 1 - Initializing Firebase",
-    );
-
     await Firebase.initializeApp(
-      options:
-          DefaultFirebaseOptions.currentPlatform,
-    );
+  options: DefaultFirebaseOptions.currentPlatform,
+);
+  } on FirebaseException catch (e) {
+    if (e.code != 'duplicate-app') {
+      rethrow;
+    }
+  }
 
-    debugPrint(
-      "STEP 2 - Firebase initialized",
-    );
+  FirebaseMessaging.onBackgroundMessage(
+    _firebaseMessagingBackgroundHandler,
+  );
 
-    FirebaseMessaging.onBackgroundMessage(
-      _firebaseMessagingBackgroundHandler,
-    );
+  await NotificationService.initialize();
 
-    debugPrint(
-      "STEP 3 - Background handler registered",
-    );
+  FirebaseMessaging.onMessage.listen(
+    (RemoteMessage message) {
 
-    FirebaseMessaging.onMessage.listen(
-      (RemoteMessage message) {
-        debugPrint(
-          "Foreground notification received",
-        );
+      final title =
+          message.notification?.title ??
+          'Notification';
 
-        final title =
-            message.notification?.title ??
-                "Notification";
+      final body =
+          message.notification?.body ?? '';
 
-        final body =
-            message.notification?.body ??
-                "";
+      debugPrint(
+        'Foreground notification received',
+      );
 
-        messengerKey.currentState?.showSnackBar(
-          SnackBar(
-            content: Text(
-              "$title\n$body",
+      debugPrint(
+        'Title: $title',
+      );
+
+      debugPrint(
+        'Body: $body',
+      );
+
+      messengerKey.currentState?.showSnackBar(
+  SnackBar(
+    elevation: 0,
+    backgroundColor: Colors.transparent,
+    behavior: SnackBarBehavior.floating,
+    margin: const EdgeInsets.fromLTRB(
+      16,
+      10,
+      16,
+      0,
+    ),
+    duration: const Duration(
+      seconds: 4,
+    ),
+    content: Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            Color(0xFF7C3AED),
+            Color(0xFF9333EA),
+            Color(0xFFEC4899),
+          ],
+        ),
+        borderRadius:
+            BorderRadius.circular(22),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(
+              0xFF7C3AED,
+            ).withOpacity(.30),
+            blurRadius: 25,
+            offset: const Offset(
+              0,
+              10,
             ),
           ),
-        );
-      },
-    );
+        ],
+      ),
+      child: Row(
+        children: [
 
-    FirebaseMessaging.onMessageOpenedApp.listen(
-      (RemoteMessage message) {
-        debugPrint(
-          "Notification clicked",
-        );
-
-        debugPrint(
-          message.data.toString(),
-        );
-      },
-    );
-
-    debugPrint(
-      "STEP 4 - Running App",
-    );
-
-    runApp(
-      const MyApp(),
-    );
-
-    debugPrint(
-      "STEP 5 - App Started",
-    );
-  } catch (e, stackTrace) {
-    debugPrint(
-      "========== MAIN ERROR ==========",
-    );
-
-    debugPrint(
-      e.toString(),
-    );
-
-    debugPrintStack(
-      stackTrace: stackTrace,
-    );
-
-    runApp(
-      MaterialApp(
-        debugShowCheckedModeBanner: false,
-        home: Scaffold(
-          appBar: AppBar(
-            title: const Text(
-              "Startup Error",
-            ),
-          ),
-          body: Padding(
-            padding:
-                const EdgeInsets.all(16),
-            child: SingleChildScrollView(
-              child: SelectableText(
-                "$e\n\n$stackTrace",
-                style: const TextStyle(
-                  color: Colors.red,
-                ),
+          Container(
+            height: 52,
+            width: 52,
+            decoration: BoxDecoration(
+              color: Colors.white
+                  .withOpacity(.15),
+              borderRadius:
+                  BorderRadius.circular(
+                16,
               ),
             ),
+            child: const Icon(
+              Icons
+                  .notifications_active_rounded,
+              color: Colors.white,
+              size: 28,
+            ),
           ),
-        ),
+
+          const SizedBox(
+            width: 14,
+          ),
+
+          Expanded(
+            child: Column(
+              mainAxisSize:
+                  MainAxisSize.min,
+              crossAxisAlignment:
+                  CrossAxisAlignment.start,
+              children: [
+
+                Text(
+                  title,
+                  maxLines: 1,
+                  overflow:
+                      TextOverflow.ellipsis,
+                  style:
+                      const TextStyle(
+                    color: Colors.white,
+                    fontWeight:
+                        FontWeight.w800,
+                    fontSize: 15,
+                  ),
+                ),
+
+                const SizedBox(
+                  height: 4,
+                ),
+
+                Text(
+                  body,
+                  maxLines: 2,
+                  overflow:
+                      TextOverflow.ellipsis,
+                  style: TextStyle(
+                    color: Colors.white
+                        .withOpacity(.95),
+                    fontSize: 13,
+                    height: 1.35,
+                  ),
+                ),
+              ],
+            ),
+          ),
+
+          const SizedBox(
+            width: 8,
+          ),
+
+          const Icon(
+            Icons.chevron_right_rounded,
+            color: Colors.white,
+          ),
+        ],
       ),
-    );
-  }
+    ),
+  ),
+);
+    },
+  );
+
+  FirebaseMessaging.onMessageOpenedApp
+      .listen(
+    (RemoteMessage message) {
+      debugPrint(
+        'Notification clicked',
+      );
+
+      debugPrint(
+        'Notification data: ${message.data}',
+      );
+    },
+  );
+
+  runApp(
+    const MyApp(),
+  );
 }
 
 class MyApp extends StatelessWidget {
@@ -177,21 +222,15 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    debugPrint(
-      "========== BUILDING MYAPP ==========",
-    );
-
-    debugPrint(
-      "Current User: ${FirebaseAuth.instance.currentUser?.uid}",
-    );
-
     return MaterialApp(
       scaffoldMessengerKey:
           messengerKey,
-      title: "MyTennat",
-      debugShowCheckedModeBanner: false,
+      title: 'MyTennat',
+      debugShowCheckedModeBanner:
+          false,
       theme: ThemeData(
-        primarySwatch: Colors.blue,
+        primarySwatch:
+            Colors.blue,
       ),
       home:
           FirebaseAuth.instance.currentUser !=
