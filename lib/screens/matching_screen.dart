@@ -3234,27 +3234,7 @@ Widget _buildCardView() {
     final bool isLargeScreen = screenWidth > 900; // Define your breakpoint for web layout
     return Scaffold(
       key: _scaffoldKey, // Assign the key to Scaffold
-      floatingActionButtonLocation:
-      FloatingActionButtonLocation.startTop,
-
-  floatingActionButton: _canUndoPass
-      ? FloatingActionButton.extended(
-          onPressed: _undoLastPass,
-          backgroundColor: Colors.white,
-          foregroundColor: const Color(0xFF7C3AED),
-          elevation: 12,
-          icon: const Icon(
-            Icons.undo_rounded,
-          ),
-          label: const Text(
-            'Undo',
-            style: TextStyle(
-              fontWeight: FontWeight.w700,
-            ),
-          ),
-        )
-      : null,
-
+      
       appBar: AppBar(
         title: const Text('UrbanHomey Matching', style: TextStyle(color: Colors.white)),
         // Changed to a consistent gradient background
@@ -3271,6 +3251,12 @@ Widget _buildCardView() {
         elevation: 0,
         actions: [
           // NEW: Button to toggle between card and list view
+            if (_canUndoPass)
+    IconButton(
+      tooltip: "Undo Pass",
+      icon: const Icon(Icons.undo_rounded),
+      onPressed: _undoLastPass,
+    ),
           IconButton(
             icon: Icon(
               _currentViewType == _ViewType.card ? Icons.list : Icons.view_carousel,
