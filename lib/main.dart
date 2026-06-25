@@ -210,9 +210,7 @@ class MyApp extends StatelessWidget {
         primarySwatch: Colors.blue,
       ),
 
-      home: currentUser != null
-          ? const HomePage()
-          : const LoginScreen(),
+      home: const LoginScreen(),
     );
   }
 }
