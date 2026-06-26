@@ -17,6 +17,7 @@ import 'package:mytennat/screens/matching/widgets/profile_list_item.dart';
 import 'package:mytennat/screens/matching/services/matching_service.dart';
 import 'package:mytennat/screens/matching/widgets/ad_panel.dart';
 import 'dart:math' as math;
+import 'package:flutter_card_swiper/flutter_card_swiper.dart';
 // NEW: Enum to manage different view types
 enum _ViewType {
   card,
@@ -78,7 +79,8 @@ DocumentSnapshot? _lastDocument;
 bool _hasMoreProfiles = true;
 
 bool _isLoadingMore = false;
-
+final CardSwiperController _cardController =
+    CardSwiperController();
 static const int _pageSize = 50;
 
   String? _bannerMessage;
@@ -181,6 +183,7 @@ if (widget.isExploreMode) {
   @override
   void dispose() {
     super.dispose();
+    _cardController.dispose();
   }
 
   // Helper to get display name for a profile
@@ -3105,128 +3108,200 @@ Widget _buildCardView() {
         16,
         16,
       ),
-      child: Dismissible(
-        key: Key(
-          profile.documentId ??
-              profile.uid,
-        ),
+      child: CardSwiper(
+  controller: _cardController,
 
-        direction:
-            DismissDirection.horizontal,
+  cardsCount: 1,
 
-        onDismissed:
-            _handleProfileDismissed,
+  numberOfCardsDisplayed: 1,
 
-        background: Container(
+  isLoop: false,
+
+  backCardOffset: const Offset(0, 0),
+
+  padding: EdgeInsets.zero,
+
+  allowedSwipeDirection:
+      const AllowedSwipeDirection.only(
+    left: true,
+    right: true,
+  ),
+
+  cardBuilder: (
+    context,
+    index,
+    horizontalOffsetPercentage,
+    verticalOffsetPercentage,
+  ) {
+final double offset =
+    horizontalOffsetPercentage.toDouble();
+
+final double likeOpacity =
+    offset.clamp(0.0, 1.0).toDouble();
+
+final double nopeOpacity =
+    (-offset).clamp(0.0, 1.0).toDouble();
+    return Stack(
+  fit: StackFit.expand,
+  children: [
+
+    InkWell(
+      borderRadius: BorderRadius.circular(32),
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (_) => ViewProfileScreen(
+              userId: profile.uid,
+              profileDocumentId: profile.documentId!,
+            ),
+          ),
+        );
+      },
+      child: ProfileCard(
+        profile: profile,
+        distanceText: _getDistanceText(profile),
+
+        onLike: () {
+
+          if (widget.isExploreMode) {
+            _showCreateProfileRequiredDialog();
+            return;
+          }
+
+          _cardController.swipe(
+            CardSwiperDirection.right,
+          );
+        },
+
+        onPass: () {
+
+          _cardController.swipe(
+            CardSwiperDirection.left,
+          );
+        },
+      ),
+    ),
+   
+
+    /// LIKE
+    if (horizontalOffsetPercentage > 0)
+      if (likeOpacity > 0)
+  Positioned(
+    top: 70,
+    left: 28,
+    child: _buildSwipeBadge(
+      text: "LIKE",
+      color: const Color(0xFF22C55E),
+      opacity: likeOpacity,
+      angle: -.25,
+    ),
+  ),
+
+    /// NOPE
+    if (horizontalOffsetPercentage < 0)
+      if (nopeOpacity > 0)
+  Positioned(
+    top: 70,
+    right: 28,
+    child: _buildSwipeBadge(
+      text: "NOPE",
+      color: const Color(0xFFEF4444),
+      opacity: nopeOpacity,
+      angle: .25,
+    ),
+  ),
+  ],
+);
+
+  },
+
+  onSwipe: (
+    previousIndex,
+    currentIndex,
+    direction,
+  ) {
+
+    if (direction ==
+        CardSwiperDirection.right) {
+
+      if (widget.isExploreMode) {
+        return false;
+      }
+
+      _lastLikedProfile = profile;
+
+      debugPrint(
+        'LAST LIKED PROFILE = ${profile.documentId}',
+      );
+
+      _handleProfileDismissed(
+        DismissDirection.startToEnd,
+      );
+
+    } else {
+
+      _handleProfileDismissed(
+        DismissDirection.endToStart,
+      );
+
+    }
+
+    return true;
+
+  },
+),
+    ),
+  );
+}
+
+Widget _buildSwipeBadge({
+  required String text,
+  required Color color,
+  required double opacity,
+  required double angle,
+}) {
+  return Transform.rotate(
+    angle: angle,
+    child: AnimatedScale(
+      duration: const Duration(milliseconds: 120),
+      scale: .85 + (.15 * opacity),
+      child: Opacity(
+        opacity: opacity,
+        child: Container(
+          padding: const EdgeInsets.symmetric(
+            horizontal: 22,
+            vertical: 12,
+          ),
           decoration: BoxDecoration(
-            borderRadius:
-                BorderRadius.circular(
-              32,
+            color: Colors.white.withOpacity(.08),
+            borderRadius: BorderRadius.circular(14),
+            border: Border.all(
+              color: color,
+              width: 4,
             ),
-            gradient:
-                const LinearGradient(
-              colors: [
-                Color(0xFF22C55E),
-                Color(0xFF16A34A),
-              ],
-            ),
-          ),
-          alignment:
-              Alignment.centerLeft,
-          padding:
-              const EdgeInsets.only(
-            left: 30,
-          ),
-          child: const Icon(
-            Icons.favorite_rounded,
-            color: Colors.white,
-            size: 42,
-          ),
-        ),
-
-        secondaryBackground:
-            Container(
-          decoration: BoxDecoration(
-            borderRadius:
-                BorderRadius.circular(
-              32,
-            ),
-            gradient:
-                const LinearGradient(
-              colors: [
-                Color(0xFFEF4444),
-                Color(0xFFDC2626),
-              ],
-            ),
-          ),
-          alignment:
-              Alignment.centerRight,
-          padding:
-              const EdgeInsets.only(
-            right: 30,
-          ),
-          child: const Icon(
-            Icons.close_rounded,
-            color: Colors.white,
-            size: 42,
-          ),
-        ),
-
-        child: InkWell(
-          borderRadius:
-              BorderRadius.circular(
-            32,
-          ),
-          onTap: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (_) =>
-                    ViewProfileScreen(
-                  userId: profile.uid,
-                  profileDocumentId:
-                      profile.documentId!,
-                ),
+            boxShadow: [
+              BoxShadow(
+                color: color.withOpacity(.35),
+                blurRadius: 20,
+                spreadRadius: 1,
               ),
-            );
-          },
-
-          child: ProfileCard(
-            profile: profile,
- distanceText:
-      _getDistanceText(profile),
-          onLike: () {
-
-  if (widget.isExploreMode) {
-    _showCreateProfileRequiredDialog();
-    return;
-  }
-
-  _lastLikedProfile = profile;
-  
-
-  debugPrint(
-    'LAST LIKED PROFILE = ${profile.documentId}',
-  );
-
-  _handleProfileDismissed(
-    DismissDirection.startToEnd,
-  );
-},
-
-            onPass: () {
-              _handleProfileDismissed(
-                DismissDirection
-                    .endToStart,
-              );
-            },
+            ],
+          ),
+          child: Text(
+            text,
+            style: TextStyle(
+              color: color,
+              fontSize: 34,
+              fontWeight: FontWeight.w900,
+              letterSpacing: 4,
+            ),
           ),
         ),
       ),
     ),
   );
 }
-
 
   @override
   Widget build(BuildContext context) {
