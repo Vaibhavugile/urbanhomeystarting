@@ -455,8 +455,8 @@ void _clearAllFilters() {
             children: [
 
 
-              // Location Section
-              _buildFilterSection(
+             // Location Section
+_buildFilterSection(
   title: '📍 Location',
   children: [
 
@@ -471,6 +471,7 @@ void _clearAllFilters() {
       ),
       child: Row(
         children: [
+
           const Icon(
             Icons.location_on_rounded,
             color: kPrimaryColor,
@@ -480,74 +481,145 @@ void _clearAllFilters() {
 
           Expanded(
             child: Text(
-  _filters.locationName?.isNotEmpty == true
-      ? _filters.locationName!
-      : 'Select Location',
-),
+              _filters.locationName?.isNotEmpty == true
+                  ? _filters.locationName!
+                  : 'Select Location',
+              style: const TextStyle(
+                fontWeight: FontWeight.w600,
+              ),
+            ),
           ),
 
           IconButton(
-  onPressed: () async {
-
-  final result =
-      await Navigator.push<LocationResult>(
-    context,
-    MaterialPageRoute(
-      builder: (_) =>
-          Scaffold(
-            appBar: AppBar(
-              title: const Text(
-                'Select Location',
-              ),
+            icon: const Icon(
+              Icons.edit_location_alt_rounded,
+              color: kPrimaryColor,
             ),
-            body: LocationSelectorWidget(
-              googleApiKey:
-                  'AIzaSyBK82kg-QdV1TdTrOoC3-jvbSstRhz1wZ0',
 
-              initialCity:
-                  _filters.desiredCity,
+            onPressed: () async {
 
-              initialAddress:
-                  _filters.locationName,
+              final result =
+                  await showModalBottomSheet<LocationResult>(
+                context: context,
+                isScrollControlled: true,
+                useSafeArea: true,
+                backgroundColor: Colors.transparent,
 
-              onLocationSelected:
-                  (location) {
-                Navigator.pop(
-                  context,
-                  location,
-                );
-              },
-            ),
+                builder: (context) {
+
+                  return DraggableScrollableSheet(
+                    expand: false,
+                    initialChildSize: .92,
+                    minChildSize: .70,
+                    maxChildSize: .96,
+
+                    builder: (
+                      context,
+                      scrollController,
+                    ) {
+
+                      return Container(
+                        decoration: const BoxDecoration(
+                          color: Colors.white,
+                          borderRadius:
+                              BorderRadius.vertical(
+                            top: Radius.circular(30),
+                          ),
+                        ),
+
+                        child: Column(
+                          children: [
+
+                            const SizedBox(height: 12),
+
+                            Container(
+                              width: 48,
+                              height: 5,
+                              decoration: BoxDecoration(
+                                color: Colors.grey.shade300,
+                                borderRadius:
+                                    BorderRadius.circular(
+                                  20,
+                                ),
+                              ),
+                            ),
+
+                            const SizedBox(height: 18),
+
+                            const Text(
+                              "Select Location",
+                              style: TextStyle(
+                                fontSize: 22,
+                                fontWeight:
+                                    FontWeight.bold,
+                              ),
+                            ),
+
+                            const SizedBox(height: 18),
+
+                            Expanded(
+                              child: SingleChildScrollView(
+                                controller:
+                                    scrollController,
+
+                                padding:
+                                    const EdgeInsets.all(
+                                  20,
+                                ),
+
+                                child:
+                                    LocationSelectorWidget(
+                                  googleApiKey:
+                                      'AIzaSyBK82kg-QdV1TdTrOoC3-jvbSstRhz1wZ0',
+
+                                  initialCity:
+                                      _filters.desiredCity,
+
+                                  initialAddress:
+                                      _filters.locationName,
+
+                                  onLocationSelected:
+                                      (location) {
+
+                                    Navigator.pop(
+                                      context,
+                                      location,
+                                    );
+
+                                  },
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      );
+                    },
+                  );
+                },
+              );
+
+              if (result != null) {
+
+                setState(() {
+
+                  _filters.desiredCity =
+                      result.city;
+
+                  _filters.locationName =
+                      result.address;
+
+                  _filters.placeId =
+                      result.placeId;
+
+                  _filters.latitude =
+                      result.latitude;
+
+                  _filters.longitude =
+                      result.longitude;
+                });
+              }
+            },
           ),
-    ),
-  );
-
-  if (result != null) {
-
-    setState(() {
-
-      _filters.desiredCity =
-          result.city;
-
-      _filters.locationName =
-          result.address;
-
-      _filters.placeId =
-          result.placeId;
-
-      _filters.latitude =
-          result.latitude;
-
-      _filters.longitude =
-          result.longitude;
-    });
-  }
-},
-  icon: const Icon(
-    Icons.edit_location_alt_rounded,
-    color: kPrimaryColor,
-  ),
-),
         ],
       ),
     ),

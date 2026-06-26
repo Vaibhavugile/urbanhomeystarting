@@ -1617,6 +1617,14 @@ void _showCreateProfileRequiredDialog() {
   void _onFiltersChanged(FilterOptions newFilters) {
     setState(() {
       _currentFilters = newFilters;
+      debugPrint(
+    "FILTER ADDRESS = ${newFilters.locationName}");
+
+debugPrint(
+    "FILTER LAT = ${newFilters.latitude}");
+
+debugPrint(
+    "FILTER LNG = ${newFilters.longitude}");
     });
     if (widget.isExploreMode) {
 

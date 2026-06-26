@@ -59,7 +59,6 @@ class LocationSelectorWidget extends StatefulWidget {
 
   final String? initialCity;
   final String? initialAddress;
-
   final Function(LocationResult) onLocationSelected;
 
   const LocationSelectorWidget({
@@ -68,6 +67,7 @@ class LocationSelectorWidget extends StatefulWidget {
     required this.onLocationSelected,
     this.initialCity,
     this.initialAddress,
+    
   });
 
   @override
@@ -471,7 +471,7 @@ if (_selectedCity == null)
         prediction.placeId;
   });
 
-  _notifyParent();
+  // _notifyParent();
 },
 
                 getPlaceDetailWithLatLng:
