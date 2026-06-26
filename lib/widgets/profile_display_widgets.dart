@@ -4,7 +4,8 @@ import 'package:intl/intl.dart';
 import 'package:mytennat/screens/flat_with_flatmate_profile_screen.dart';
 import 'package:mytennat/screens/flatmate_profile_screen.dart';
 import 'package:lottie/lottie.dart'; // Import Lottie
-
+import 'package:smooth_page_indicator/smooth_page_indicator.dart';
+import 'package:mytennat/screens/full_screen_gallery.dart';
 // ===============================
 // PREMIUM 2026 LUXURY PALETTES
 // ===============================
@@ -779,353 +780,172 @@ Expanded(
   );
 }
 Widget _buildPremiumHeroSection(
+  BuildContext context,
   FlatListingProfile profile,
+  PageController pageController,
 ) {
   final imageUrls = profile.imageUrls ?? [];
 
-  return Container(
-    height: 420,
-    margin: const EdgeInsets.only(
-      bottom: 20,
-    ),
+  return SizedBox(
+    height: 430,
+    child: ClipRRect(
+      borderRadius: const BorderRadius.only(
+        bottomLeft: Radius.circular(28),
+        bottomRight: Radius.circular(28),
+      ),
+      child: Stack(
+        fit: StackFit.expand,
+        children: [
 
-    child: Stack(
-      children: [
+          /// IMAGES
+          PageView.builder(
+            controller: pageController,
+            physics: const BouncingScrollPhysics(),
+            itemCount: imageUrls.isEmpty ? 1 : imageUrls.length,
+            onPageChanged: (index) {
+              debugPrint("PAGE CHANGED : $index");
+            },
+            itemBuilder: (context, index) {
 
-        /// PROPERTY IMAGE
-        ClipRRect(
-          borderRadius: const BorderRadius.only(
-            bottomLeft: Radius.circular(35),
-            bottomRight: Radius.circular(35),
-          ),
-          child: imageUrls.isNotEmpty
-              ? PageView.builder(
-                  itemCount: imageUrls.length,
-                  itemBuilder: (context, index) {
-                    return Image.network(
-                      imageUrls[index],
-                      width: double.infinity,
-                      height: 420,
-                      fit: BoxFit.cover,
-                    );
-                  },
-                )
-              : Container(
-                  height: 420,
+              if (imageUrls.isEmpty) {
+                return Container(
                   color: kLightGrey,
                   child: const Center(
                     child: Icon(
                       Icons.home_rounded,
                       size: 80,
-                      color: kMediumText,
                     ),
                   ),
-                ),
-        ),
+                );
+              }
 
-        /// DARK OVERLAY
-        Container(
-          decoration: BoxDecoration(
-            borderRadius: const BorderRadius.only(
-              bottomLeft: Radius.circular(35),
-              bottomRight: Radius.circular(35),
-            ),
-            gradient: LinearGradient(
-              begin: Alignment.topCenter,
-              end: Alignment.bottomCenter,
-              colors: [
-                Colors.black.withOpacity(.10),
-                Colors.black.withOpacity(.25),
-                Colors.black.withOpacity(.75),
-              ],
-            ),
+              return GestureDetector(
+                behavior: HitTestBehavior.translucent,
+                onTap: () {
+                  debugPrint("IMAGE TAPPED");
+
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => FullScreenGallery(
+                        images: imageUrls,
+                        initialIndex: index,
+                      ),
+                    ),
+                  );
+                },
+                child: Hero(
+                  tag: imageUrls[index],
+                  child: Image.network(
+                    imageUrls[index],
+                    width: double.infinity,
+                    height: double.infinity,
+                    fit: BoxFit.cover,
+                  ),
+                ),
+              );
+            },
           ),
-        ),
 
-        /// BACK BUTTON
-        SafeArea(
-          child: Padding(
-            padding: const EdgeInsets.all(16),
-            child: CircleAvatar(
-              backgroundColor:
-                  Colors.black.withOpacity(.30),
-              child: IconButton(
-                icon: const Icon(
-                  Icons.arrow_back_ios_new,
-                  color: Colors.white,
-                ),
-                onPressed: () {},
-              ),
-            ),
-          ),
-        ),
-
-        /// CONTENT
-        Positioned(
-          left: 20,
-          right: 20,
-          bottom: 25,
-          child: Column(
-            crossAxisAlignment:
-                CrossAxisAlignment.start,
-            children: [
-
-              /// RENT BADGE
-              Container(
-                padding:
-                    const EdgeInsets.symmetric(
-                  horizontal: 16,
-                  vertical: 10,
-                ),
-                decoration: BoxDecoration(
-                  gradient: kPrimaryGradient,
-                  borderRadius:
-                      BorderRadius.circular(30),
-                ),
-                child: Text(
-                  profile.rentPrice != null
-                      ? '₹${profile.rentPrice}/month'
-                      : 'Rent Not Available',
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 16,
-                    fontWeight:
-                        FontWeight.w700,
-                  ),
-                ),
-              ),
-
-              const SizedBox(height: 16),
-
-              /// FLAT TYPE
-              Text(
-                '${profile.flatType} • ${profile.roomType}',
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 28,
-                  fontWeight:
-                      FontWeight.w800,
-                ),
-              ),
-
-              const SizedBox(height: 8),
-
-              /// LOCATION
-              Row(
-                children: [
-                  const Icon(
-                    Icons.location_on,
-                    color: Colors.white70,
-                    size: 18,
-                  ),
-                  const SizedBox(width: 6),
-                  // Expanded(
-                  //   child: Text(
-                  //     profile.address.isNotEmpty
-                  //         ? profile.address
-                  //         : profile.userProfile.city ??
-                  //             'Location not specified',
-                  //     maxLines: 2,
-                  //     overflow:
-                  //         TextOverflow.ellipsis,
-                  //     style: const TextStyle(
-                  //       color:
-                  //           Colors.white70,
-                  //       fontSize: 15,
-                  //     ),
-                  //   ),
-                  // ),
-                ],
-              ),
-
-              const SizedBox(height: 20),
-
-              /// OWNER CARD
-              Container(
-                padding:
-                    const EdgeInsets.all(14),
-                decoration: BoxDecoration(
-                  color: Colors.white
-                      .withOpacity(.12),
-                  borderRadius:
-                      BorderRadius.circular(
-                    20,
-                  ),
-                ),
-                child: Row(
-                  children: [
-
-                    CircleAvatar(
-                      radius: 24,
-                      backgroundColor:
-                          Colors.white,
-                      backgroundImage:
-                          profile.userProfile
-                                      .profilePhotoUrl !=
-                                  null
-                              ? NetworkImage(
-                                  profile
-                                      .userProfile
-                                      .profilePhotoUrl!,
-                                )
-                              : null,
-                      child: profile
-                                  .userProfile
-                                  .profilePhotoUrl ==
-                              null
-                          ? const Icon(
-                              Icons.person,
-                            )
-                          : null,
-                    ),
-
-                    const SizedBox(width: 12),
-
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment:
-                            CrossAxisAlignment
-                                .start,
-                        children: [
-                          Text(
-                            profile.userProfile
-                                    .name ??
-                                'Owner',
-                            style:
-                                const TextStyle(
-                              color:
-                                  Colors.white,
-                              fontSize: 16,
-                              fontWeight:
-                                  FontWeight
-                                      .w700,
-                            ),
-                          ),
-
-                          Text(
-                            profile.userProfile
-                                    .occupation ??
-                                '',
-                            style:
-                                const TextStyle(
-                              color: Colors
-                                  .white70,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-
-                    Container(
-                      padding:
-                          const EdgeInsets
-                              .symmetric(
-                        horizontal: 10,
-                        vertical: 5,
-                      ),
-                      decoration:
-                          BoxDecoration(
-                        color:
-                            kOnlineColor,
-                        borderRadius:
-                            BorderRadius
-                                .circular(
-                          30,
-                        ),
-                      ),
-                      child: const Text(
-                        'Verified',
-                        style: TextStyle(
-                          color:
-                              Colors.white,
-                          fontSize: 12,
-                          fontWeight:
-                              FontWeight.w600,
-                        ),
-                      ),
-                    ),
+          /// OVERLAY (doesn't block gestures)
+          IgnorePointer(
+            child: Container(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [
+                    Colors.transparent,
+                    Colors.black.withOpacity(.20),
+                    Colors.black.withOpacity(.85),
                   ],
                 ),
               ),
-
-              const SizedBox(height: 14),
-
-              /// ACTION BUTTONS
-              Row(
-                children: [
-
-                  Expanded(
-                    child: ElevatedButton.icon(
-                      onPressed: () {
-                        // Open Chat
-                      },
-                      icon:
-                          const Icon(Icons.chat),
-                      label:
-                          const Text("Chat"),
-                      style:
-                          ElevatedButton.styleFrom(
-                        backgroundColor:
-                            kPrimaryColor,
-                        foregroundColor:
-                            Colors.white,
-                        minimumSize:
-                            const Size(
-                          double.infinity,
-                          52,
-                        ),
-                        shape:
-                            RoundedRectangleBorder(
-                          borderRadius:
-                              BorderRadius.circular(
-                            18,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-
-                  const SizedBox(width: 12),
-
-                  Expanded(
-                    child: OutlinedButton.icon(
-                      onPressed: () {
-                        // Call Owner
-                      },
-                      icon:
-                          const Icon(Icons.call),
-                      label:
-                          const Text("Call"),
-                      style:
-                          OutlinedButton.styleFrom(
-                        foregroundColor:
-                            Colors.white,
-                        side:
-                            const BorderSide(
-                          color:
-                              Colors.white,
-                        ),
-                        minimumSize:
-                            const Size(
-                          double.infinity,
-                          52,
-                        ),
-                        shape:
-                            RoundedRectangleBorder(
-                          borderRadius:
-                              BorderRadius.circular(
-                            18,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ],
+            ),
           ),
-        ),
-      ],
+
+          /// BACK BUTTON
+         
+          /// PAGE INDICATOR
+          Positioned(
+            bottom: 82,
+            left: 0,
+            right: 0,
+            child: Center(
+              child: SmoothPageIndicator(
+                controller: pageController,
+                count: imageUrls.isEmpty ? 1 : imageUrls.length,
+                effect: const ExpandingDotsEffect(
+                  activeDotColor: Colors.white,
+                  dotColor: Colors.white38,
+                  dotHeight: 8,
+                  dotWidth: 8,
+                  expansionFactor: 3.5,
+                  spacing: 8,
+                ),
+              ),
+            ),
+          ),
+
+          /// NAME + VERIFIED
+          Positioned(
+            left: 24,
+            right: 24,
+            bottom: 26,
+            child: Row(
+              children: [
+
+                Expanded(
+                  child: Text(
+                    profile.userProfile.name ?? "",
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 30,
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
+                ),
+
+                const SizedBox(width: 12),
+
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 14,
+                    vertical: 8,
+                  ),
+                  decoration: BoxDecoration(
+                    color: Colors.green,
+                    borderRadius: BorderRadius.circular(30),
+                  ),
+                  child: const Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+
+                      Icon(
+                        Icons.verified,
+                        color: Colors.white,
+                        size: 18,
+                      ),
+
+                      SizedBox(width: 6),
+
+                      Text(
+                        "Verified",
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
     ),
   );
 }
@@ -1282,7 +1102,171 @@ Widget _buildCharacteristicGrid(
     ],
   );
 }
+Widget _buildSeekingHeroSection(
+  BuildContext context,
+  SeekingFlatmateProfile profile,
+  PageController pageController,
+) {
+  final imageUrls = profile.imageUrls ?? [];
 
+  return SizedBox(
+    height: 430,
+    child: ClipRRect(
+      borderRadius: const BorderRadius.only(
+        bottomLeft: Radius.circular(28),
+        bottomRight: Radius.circular(28),
+      ),
+      child: Stack(
+        fit: StackFit.expand,
+        children: [
+
+          /// IMAGES
+          PageView.builder(
+            controller: pageController,
+            physics: const BouncingScrollPhysics(),
+            itemCount: imageUrls.isEmpty ? 1 : imageUrls.length,
+            itemBuilder: (context, index) {
+
+              if (imageUrls.isEmpty) {
+                return Container(
+                  color: kLightGrey,
+                  child: const Center(
+                    child: Icon(
+                      Icons.person,
+                      size: 90,
+                    ),
+                  ),
+                );
+              }
+
+              return GestureDetector(
+                onTap: () {
+
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => FullScreenGallery(
+                        images: imageUrls,
+                        initialIndex: index,
+                      ),
+                    ),
+                  );
+
+                },
+
+                child: Hero(
+                  tag: imageUrls[index],
+                  child: Image.network(
+                    imageUrls[index],
+                    fit: BoxFit.cover,
+                    width: double.infinity,
+                    height: double.infinity,
+                  ),
+                ),
+              );
+            },
+          ),
+
+          /// OVERLAY
+          IgnorePointer(
+            child: Container(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [
+                    Colors.transparent,
+                    Colors.black.withOpacity(.20),
+                    Colors.black.withOpacity(.85),
+                  ],
+                ),
+              ),
+            ),
+          ),
+
+          /// BACK BUTTON
+          
+
+          /// PAGE INDICATOR
+          Positioned(
+            bottom: 82,
+            left: 0,
+            right: 0,
+            child: Center(
+              child: SmoothPageIndicator(
+                controller: pageController,
+                count: imageUrls.isEmpty ? 1 : imageUrls.length,
+                effect: const ExpandingDotsEffect(
+                  activeDotColor: Colors.white,
+                  dotColor: Colors.white38,
+                  dotHeight: 8,
+                  dotWidth: 8,
+                  expansionFactor: 3.5,
+                ),
+              ),
+            ),
+          ),
+
+          /// NAME + VERIFIED
+          Positioned(
+            left: 24,
+            right: 24,
+            bottom: 26,
+            child: Row(
+              children: [
+
+                Expanded(
+                  child: Text(
+                    profile.userProfile.name ?? "",
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 30,
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
+                ),
+
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 14,
+                    vertical: 8,
+                  ),
+                  decoration: BoxDecoration(
+                    color: Colors.green,
+                    borderRadius: BorderRadius.circular(30),
+                  ),
+                  child: const Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+
+                      Icon(
+                        Icons.verified,
+                        color: Colors.white,
+                        size: 18,
+                      ),
+
+                      SizedBox(width: 6),
+
+                      Text(
+                        "Verified",
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    ),
+  );
+}
 // Helper for displaying preferences with custom icons in a grid (e.g., Night Owl, Early Bird)
 final Map<String, dynamic> _preferenceIcons = { // Changed to dynamic to hold IconData or Lottie paths
   'Night Owl': 'assets/lottie/nightowl.json', // Assuming you have this Lottie file
@@ -1570,249 +1554,44 @@ List<MapEntry<String, String?>>
 
 // --- Main Display Widgets ---
 
-class SeekingFlatmateProfileDisplay extends StatelessWidget {
+class SeekingFlatmateProfileDisplay extends StatefulWidget {
   final SeekingFlatmateProfile profile;
 
-  const SeekingFlatmateProfileDisplay({super.key, required this.profile});
+  const SeekingFlatmateProfileDisplay({
+    super.key,
+    required this.profile,
+  });
+
+  @override
+  State<SeekingFlatmateProfileDisplay> createState() =>
+      _SeekingFlatmateProfileDisplayState();
+}
+
+class _SeekingFlatmateProfileDisplayState
+    extends State<SeekingFlatmateProfileDisplay> {
+
+  final PageController _pageController = PageController();
+
+  @override
+  void dispose() {
+    _pageController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
+
+    final profile = widget.profile;
     return Scaffold(
 
       body: ListView(
         children: [
           // Profile Header (similar to the image)
-          Container(
-  margin: const EdgeInsets.fromLTRB(16, 16, 16, 20),
-  height: 420,
-  child: Stack(
-    children: [
-
-      /// COVER IMAGE
-      ClipRRect(
-        borderRadius: BorderRadius.circular(30),
-        child: profile.imageUrls != null &&
-                profile.imageUrls!.isNotEmpty
-            ? PageView.builder(
-                itemCount: profile.imageUrls!.length,
-                itemBuilder: (context, index) {
-                  return Image.network(
-                    profile.imageUrls![index],
-                    fit: BoxFit.cover,
-                    width: double.infinity,
-                    errorBuilder:
-                        (context, error, stackTrace) {
-                      return Container(
-                        color: Colors.grey.shade300,
-                        child: const Center(
-                          child: Icon(
-                            Icons.broken_image,
-                            size: 60,
-                          ),
-                        ),
-                      );
-                    },
-                  );
-                },
-              )
-            : Container(
-                color: Colors.grey.shade300,
-                child: const Center(
-                  child: Icon(
-                    Icons.person,
-                    size: 100,
-                    color: Colors.white,
-                  ),
-                ),
-              ),
-      ),
-
-      /// DARK OVERLAY
-      Container(
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(30),
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [
-              Colors.transparent,
-              Colors.black.withOpacity(.15),
-              Colors.black.withOpacity(.85),
-            ],
-          ),
-        ),
-      ),
-
-      /// MATCH SCORE
-      Positioned(
-        top: 20,
-        left: 20,
-        child: Container(
-          padding: const EdgeInsets.symmetric(
-            horizontal: 12,
-            vertical: 6,
-          ),
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(30),
-            gradient: const LinearGradient(
-              colors: [
-                Color(0xFF6A1B9A),
-                Color(0xFFAD1457),
-              ],
-            ),
-          ),
-          child: const Text(
-            "95% Match",
-            style: TextStyle(
-              color: Colors.white,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-        ),
-      ),
-
-      /// VERIFIED
-      Positioned(
-        top: 20,
-        right: 20,
-        child: Container(
-          padding: const EdgeInsets.all(10),
-          decoration: BoxDecoration(
-            color: Colors.white24,
-            borderRadius:
-                BorderRadius.circular(20),
-          ),
-          child: const Icon(
-            Icons.verified,
-            color: Colors.white,
-          ),
-        ),
-      ),
-
-      /// PROFILE DETAILS
-      Positioned(
-        left: 24,
-        right: 24,
-        bottom: 24,
-        child: Column(
-          crossAxisAlignment:
-              CrossAxisAlignment.start,
-          children: [
-
-            Text(
-              "${profile.userProfile.name ?? 'User'}, ${profile.userProfile.age ?? ''}",
-              style: const TextStyle(
-                color: Colors.white,
-                fontSize: 30,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-
-            const SizedBox(height: 4),
-
-            Text(
-              profile.userProfile.occupation ??
-                  "Occupation not specified",
-              style: const TextStyle(
-                color: Colors.white70,
-                fontSize: 16,
-              ),
-            ),
-
-            const SizedBox(height: 8),
-
-            Row(
-              children: [
-                const Icon(
-                  Icons.location_on,
-                  color: Colors.white,
-                  size: 18,
-                ),
-                const SizedBox(width: 4),
-                Expanded(
-                  child: Text(
-                    profile.userProfile.city ??
-                        "Location not specified",
-                    style: const TextStyle(
-                      color: Colors.white,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-
-            const SizedBox(height: 18),
-
-            Row(
-              children: [
-
-                Expanded(
-                  child:
-                      ElevatedButton.icon(
-                    onPressed: () {},
-                    icon:
-                        const Icon(Icons.chat),
-                    label:
-                        const Text("Chat"),
-                    style:
-                        ElevatedButton.styleFrom(
-                      backgroundColor:
-                          const Color(
-                              0xFFAD1457),
-                      foregroundColor:
-                          Colors.white,
-                      minimumSize:
-                          const Size(
-                              0, 50),
-                      shape:
-                          RoundedRectangleBorder(
-                        borderRadius:
-                            BorderRadius.circular(
-                                16),
-                      ),
-                    ),
-                  ),
-                ),
-
-                const SizedBox(width: 12),
-
-                Expanded(
-                  child:
-                      OutlinedButton.icon(
-                    onPressed: () {},
-                    icon:
-                        const Icon(Icons.call),
-                    label:
-                        const Text("Call"),
-                    style:
-                        OutlinedButton.styleFrom(
-                      foregroundColor:
-                          Colors.white,
-                      side:
-                          const BorderSide(
-                        color:
-                            Colors.white,
-                      ),
-                      minimumSize:
-                          const Size(
-                              0, 50),
-                      shape:
-                          RoundedRectangleBorder(
-                        borderRadius:
-                            BorderRadius.circular(
-                                16),
-                      ),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ],
-        ),
-      ),
-    ],
-  ),
-      ),
+          _buildSeekingHeroSection(
+  context,
+  profile,
+  _pageController,
+),
 
 
                 // Basic Info - NOW AS A GRID
@@ -2013,261 +1792,295 @@ class SeekingFlatmateProfileDisplay extends StatelessWidget {
         }
 }
 
-class FlatListingProfileDisplay extends StatelessWidget {
+class FlatListingProfileDisplay extends StatefulWidget {
   final FlatListingProfile profile;
 
-  const FlatListingProfileDisplay({super.key, required this.profile});
+  const FlatListingProfileDisplay({
+    super.key,
+    required this.profile,
+  });
 
   @override
-Widget build(BuildContext context) {
-  return Scaffold(
-    backgroundColor: kBackgroundColor,
+  State<FlatListingProfileDisplay> createState() =>
+      _FlatListingProfileDisplayState();
+}
 
-    body: ListView(
-      children: [
+class _FlatListingProfileDisplayState
+    extends State<FlatListingProfileDisplay> {
 
-        /// HERO HEADER
-        _buildPremiumHeroSection(profile),
+  final PageController _pageController =
+      PageController();
 
-        /// QUICK OVERVIEW
-        _buildCharacteristicGrid(
-          'Quick Overview',
-          [
-            MapEntry('Flat Type', profile.flatType),
-            MapEntry('Room Type', profile.roomType),
-            MapEntry('Bathroom', profile.bathroomType),
-            MapEntry('Furnished', profile.furnishedStatus),
+  @override
+  void dispose() {
+    _pageController.dispose();
+    super.dispose();
+  }
 
-            MapEntry(
-              'Occupants',
-              profile.currentOccupants,
-            ),
+  @override
+  Widget build(BuildContext context) {
 
-            MapEntry(
-              'Lease',
-              profile.leaseDuration != null
-                  ? '${profile.leaseDuration} Months'
-                  : null,
-            ),
-          ],
-        ),
+    final profile = widget.profile;
 
-        /// RENT DETAILS
-        _buildCharacteristicGrid(
-          'Rent Details',
-          [
-            MapEntry(
-              'Rent',
-              profile.rentPrice != null
-                  ? '₹${profile.rentPrice}'
-                  : null,
-            ),
+    return Scaffold(
+      backgroundColor: kBackgroundColor,
 
-            MapEntry(
-              'Deposit',
-              profile.depositAmount != null
-                  ? '₹${profile.depositAmount}'
-                  : null,
-            ),
+      body: ListView(
+        children: [
 
-            MapEntry(
-              'Available For',
-              profile.availableFor,
-            ),
+          /// HERO HEADER
+          _buildPremiumHeroSection(
+            context,
+            profile,
+            _pageController,
+          ),
 
-            MapEntry(
-              'Available From',
-              profile.availabilityDate != null
-                  ? DateFormat(
-                      'dd MMM yyyy',
-                    ).format(
-                      profile.availabilityDate!,
-                    )
-                  : null,
-            ),
-          ],
-        ),
+          /// QUICK OVERVIEW
+          _buildCharacteristicGrid(
+            'Quick Overview',
+            [
+              MapEntry('Flat Type', profile.flatType),
+              MapEntry('Room Type', profile.roomType),
+              MapEntry('Bathroom', profile.bathroomType),
+              MapEntry('Furnished', profile.furnishedStatus),
 
-        /// AMENITIES
-        _buildPreferenceGrid(
-          'Amenities',
-          profile.amenities,
-        ),
+              MapEntry(
+                'Occupants',
+                profile.currentOccupants,
+              ),
 
-        /// ABOUT THE FLAT
-        _buildSection(
-          title: 'About The Flat',
-          children: [
-            // _buildProfileField(
-            //   'Address',
-            //   profile.address,
-            //   icon: Icons.location_on,
-            // ),
-
-            // _buildProfileField(
-            //   'Landmark',
-            //   profile.landmark,
-            //   icon: Icons.place,
-            // ),
-
-            _buildProfileField(
-              'Description',
-              profile.flatDescription,
-              icon: Icons.description,
-            ),
-          ],
-        ),
-
-        /// CURRENT FLATMATE
-        _buildCharacteristicGrid(
-          'Current Flatmate',
-          [
-            MapEntry(
-              'Name',
-              profile.userProfile.name,
-            ),
-
-            MapEntry(
-              'Age',
-              profile.userProfile.age?.toString(),
-            ),
-
-            MapEntry(
-              'Gender',
-              profile.userProfile.gender,
-            ),
-
-            MapEntry(
-              'Occupation',
-              profile.userProfile.occupation,
-            ),
-
-            MapEntry(
-              'Religion',
-              profile.userProfile.religion,
-            ),
-          ],
-        ),
-
-        /// LIFESTYLE
-        _buildCharacteristicGrid(
-          'Lifestyle & Habits',
-          [
-            MapEntry(
-              'Smoking',
-              profile.userProfile.smokingHabit,
-            ),
-
-            MapEntry(
-              'Drinking',
-              profile.userProfile.drinkingHabit,
-            ),
-
-            MapEntry(
-              'Food',
-              profile.userProfile.foodPreference,
-            ),
-
-            MapEntry(
-              'Cleanliness',
-              profile.userProfile.cleanlinessLevel,
-            ),
-
-            MapEntry(
-              'Social',
-              profile.userProfile.socialPreferences,
-            ),
-
-            MapEntry(
-              'Pets',
-              profile.userProfile.petOwnership,
-            ),
-
-            MapEntry(
-              'Pet Tolerance',
-              profile.userProfile.petTolerance,
-            ),
-          ],
-        ),
-
-        /// FLATMATE PREFERENCES
-        _buildCharacteristicGrid(
-          'Flatmate Preferences',
-          [
-            MapEntry(
-              'Gender',
-              profile.preferredGender,
-            ),
-
-            MapEntry(
-              'Age',
-              profile.preferredAgeGroup,
-            ),
-
-            MapEntry(
-              'Occupation',
-              profile.preferredOccupation,
-            ),
-          ],
-        ),
-
-        _buildPreferenceGrid(
-          'Preferred Habits',
-          profile.preferredHabits,
-        ),
-
-        _buildPreferenceGrid(
-          'Ideal Qualities',
-          profile.flatmateIdealQualities,
-        ),
-
-        _buildPreferenceGrid(
-          'Deal Breakers',
-          profile.flatmateDealBreakers,
-        ),
-
-        /// PHOTO GALLERY
-        if (profile.imageUrls != null &&
-            profile.imageUrls!.isNotEmpty)
-          _buildSection(
-            title: 'Photo Gallery',
-            children: [
-              GridView.builder(
-                shrinkWrap: true,
-                physics:
-                    const NeverScrollableScrollPhysics(),
-
-                itemCount:
-                    profile.imageUrls!.length,
-
-                gridDelegate:
-                    const SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: 2,
-                  crossAxisSpacing: 12,
-                  mainAxisSpacing: 12,
-                  childAspectRatio: 1,
-                ),
-
-                itemBuilder:
-                    (context, index) {
-                  return ClipRRect(
-                    borderRadius:
-                        BorderRadius.circular(
-                      20,
-                    ),
-                    child: Image.network(
-                      profile.imageUrls![index],
-                      fit: BoxFit.cover,
-                    ),
-                  );
-                },
+              MapEntry(
+                'Lease Pending',
+                profile.leaseDuration != null
+                    ? '${profile.leaseDuration}'
+                    : null,
               ),
             ],
           ),
 
-        const SizedBox(height: 40),
-      ],
+          /// RENT DETAILS
+          _buildCharacteristicGrid(
+            'Rent Details',
+            [
+              MapEntry(
+                'Rent',
+                profile.rentPrice != null
+                    ? '₹${profile.rentPrice}'
+                    : null,
+              ),
+
+              MapEntry(
+                'Deposit',
+                profile.depositAmount != null
+                    ? '₹${profile.depositAmount}'
+                    : null,
+              ),
+
+              MapEntry(
+                'Available For',
+                profile.availableFor,
+              ),
+
+              MapEntry(
+                'Available From',
+                profile.availabilityDate != null
+                    ? DateFormat(
+                        'dd MMM yyyy',
+                      ).format(
+                        profile.availabilityDate!,
+                      )
+                    : null,
+              ),
+            ],
+          ),
+
+          /// AMENITIES
+          _buildPreferenceGrid(
+            'Amenities',
+            profile.amenities,
+          ),
+
+          /// ABOUT THE FLAT
+          _buildSection(
+            title: 'About The Flat',
+            children: [
+
+              _buildProfileField(
+                'Description',
+                profile.flatDescription,
+                icon: Icons.description,
+              ),
+            ],
+          ),
+
+          /// CURRENT FLATMATE
+          _buildCharacteristicGrid(
+            'Current Flatmate',
+            [
+              MapEntry(
+                'Name',
+                profile.userProfile.name,
+              ),
+
+              MapEntry(
+                'Age',
+                profile.userProfile.age?.toString(),
+              ),
+
+              MapEntry(
+                'Gender',
+                profile.userProfile.gender,
+              ),
+
+              MapEntry(
+                'Occupation',
+                profile.userProfile.occupation,
+              ),
+
+              MapEntry(
+                'Religion',
+                profile.userProfile.religion,
+              ),
+            ],
+          ),
+
+          /// LIFESTYLE
+          _buildCharacteristicGrid(
+            'Lifestyle & Habits',
+            [
+              MapEntry(
+                'Smoking',
+                profile.userProfile.smokingHabit,
+              ),
+
+              MapEntry(
+                'Drinking',
+                profile.userProfile.drinkingHabit,
+              ),
+
+              MapEntry(
+                'Food',
+                profile.userProfile.foodPreference,
+              ),
+
+              MapEntry(
+                'Cleanliness',
+                profile.userProfile.cleanlinessLevel,
+              ),
+
+              MapEntry(
+                'Social',
+                profile.userProfile.socialPreferences,
+              ),
+
+              MapEntry(
+                'Pets',
+                profile.userProfile.petOwnership,
+              ),
+
+              MapEntry(
+                'Pet Tolerance',
+                profile.userProfile.petTolerance,
+              ),
+            ],
+          ),
+
+          /// FLATMATE PREFERENCES
+          _buildCharacteristicGrid(
+            'Flatmate Preferences',
+            [
+              MapEntry(
+                'Gender',
+                profile.preferredGender,
+              ),
+
+              MapEntry(
+                'Age',
+                profile.preferredAgeGroup,
+              ),
+
+              MapEntry(
+                'Occupation',
+                profile.preferredOccupation,
+              ),
+            ],
+          ),
+
+          _buildPreferenceGrid(
+            'Preferred Habits',
+            profile.preferredHabits,
+          ),
+
+          _buildPreferenceGrid(
+            'Ideal Qualities',
+            profile.flatmateIdealQualities,
+          ),
+
+          _buildPreferenceGrid(
+            'Deal Breakers',
+            profile.flatmateDealBreakers,
+          ),
+
+          if (profile.imageUrls != null &&
+              profile.imageUrls!.isNotEmpty)
+            _buildSection(
+              title: 'Photo Gallery',
+              children: [
+                GridView.builder(
+                  shrinkWrap: true,
+                  physics:
+                      const NeverScrollableScrollPhysics(),
+
+                  itemCount:
+                      profile.imageUrls!.length,
+
+                  gridDelegate:
+                      const SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: 2,
+                    crossAxisSpacing: 12,
+                    mainAxisSpacing: 12,
+                    childAspectRatio: 1,
+                  ),
+
+                  itemBuilder:
+                      (context, index) {
+
+                   return Hero(
+  tag: profile.imageUrls![index],
+  child: Material(
+    color: Colors.transparent,
+    borderRadius: BorderRadius.circular(20),
+    child: InkWell(
+      borderRadius: BorderRadius.circular(20),
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (_) => FullScreenGallery(
+              images: profile.imageUrls!,
+              initialIndex: index,
+            ),
+          ),
+        );
+      },
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(20),
+        child: Image.network(
+          profile.imageUrls![index],
+          fit: BoxFit.cover,
+        ),
+      ),
     ),
-  );
-}
+  ),
+);
+                  },
+                ),
+              ],
+            ),
+
+          const SizedBox(height: 40),
+        ],
+      ),
+    );
+  }
 }
