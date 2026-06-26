@@ -18,8 +18,8 @@ import 'package:mytennat/screens/profile_switch_animation.dart';
 import '../widgets/home/hero_banner.dart';
 import '../widgets/home/quick_actions_section.dart';
 import '../widgets/home/Community_Stats_Section.dart';
-import '../widgets/home/PopularCitiesSection.dart';
-import '../widgets/home/Success_Stories_Section.dart';
+// import '../widgets/home/PopularCitiesSection.dart';
+// import '../widgets/home/Success_Stories_Section.dart';
 import '../widgets/home/subscription_section.dart';
 import 'package:mytennat/screens/notification_screen.dart';
 import '../widgets/location_selector_widget.dart';
@@ -827,15 +827,15 @@ QuickActionsSection(
       // Future Explore Screen
   },
 ),
-const SizedBox(height: 28),
+// const SizedBox(height: 28),
 
 
-const PopularCitiesSection(),
+// const PopularCitiesSection(),
 
 
-const SizedBox(height: 32),
+// const SizedBox(height: 32),
 
-const SuccessStoriesSection(),
+// const SuccessStoriesSection(),
 
 const SizedBox(height: 32),
 
