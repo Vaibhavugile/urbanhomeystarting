@@ -1662,7 +1662,7 @@ class _SeekingFlatmateProfileDisplayState
 
                         /// 🏠 HOUSING PREFERENCES
                         _buildSection(
-                          title: '🏠 Housing Preferences',
+                          title: '🏠 My Home Preferences',
                           children: [
                             _buildProfileField(
                               'Budget',
@@ -1694,7 +1694,7 @@ class _SeekingFlatmateProfileDisplayState
 
                         /// ✨ LIFESTYLE
                         _buildProfileListField(
-                          '✨ Lifestyle',
+                          '🌿 My Lifestyle',
                           [
                             profile.userProfile.cleanlinessLevel ?? '',
                             profile.userProfile.socialPreferences ?? '',
@@ -1708,13 +1708,13 @@ class _SeekingFlatmateProfileDisplayState
 
                         /// 🏡 DESIRED AMENITIES
                         _buildProfileListField(
-                          '🏡 Desired Amenities',
+                          "🏡 Amenities I'd Love",
                           profile.amenitiesDesired,
                         ),
 
                         /// 🤝 IDEAL FLATMATE
                         _buildSection(
-                          title: '🤝 Ideal Flatmate',
+                          title: "Who I'm Looking For",
                           children: [
                             _buildProfileField(
                               'Gender',
@@ -1736,25 +1736,25 @@ class _SeekingFlatmateProfileDisplayState
 
                         /// ⭐ PREFERRED HABITS
                         _buildProfileListField(
-                          '⭐ Preferred Habits',
+                          "⭐ Habits I'd Prefer",
                           profile.preferredHabits,
                         ),
 
                         /// 💎 IDEAL QUALITIES
                         _buildProfileListField(
-                          '💎 Ideal Qualities',
+                          "💙 Qualities I Appreciate",
                           profile.idealQualities,
                         ),
 
                         /// 🚫 DEAL BREAKERS
                         _buildProfileListField(
-                          '🚫 Deal Breakers',
+                          '🚫 My Deal Breakers',
                           profile.dealBreakers,
                         ),
                 // Profile Images (using the existing implementation)
                 if (profile.imageUrls != null && profile.imageUrls!.isNotEmpty)
                   _buildSection(
-                    title: 'Profile Images',
+                    title: '📸 My Photos',
                     children: [
                       SizedBox(
                         height: 150,
@@ -1837,7 +1837,7 @@ class _FlatListingProfileDisplayState
 
           /// QUICK OVERVIEW
           _buildCharacteristicGrid(
-            'Quick Overview',
+            '🏠 My Home',
             [
               MapEntry('Flat Type', profile.flatType),
               MapEntry('Room Type', profile.roomType),
@@ -1860,7 +1860,7 @@ class _FlatListingProfileDisplayState
 
           /// RENT DETAILS
           _buildCharacteristicGrid(
-            'Rent Details',
+            '💰Rent Details',
             [
               MapEntry(
                 'Rent',
@@ -1896,13 +1896,13 @@ class _FlatListingProfileDisplayState
 
           /// AMENITIES
           _buildPreferenceGrid(
-            'Amenities',
+            '🏡 Amenities I Offer',
             profile.amenities,
           ),
 
           /// ABOUT THE FLAT
           _buildSection(
-            title: 'About The Flat',
+            title: '📝 About My Home',
             children: [
 
               _buildProfileField(
@@ -1915,7 +1915,7 @@ class _FlatListingProfileDisplayState
 
           /// CURRENT FLATMATE
           _buildCharacteristicGrid(
-            'Current Flatmate',
+            '👤 About Me',
             [
               MapEntry(
                 'Name',
@@ -1946,7 +1946,7 @@ class _FlatListingProfileDisplayState
 
           /// LIFESTYLE
           _buildCharacteristicGrid(
-            'Lifestyle & Habits',
+            '🌿 My Lifestyle',
             [
               MapEntry(
                 'Smoking',
@@ -1987,7 +1987,7 @@ class _FlatListingProfileDisplayState
 
           /// FLATMATE PREFERENCES
           _buildCharacteristicGrid(
-            'Flatmate Preferences',
+            "🤝 Who I'm Looking For",
             [
               MapEntry(
                 'Gender',
@@ -2007,24 +2007,24 @@ class _FlatListingProfileDisplayState
           ),
 
           _buildPreferenceGrid(
-            'Preferred Habits',
+            "⭐ Habits I'd Prefer",
             profile.preferredHabits,
           ),
 
           _buildPreferenceGrid(
-            'Ideal Qualities',
+            '💙 Qualities I Appreciate',
             profile.flatmateIdealQualities,
           ),
 
           _buildPreferenceGrid(
-            'Deal Breakers',
+            '🚫 My Deal Breakers',
             profile.flatmateDealBreakers,
           ),
 
           if (profile.imageUrls != null &&
               profile.imageUrls!.isNotEmpty)
             _buildSection(
-              title: 'Photo Gallery',
+              title: '📸Photo Gallery',
               children: [
                 GridView.builder(
                   shrinkWrap: true,
