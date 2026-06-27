@@ -263,316 +263,359 @@ if (_selectedCity == null)
     ),
   ),
         /// LOCATION ROW
-        Row(
-          crossAxisAlignment:
-              CrossAxisAlignment.start,
-          children: [
+        Column(
+  crossAxisAlignment: CrossAxisAlignment.start,
+  children: [
 
-            /// CITY
-            Flexible(
-  flex: 3,
-  child: DropdownButtonFormField<String>(
-    isExpanded: true,
-                value: _cities.contains(_selectedCity)
-    ? _selectedCity
-    : null,
-
-                decoration: InputDecoration(
-                  hintText: "City",
-
-                  filled: true,
-                  fillColor: kCardColor,
-
-                  contentPadding:
-                      const EdgeInsets.symmetric(
-                    horizontal: 12,
-                    vertical: 16,
-                  ),
-
-                  border: OutlineInputBorder(
-                    borderRadius:
-                        BorderRadius.circular(
-                      18,
-                    ),
-                    borderSide: BorderSide(
-                      color: kBorderColor,
-                    ),
-                  ),
-
-                  enabledBorder:
-                      OutlineInputBorder(
-                    borderRadius:
-                        BorderRadius.circular(
-                      18,
-                    ),
-                    borderSide: BorderSide(
-                      color: kBorderColor,
-                    ),
-                  ),
-
-                  focusedBorder:
-                      OutlineInputBorder(
-                    borderRadius:
-                        BorderRadius.circular(
-                      18,
-                    ),
-                    borderSide:
-                        const BorderSide(
-                      color: kPrimaryColor,
-                      width: 2,
-                    ),
-                  ),
-                ),
-
-                items:
-                    _cities.map((city) {
-                  return DropdownMenuItem(
-                    value: city,
-                    child: Text(
-                      city,
-                      overflow:
-                          TextOverflow
-                              .ellipsis,
-                              maxLines: 1,
-                    ),
-                  );
-                }).toList(),
-
-                onChanged: (value) {
-                  setState(() {
-                    _selectedCity = value;
-                  });
-
-                  _notifyParent();
-                },
-              ),
-            ),
-
-            const SizedBox(width: 12),
-
-            /// GOOGLE SEARCH
-            Flexible(
-  flex: 7,
-  child: GooglePlaceAutoCompleteTextField(
-                textEditingController:
-                    _addressController,
-
-               googleAPIKey:
-    'AIzaSyBK82kg-QdV1TdTrOoC3-jvbSstRhz1wZ0',
-
-                debounceTime: 600,
-
-                isLatLngRequired: true,
-
-                countries:
-                    const ["in"],
-
-                inputDecoration:
-                    InputDecoration(
-                  hintText:
-                      "Search locality, area or address",
-
-                  hintStyle:
-                      const TextStyle(
-                    color: kMediumText,
-                  ),
-
-                  prefixIcon: Container(
-                    margin:
-                        const EdgeInsets.all(
-                      10,
-                    ),
-
-                    decoration:
-                        const BoxDecoration(
-                      shape:
-                          BoxShape.circle,
-                      gradient:
-                          kPrimaryGradient,
-                    ),
-
-                    child: const Icon(
-                      Icons.location_on,
-                      color: Colors.white,
-                      size: 18,
-                    ),
-                  ),
-
-                  filled: true,
-                  fillColor: kCardColor,
-
-                  contentPadding:
-                      const EdgeInsets.symmetric(
-                    horizontal: 16,
-                    vertical: 16,
-                  ),
-
-                  border:
-                      OutlineInputBorder(
-                    borderRadius:
-                        BorderRadius.circular(
-                      18,
-                    ),
-
-                    borderSide:
-                        BorderSide(
-                      color:
-                          kBorderColor,
-                    ),
-                  ),
-
-                  enabledBorder:
-                      OutlineInputBorder(
-                    borderRadius:
-                        BorderRadius.circular(
-                      18 ),
-
-                    borderSide:
-                        BorderSide(
-                      color:
-                          kBorderColor,
-                    ),
-                  ),
-
-                  focusedBorder:
-                      OutlineInputBorder(
-                    borderRadius:
-                        BorderRadius.circular(
-                      18,
-                    ),
-
-                    borderSide:
-                        const BorderSide(
-                      color:
-                          kPrimaryColor,
-                      width: 2,
-                    ),
-                  ),
-                ),
-
-                itemClick: (Prediction prediction) {
-
-  FocusScope.of(context).unfocus();
-
-  setState(() {
-
-    _addressController.text =
-        prediction.description ?? '';
-
-    _addressController.selection =
-        TextSelection.fromPosition(
-      TextPosition(
-        offset:
-            _addressController.text.length,
+    /// CITY
+    const Text(
+      "City",
+      style: TextStyle(
+        fontSize: 15,
+        fontWeight: FontWeight.w700,
+        color: kDarkText,
       ),
-    );
+    ),
 
-    _placeId =
-        prediction.placeId;
-  });
+    const SizedBox(height: 8),
 
-  // _notifyParent();
-},
+    InkWell(
+  borderRadius: BorderRadius.circular(18),
 
-                getPlaceDetailWithLatLng:
-    (Prediction prediction) {
+  onTap: () async {
 
-  setState(() {
+    final city =
+        await showModalBottomSheet<String>(
+      context: context,
+      showDragHandle: true,
+      isScrollControlled: true,
 
-    _latitude =
-        double.tryParse(
-      prediction.lat ?? '',
-    );
+      builder: (_) {
 
-    _longitude =
-        double.tryParse(
-      prediction.lng ?? '',
-    );
+        return SafeArea(
+          child: ListView(
+            shrinkWrap: true,
+            children: [
 
-    _placeId =
-        prediction.placeId;
-  });
-
-  _notifyParent();
-},
-
-                seperatedBuilder:
-                    const Divider(),
-
-                isCrossBtnShown: true,
-
-                itemBuilder: (
-                  context,
-                  index,
-                  Prediction prediction,
-                ) {
-                  return Container(
-                    padding:
-                        const EdgeInsets.all(
-                      14,
-                    ),
-
-                    child: Row(
-                      children: [
-
-                        Container(
-                          width: 38,
-                          height: 38,
-
-                          decoration:
-                              BoxDecoration(
-                            shape:
-                                BoxShape.circle,
-
-                            color:
-                                kPrimaryColor
-                                    .withOpacity(
-                              .10,
-                            ),
-                          ),
-
-                          child:
-                              const Icon(
-                            Icons
-                                .location_on,
-                            color:
-                                kPrimaryColor,
-                            size: 18,
-                          ),
-                        ),
-
-                        const SizedBox(
-                          width: 12,
-                        ),
-
-                        Expanded(
-                          child: Text(
-                            prediction.description ??
-                                '',
-                            maxLines: 2,
-                            overflow:
-                                TextOverflow
-                                    .ellipsis,
-
-                            style:
-                                const TextStyle(
-                              fontSize: 14,
-                              fontWeight:
-                                  FontWeight
-                                      .w600,
-                              color:
-                                  kDarkText,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  );
-                },
+              const Padding(
+                padding: EdgeInsets.all(20),
+                child: Text(
+                  "Choose City",
+                  style: TextStyle(
+                    fontSize: 22,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
               ),
-            ),
-          ],
+
+              ..._cities.map(
+                (city) => ListTile(
+
+                  leading: const Icon(
+                    Icons.location_city_rounded,
+                    color: kPrimaryColor,
+                  ),
+
+                  title: Text(city),
+
+                  trailing:
+                      city == _selectedCity
+                          ? const Icon(
+                              Icons.check_circle,
+                              color: kPrimaryColor,
+                            )
+                          : null,
+
+                  onTap: () {
+
+                    Navigator.pop(
+                      context,
+                      city,
+                    );
+
+                  },
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+
+    if (city == null) return;
+
+    setState(() {
+
+      _selectedCity = city;
+
+      _addressController.clear();
+
+      _latitude = null;
+
+      _longitude = null;
+
+      _placeId = null;
+
+    });
+
+  },
+
+  child: Container(
+
+    padding: const EdgeInsets.symmetric(
+      horizontal: 18,
+      vertical: 18,
+    ),
+
+    decoration: BoxDecoration(
+
+      color: Colors.white,
+
+      borderRadius:
+          BorderRadius.circular(18),
+
+      border: Border.all(
+        color: kBorderColor,
+      ),
+
+    ),
+
+    child: Row(
+
+      children: [
+
+        const Icon(
+          Icons.location_city_rounded,
+          color: kPrimaryColor,
         ),
+
+        const SizedBox(width: 12),
+
+        Expanded(
+          child: Text(
+            _selectedCity ??
+                "Select City",
+            style: TextStyle(
+              fontSize: 15,
+              color: _selectedCity == null
+                  ? kMediumText
+                  : kDarkText,
+              fontWeight:
+                  FontWeight.w600,
+            ),
+          ),
+        ),
+
+        const Icon(
+          Icons.keyboard_arrow_down,
+        ),
+      ],
+    ),
+  ),
+),
+
+    const SizedBox(height: 22),
+
+    /// ADDRESS
+    const Text(
+      "Search Address",
+      style: TextStyle(
+        fontSize: 15,
+        fontWeight: FontWeight.w700,
+        color: kDarkText,
+      ),
+    ),
+
+    const SizedBox(height: 8),
+
+    GooglePlaceAutoCompleteTextField(
+
+      textEditingController:
+          _addressController,
+
+      googleAPIKey:
+          'AIzaSyBK82kg-QdV1TdTrOoC3-jvbSstRhz1wZ0',
+
+      debounceTime: 600,
+
+      isLatLngRequired: true,
+
+      countries: const ["in"],
+
+      inputDecoration: InputDecoration(
+
+        hintText:
+            _selectedCity == null
+                ? "Select city first"
+                : "Search in $_selectedCity",
+
+        hintStyle: const TextStyle(
+          color: kMediumText,
+        ),
+
+        prefixIcon: Container(
+          margin: const EdgeInsets.all(10),
+
+          decoration:
+              const BoxDecoration(
+            shape: BoxShape.circle,
+            gradient:
+                kPrimaryGradient,
+          ),
+
+          child: const Icon(
+            Icons.search_rounded,
+            color: Colors.white,
+            size: 18,
+          ),
+        ),
+
+        filled: true,
+
+        fillColor: kCardColor,
+
+        contentPadding:
+            const EdgeInsets.symmetric(
+          horizontal: 16,
+          vertical: 18,
+        ),
+
+        border: OutlineInputBorder(
+          borderRadius:
+              BorderRadius.circular(18),
+        ),
+
+        enabledBorder:
+            OutlineInputBorder(
+          borderRadius:
+              BorderRadius.circular(18),
+          borderSide: BorderSide(
+            color: kBorderColor,
+          ),
+        ),
+
+        focusedBorder:
+            OutlineInputBorder(
+          borderRadius:
+              BorderRadius.circular(18),
+          borderSide:
+              const BorderSide(
+            color: kPrimaryColor,
+            width: 2,
+          ),
+        ),
+      ),
+
+      itemClick: (Prediction prediction) {
+
+        FocusScope.of(context).unfocus();
+
+        setState(() {
+
+          _addressController.text =
+              prediction.description ?? '';
+
+          _addressController.selection =
+              TextSelection.fromPosition(
+            TextPosition(
+              offset: _addressController.text.length,
+            ),
+          );
+
+          _placeId =
+              prediction.placeId;
+
+        });
+
+      },
+
+      getPlaceDetailWithLatLng:
+          (Prediction prediction) {
+
+        setState(() {
+
+          _latitude =
+              double.tryParse(
+            prediction.lat ?? '',
+          );
+
+          _longitude =
+              double.tryParse(
+            prediction.lng ?? '',
+          );
+
+          _placeId =
+              prediction.placeId;
+
+        });
+
+        _notifyParent();
+
+      },
+
+      seperatedBuilder:
+          const Divider(),
+
+      isCrossBtnShown: true,
+
+      itemBuilder: (
+        context,
+        index,
+        Prediction prediction,
+      ) {
+
+        return Container(
+
+          padding:
+              const EdgeInsets.all(14),
+
+          child: Row(
+
+            children: [
+
+              Container(
+                width: 40,
+                height: 40,
+
+                decoration:
+                    BoxDecoration(
+                  shape:
+                      BoxShape.circle,
+
+                  color:
+                      kPrimaryColor
+                          .withOpacity(.10),
+                ),
+
+                child: const Icon(
+                  Icons.location_on,
+                  color: kPrimaryColor,
+                ),
+              ),
+
+              const SizedBox(width: 12),
+
+              Expanded(
+                child: Text(
+                  prediction.description ?? '',
+                  maxLines: 2,
+                  overflow:
+                      TextOverflow.ellipsis,
+                  style:
+                      const TextStyle(
+                    fontWeight:
+                        FontWeight.w600,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        );
+
+      },
+    ),
+  ],
+),
 
         const SizedBox(height: 12),
         if (_addressController.text.isNotEmpty)
