@@ -1,129 +1,84 @@
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:razorpay_flutter/razorpay_flutter.dart';
 
 class PaymentService {
-  late Razorpay _razorpay;
+  late final Razorpay _razorpay;
 
-  final BuildContext context;
-
-  PaymentService(this.context) {
+  void initialize({
+    required void Function(PaymentSuccessResponse) onSuccess,
+    required void Function(PaymentFailureResponse) onFailure,
+    required void Function(ExternalWalletResponse) onExternalWallet,
+  }) {
     _razorpay = Razorpay();
 
     _razorpay.on(
       Razorpay.EVENT_PAYMENT_SUCCESS,
-      _handlePaymentSuccess,
+      onSuccess,
     );
 
     _razorpay.on(
       Razorpay.EVENT_PAYMENT_ERROR,
-      _handlePaymentError,
+      onFailure,
     );
 
     _razorpay.on(
       Razorpay.EVENT_EXTERNAL_WALLET,
-      _handleExternalWallet,
+      onExternalWallet,
     );
   }
-
-  String? _planName;
-  int? _contacts;
-  int? _amount;
 
   void openCheckout({
+    required String razorpayKey,
+    required int amount, // In paise
     required String planName,
-    required int contacts,
-    required int amount,
+    required String phoneNumber,
+    String? orderId,
   }) {
-    _planName = planName;
-    _contacts = contacts;
-    _amount = amount;
+    try {
+      final Map<String, dynamic> options = {
+        'key': razorpayKey,
+        'amount': amount,
+        'currency': 'INR',
 
-    var options = {
-      'key': 'YOUR_RAZORPAY_KEY',
-      'amount': amount * 100,
-      'name': 'UrbanHomey',
-      'description': '$planName Plan',
-      'prefill': {
-        'contact':
-            FirebaseAuth.instance.currentUser?.phoneNumber ?? '',
-      },
-      'theme': {
-        'color': '#7C3AED',
-      }
-    };
+        'name': 'UrbanHomey',
 
-    _razorpay.open(options);
+        'description':
+            '$planName Premium Membership',
+
+        if (orderId != null) 'order_id': orderId,
+
+        'prefill': {
+          'contact': phoneNumber,
+        },
+
+        'retry': {
+          'enabled': true,
+          'max_count': 3,
+        },
+
+        'send_sms_hash': true,
+
+        'theme': {
+          'color': '#7C3AED',
+        },
+
+        'modal': {
+          'confirm_close': true,
+          'escape': false,
+        },
+      };
+
+      _razorpay.open(options);
+    } catch (e, stackTrace) {
+      debugPrint(
+        'Razorpay Error: $e',
+      );
+
+      debugPrintStack(
+        stackTrace: stackTrace,
+      );
+    }
   }
-
-  Future<void> _handlePaymentSuccess(
-    PaymentSuccessResponse response,
-  ) async {
-    final user =
-        FirebaseAuth.instance.currentUser;
-
-    if (user == null) return;
-
-    await FirebaseFirestore.instance
-        .collection('users')
-        .doc(user.uid)
-        .set({
-      'currentPlan': _planName,
-      'currentPlanContacts': _contacts,
-      'remainingContacts': _contacts,
-      'paymentId':
-          response.paymentId,
-      'planPurchaseDate':
-          FieldValue.serverTimestamp(),
-    }, SetOptions(merge: true));
-
-    await FirebaseFirestore.instance
-        .collection('users')
-        .doc(user.uid)
-        .collection('purchases')
-        .add({
-      'planName': _planName,
-      'contactsPurchased':
-          _contacts,
-      'amount': _amount,
-      'paymentId':
-          response.paymentId,
-      'purchaseDate':
-          FieldValue.serverTimestamp(),
-    });
-
-    ScaffoldMessenger.of(context)
-        .showSnackBar(
-      const SnackBar(
-        content: Text(
-          '🎉 Payment Successful',
-        ),
-        backgroundColor:
-            Colors.green,
-      ),
-    );
-  }
-
-  void _handlePaymentError(
-    PaymentFailureResponse response,
-  ) {
-    ScaffoldMessenger.of(context)
-        .showSnackBar(
-      SnackBar(
-        content: Text(
-          response.message ??
-              'Payment Failed',
-        ),
-        backgroundColor:
-            Colors.red,
-      ),
-    );
-  }
-
-  void _handleExternalWallet(
-    ExternalWalletResponse response,
-  ) {}
 
   void dispose() {
     _razorpay.clear();

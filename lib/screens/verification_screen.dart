@@ -8,6 +8,8 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'home_page.dart';
+import 'package:flutter_image_compress/flutter_image_compress.dart';
+import 'package:path_provider/path_provider.dart';
 const Color kPrimaryColor = Color(0xFF7C3AED);
 const Color kSecondaryColor = Color(0xFF9333EA);
 const Color kAccentColor = Color(0xFFEC4899);
@@ -99,29 +101,99 @@ final ImagePicker _picker = ImagePicker();
   // ============================
   // UI State
   // ============================
+  Future<File> _compressImage(File file) async {
+  final dir = await getTemporaryDirectory();
+
+  int quality = 80;
+
+  while (true) {
+    final targetPath =
+        '${dir.path}/${DateTime.now().millisecondsSinceEpoch}_$quality.jpg';
+
+    final result = await FlutterImageCompress.compressAndGetFile(
+      file.absolute.path,
+      targetPath,
+      quality: quality,
+      minWidth: 1280,
+      minHeight: 1280,
+      format: CompressFormat.jpeg,
+      keepExif: false,
+    );
+
+    if (result == null) return file;
+
+    final compressed = File(result.path);
+
+    final sizeKB = await compressed.length() / 1024;
+
+    debugPrint(
+      'Verification Image: ${sizeKB.toStringAsFixed(1)} KB',
+    );
+
+    if (sizeKB <= 300 || quality <= 40) {
+      return compressed;
+    }
+
+    quality -= 5;
+  }
+}
 Future<void> _pickSelfie() async {
   final XFile? image = await _picker.pickImage(
     source: ImageSource.camera,
-    imageQuality: 80,
   );
 
   if (image == null) return;
 
   setState(() {
-    selfieImage = File(image.path);
+    isSubmitting = true;
   });
+
+  try {
+    final compressed = await _compressImage(
+      File(image.path),
+    );
+
+    setState(() {
+      selfieImage = compressed;
+    });
+
+    debugPrint(
+      'Selfie Size: ${(await compressed.length() / 1024).toStringAsFixed(1)} KB',
+    );
+  } finally {
+    setState(() {
+      isSubmitting = false;
+    });
+  }
 }
 Future<void> _pickGovernmentId() async {
   final XFile? image = await _picker.pickImage(
     source: ImageSource.gallery,
-    imageQuality: 80,
   );
 
   if (image == null) return;
 
   setState(() {
-    governmentIdImage = File(image.path);
+    isSubmitting = true;
   });
+
+  try {
+    final compressed = await _compressImage(
+      File(image.path),
+    );
+
+    setState(() {
+      governmentIdImage = compressed;
+    });
+
+    debugPrint(
+      'Document Size: ${(await compressed.length() / 1024).toStringAsFixed(1)} KB',
+    );
+  } finally {
+    setState(() {
+      isSubmitting = false;
+    });
+  }
 }
 Future<void> _showDocumentTypePicker() async {
   final String? selected =
@@ -157,8 +229,13 @@ Future<String> _uploadImage(
   File file,
   String fileName,
 ) async {
-  final user =
-      FirebaseAuth.instance.currentUser!;
+  final user = FirebaseAuth.instance.currentUser!;
+
+  final sizeKB = await file.length() / 1024;
+
+  debugPrint(
+    'Uploading $fileName (${sizeKB.toStringAsFixed(1)} KB)',
+  );
 
   final ref = FirebaseStorage.instance
       .ref()
@@ -166,7 +243,12 @@ Future<String> _uploadImage(
         'verifications/${user.uid}/$fileName',
       );
 
-  await ref.putFile(file);
+  await ref.putFile(
+    file,
+    SettableMetadata(
+      contentType: 'image/jpeg',
+    ),
+  );
 
   return await ref.getDownloadURL();
 }

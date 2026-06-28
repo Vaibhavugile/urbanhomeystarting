@@ -8,6 +8,10 @@ import 'package:mytennat/data/user_profile.dart';
 import 'package:mytennat/screens/complete_user_profile_screen.dart';
 import 'package:mytennat/screens/home_page.dart';
 import 'package:lottie/lottie.dart';
+import 'package:flutter_image_compress/flutter_image_compress.dart';
+import 'package:path_provider/path_provider.dart';
+
+
 class InitialProfileScreen extends StatefulWidget {
   const InitialProfileScreen({Key? key}) : super(key: key);
 
@@ -24,25 +28,103 @@ class _InitialProfileScreenState extends State<InitialProfileScreen> {
   File? _profileImageFile;
   bool _isLoading = false;
 
-  Future<void> _pickImage() async {
-    final pickedFile = await ImagePicker().pickImage(source: ImageSource.gallery);
+  Future<File> _compressImage(File file) async {
+  final dir = await getTemporaryDirectory();
+
+  int quality = 75;
+
+  while (true) {
+    final targetPath =
+        '${dir.path}/${DateTime.now().millisecondsSinceEpoch}_$quality.jpg';
+
+    final result = await FlutterImageCompress.compressAndGetFile(
+      file.absolute.path, // Always compress from the ORIGINAL image
+      targetPath,
+      quality: quality,
+      minWidth: 720,
+      minHeight: 720,
+      format: CompressFormat.jpeg,
+      keepExif: false,
+    );
+
+    if (result == null) {
+      return file;
+    }
+
+    final compressed = File(result.path);
+
+    final sizeKB = await compressed.length() / 1024;
+
+    debugPrint(
+      'Quality: $quality | Size: ${sizeKB.toStringAsFixed(1)} KB',
+    );
+
+    // Stop when under 80 KB or minimum quality reached
+    if (sizeKB <= 80 || quality <= 20) {
+      return compressed;
+    }
+
+    // Reduce quality and try again
+    quality -= 5;
+  }
+}
+
+ Future<void> _pickImage() async {
+  final pickedFile = await ImagePicker().pickImage(
+    source: ImageSource.gallery,
+  );
+
+  if (pickedFile == null) return;
+
+  setState(() {
+    _isLoading = true;
+  });
+
+  try {
+    final compressed = await _compressImage(
+      File(pickedFile.path),
+    );
+
     setState(() {
-      if (pickedFile != null) {
-        _profileImageFile = File(pickedFile.path);
-      }
+      _profileImageFile = compressed;
+    });
+
+    debugPrint(
+      "Final Size: ${(await compressed.length() / 1024).toStringAsFixed(1)} KB",
+    );
+  } finally {
+    setState(() {
+      _isLoading = false;
     });
   }
+}
 
-  Future<String?> _uploadImage(File imageFile, String uid) async {
-    try {
-      final storageRef = FirebaseStorage.instance.ref().child('profile_images').child('$uid.jpg');
-      await storageRef.putFile(imageFile);
-      return await storageRef.getDownloadURL();
-    } catch (e) {
-      print("Error uploading image: $e");
-      return null;
-    }
+Future<String?> _uploadImage(File imageFile, String uid) async {
+  try {
+    final sizeKB = (await imageFile.length()) / 1024;
+
+    debugPrint(
+      'Uploading compressed image: ${sizeKB.toStringAsFixed(1)} KB',
+    );
+
+    final storageRef = FirebaseStorage.instance
+        .ref()
+        .child('profile_images')
+        .child('$uid.jpg');
+
+    await storageRef.putFile(
+      imageFile,
+      SettableMetadata(
+        contentType: 'image/jpeg',
+      ),
+    );
+
+    return await storageRef.getDownloadURL();
+  } catch (e) {
+    debugPrint("Upload Error: $e");
+    return null;
   }
+}
 
   Future<void> _saveInitialProfile() async {
     if (_formKey.currentState!.validate()) {
