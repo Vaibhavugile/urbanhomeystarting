@@ -319,9 +319,11 @@ void _listenForNewMessages() {
   final ta = a.data()['timestamp'] as Timestamp?;
   final tb = b.data()['timestamp'] as Timestamp?;
 
-  if (ta == null || tb == null) return 0;
+if (ta == null && tb == null) return 0;
+if (ta == null) return 1;
+if (tb == null) return -1;
 
-  return tb.compareTo(ta);
+return tb.compareTo(ta);
 });
     });
   });
@@ -346,15 +348,23 @@ void _listenForNewMessages() {
 
     try {
       // Define the message data map here to print it before sending
-      final Map<String, dynamic> messageData = {
-        'senderId': _currentUser!.uid,
-        'receiverId': widget.chatPartnerId,
-        'content': messageText,
-        'timestamp': FieldValue.serverTimestamp(),
-        'type': 'text',
-        'readBy': [_currentUser!.uid],
-        'delivered': false, // Placeholder
-      };
+    final now = Timestamp.now();
+
+final Map<String, dynamic> messageData = {
+  'senderId': _currentUser!.uid,
+  'receiverId': widget.chatPartnerId,
+  'content': messageText,
+
+  // Instant timestamp
+  'timestamp': now,
+
+  // Optional server timestamp
+  'serverTimestamp': FieldValue.serverTimestamp(),
+
+  'type': 'text',
+  'readBy': [_currentUser!.uid],
+  'delivered': false,
+};
       print('[_sendMessage] Message data being added: $messageData');
 
       await _firestore
@@ -368,16 +378,15 @@ void _listenForNewMessages() {
       // Update the chat document with the last message and participants
       // This part is now redundant for 'participants' because it's handled in _initializeChatRoom,
       // but keeping it for 'lastMessage' and 'lastMessageTimestamp' for convenience.
-      await _firestore.collection('chats').doc(_chatRoomId).set(
-        {
-          'lastMessage': messageText,
-          'lastMessageTimestamp': FieldValue.serverTimestamp(),
-          // 'participants': [_currentUser!.uid, widget.chatPartnerId], // Removed from here as handled in _initializeChatRoom
-          'lastMessageSenderId': _currentUser!.uid, // Add this to track last message sender
-        },
-        SetOptions(merge: true),
-      );
-
+    await _firestore.collection('chats').doc(_chatRoomId).set(
+  {
+    'lastMessage': messageText,
+    'lastMessageTimestamp': now,
+    'lastMessageServerTimestamp': FieldValue.serverTimestamp(),
+    'lastMessageSenderId': _currentUser!.uid,
+  },
+  SetOptions(merge: true),
+);
       print('[_sendMessage] Chat document updated successfully (last message).');
 
       // _scrollController.animateTo(
