@@ -48,15 +48,41 @@ class BillingService {
   }
 
   Future<void> loadProducts() async {
-    final response =
-        await _inAppPurchase.queryProductDetails(productIds);
+  print("========== BILLING ==========");
+  print("Loading products...");
 
-    if (response.error != null) {
-      throw Exception(response.error!.message);
-    }
+  final response =
+      await _inAppPurchase.queryProductDetails(productIds);
 
-    products = response.productDetails;
+  print(
+    "Products found: ${response.productDetails.length}",
+  );
+
+  print(
+    "Products not found: ${response.notFoundIDs}",
+  );
+
+  if (response.error != null) {
+    print(
+      "Billing Error: ${response.error}",
+    );
+
+    throw Exception(
+      response.error!.message,
+    );
   }
+
+  products = response.productDetails;
+
+  for (final product in products) {
+    print("----------------------");
+    print("ID: ${product.id}");
+    print("Title: ${product.title}");
+    print("Price: ${product.price}");
+  }
+
+  print("=============================");
+}
 
   Future<void> buyBasicPlan() async {
     if (products.isEmpty) {
