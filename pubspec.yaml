@@ -2,7 +2,7 @@ name: mytennat
 description: "A new Flutter project."
 publish_to: 'none'
 
-version: 2.0.0+14
+version: 5.0.0+17
 
 environment:
   sdk: ">=3.2.0 <4.0.0"
@@ -36,7 +36,8 @@ dependencies:
   flutter_card_swiper: ^7.1.0
   flutter_image_compress: ^2.4.0
   path_provider: ^2.1.5
-  razorpay_flutter: ^1.4.0
+  in_app_purchase: ^3.2.3
+  in_app_purchase_android: ^0.4.0+3
 dev_dependencies:
   flutter_test:
     sdk: flutter

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-
+import '../services/billing_service.dart';
 class PlansScreen extends StatefulWidget {
   const PlansScreen({super.key});
 
@@ -13,6 +13,8 @@ class _PlansScreenState extends State<PlansScreen> {
   late PageController _pageController;
   int _currentPage = 0;
   int? _selectedIndex;
+  String? _selectedPlanName;
+String? _selectedContacts;
 
   final List<Map<String, dynamic>> _plans = [
     {
@@ -50,26 +52,132 @@ class _PlansScreenState extends State<PlansScreen> {
     },
   ];
 
-  @override
-  void initState() {
-    super.initState();
-    _pageController = PageController(
-      initialPage: 0,
-      viewportFraction: 0.85,
+@override
+void initState() {
+  super.initState();
+
+  _pageController = PageController(
+    initialPage: 0,
+    viewportFraction: 0.85,
+  );
+
+ Future.microtask(() async {
+  try {
+    await BillingService.instance.initialize();
+
+    BillingService.instance.onPurchaseSuccess =
+        (purchase) async {
+      if (!mounted) return;
+
+      final user = FirebaseAuth.instance.currentUser;
+
+      if (user == null) return;
+
+      final firestore = FirebaseFirestore.instance;
+
+      final contactsValue = int.tryParse(
+        (_selectedContacts ?? "").replaceAll(
+          RegExp(r'\D'),
+          '',
+        ),
+      );
+
+      if (contactsValue == null) return;
+
+      try {
+        await firestore
+            .collection('users')
+            .doc(user.uid)
+            .set(
+          {
+            'currentPlan': _selectedPlanName,
+            'currentPlanContacts': contactsValue,
+            'remainingContacts': contactsValue,
+            'planPurchaseDate':
+                FieldValue.serverTimestamp(),
+          },
+          SetOptions(
+            merge: true,
+          ),
+        );
+
+        await firestore
+            .collection('users')
+            .doc(user.uid)
+            .collection('purchases')
+            .add({
+          'planName': _selectedPlanName,
+          'contactsPurchased': contactsValue,
+          'productId': purchase.productID,
+          'purchaseId': purchase.purchaseID,
+          'purchaseDate':
+              FieldValue.serverTimestamp(),
+        });
+
+        if (!mounted) return;
+
+        Navigator.pop(context);
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text(
+              "🎉 Plan activated successfully!",
+            ),
+            backgroundColor: Colors.green,
+          ),
+        );
+      } catch (e) {
+        if (!mounted) return;
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              e.toString(),
+            ),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    };
+
+    BillingService.instance.onPurchaseError =
+        (error) {
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(error),
+          backgroundColor: Colors.red,
+        ),
+      );
+    };
+  } catch (e) {
+    if (!mounted) return;
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          "Billing initialization failed: $e",
+        ),
+        backgroundColor: Colors.red,
+      ),
     );
+  }
+});
 
-    _pageController.addListener(() {
-      setState(() {
-        _currentPage = _pageController.page!.round();
-      });
+  _pageController.addListener(() {
+    setState(() {
+      _currentPage = _pageController.page!.round();
     });
-  }
+  });
+}
 
-  @override
-  void dispose() {
-    _pageController.dispose();
-    super.dispose();
-  }
+@override
+void dispose() {
+  BillingService.instance.dispose();
+  _pageController.dispose();
+  super.dispose();
+}
 
   @override
 Widget build(BuildContext context) {
@@ -407,9 +515,10 @@ Widget _statItem(
                         index,
                 onTap: () {
                   setState(() {
-                    _selectedIndex =
-                        index;
-                  });
+  _selectedIndex = index;
+  _selectedPlanName = plan['title'];
+  _selectedContacts = plan['contacts'];
+});
 
                   _showPurchaseConfirmation(
                     context,
@@ -520,9 +629,11 @@ Widget _statItem(
               isHighlighted: plan['isHighlighted'],
               isSelected: _selectedIndex == index,
               onTap: () {
-                setState(() {
-                  _selectedIndex = index;
-                });
+               setState(() {
+  _selectedIndex = index;
+  _selectedPlanName = plan['title'];
+  _selectedContacts = plan['contacts'];
+});
                 _showPurchaseConfirmation(
                     context, plan['title'] as String, plan['contacts'] as String);
               },
@@ -1031,102 +1142,20 @@ Widget _statItem(
                 width: double.infinity,
                 height: 58,
                 child: ElevatedButton(
-                  onPressed: () async {
-                    final user =
-                        FirebaseAuth
-                            .instance
-                            .currentUser;
+                 onPressed: () async {
+  try {
+    await BillingService.instance.buyBasicPlan();
+  } catch (e) {
+    if (!mounted) return;
 
-                    if (user != null) {
-                      final userId =
-                          user.uid;
-
-                      final firestore =
-                          FirebaseFirestore
-                              .instance;
-
-                      final contactsValue =
-                          int.tryParse(
-                        contactsString.replaceAll(
-                          RegExp(r'\D'),
-                          '',
-                        ),
-                      );
-
-                      if (contactsValue != null) {
-                        try {
-                          await firestore
-                              .collection(
-                                  'users')
-                              .doc(userId)
-                              .set(
-                            {
-                              'currentPlan':
-                                  planName,
-                              'currentPlanContacts':
-                                  contactsValue,
-                              'remainingContacts':
-                                  contactsValue,
-                              'planPurchaseDate':
-                                  FieldValue
-                                      .serverTimestamp(),
-                            },
-                            SetOptions(
-                                merge:
-                                    true),
-                          );
-
-                          await firestore
-                              .collection(
-                                  'users')
-                              .doc(userId)
-                              .collection(
-                                  'purchases')
-                              .add({
-                            'planName':
-                                planName,
-                            'contactsPurchased':
-                                contactsValue,
-                            'purchaseDate':
-                                FieldValue
-                                    .serverTimestamp(),
-                          });
-
-                          Navigator.pop(
-                              context);
-
-                          ScaffoldMessenger.of(
-                                  context)
-                              .showSnackBar(
-                            const SnackBar(
-                              content: Text(
-                                "🎉 Plan activated successfully!",
-                              ),
-                              backgroundColor:
-                                  Colors
-                                      .green,
-                            ),
-                          );
-                        } catch (e) {
-                          Navigator.pop(
-                              context);
-
-                          ScaffoldMessenger.of(
-                                  context)
-                              .showSnackBar(
-                            SnackBar(
-                              content:
-                                  Text(
-                                e.toString(),
-                              ),
-                              backgroundColor:
-                                  Colors.red,
-                            ),
-                          );
-                        }
-                      }
-                    }
-                  },
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(e.toString()),
+        backgroundColor: Colors.red,
+      ),
+    );
+  }
+},
                   style: ElevatedButton
                       .styleFrom(
                     backgroundColor:
