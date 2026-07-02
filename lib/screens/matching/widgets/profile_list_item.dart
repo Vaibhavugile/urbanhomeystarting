@@ -6,7 +6,7 @@ class ProfileListItem extends StatelessWidget {
   final dynamic profile;
   final VoidCallback onTap;
   final String? distanceText;
-
+final int matchPercentage;
 final VoidCallback? onLike;
 
 final VoidCallback? onPass;
@@ -15,7 +15,7 @@ final VoidCallback? onPass;
   super.key,
   required this.profile,
   required this.onTap,
-
+required this.matchPercentage,
   this.distanceText,
   this.onLike,
   this.onPass,
@@ -89,6 +89,33 @@ final VoidCallback? onPass;
         imageUrl = profile.imageUrls!.first;
       }
     }
+    final isVerified =
+    profile.userProfile.isVerified;
+
+final verificationStatus =
+    profile.userProfile.verificationStatus;
+
+IconData verificationIcon;
+Color verificationColor;
+String verificationText;
+
+if (isVerified) {
+  verificationIcon = Icons.verified_rounded;
+  verificationColor = const Color(0xFF00C853);
+  verificationText = "Verified";
+} else if (verificationStatus == "pending") {
+  verificationIcon = Icons.hourglass_top_rounded;
+  verificationColor = const Color(0xFFFF9800);
+  verificationText = "Pending Review";
+} else if (verificationStatus == "rejected") {
+  verificationIcon = Icons.gpp_bad_rounded;
+  verificationColor = const Color(0xFFFF5252);
+  verificationText = "Verification Failed";
+} else {
+  verificationIcon = Icons.shield_outlined;
+  verificationColor = const Color(0xFF78909C);
+  verificationText = "Not Verified";
+}
 
     return Container(
       margin: const EdgeInsets.symmetric(
@@ -224,15 +251,14 @@ final VoidCallback? onPass;
                                       .circular(
                                           20),
                             ),
-                            child: const Text(
-                              "92% Match",
-                              style: TextStyle(
-                                color: Colors.greenAccent,
-                                fontSize: 11,
-                                fontWeight:
-                                    FontWeight.bold,
-                              ),
-                            ),
+                            child:  Text(
+  "$matchPercentage% Match",
+  style: const TextStyle(
+    color: Colors.greenAccent,
+    fontSize: 11,
+    fontWeight: FontWeight.bold,
+  ),
+),
                           ),
                         ],
                       ),
@@ -245,10 +271,10 @@ final VoidCallback? onPass;
                         runSpacing: 8,
                         children: [
                           _chip(
-                            Icons.verified,
-                            "Verified",
-                            Colors.blue,
-                          ),
+  verificationIcon,
+  verificationText,
+  verificationColor,
+),
                           _textChip(
                             badgeText,
                           ),
@@ -543,38 +569,69 @@ Row(
     );
   }
 
-  static Widget _chip(
-    IconData icon,
-    String text,
-    Color color,
-  ) {
-    return Container(
-      padding: const EdgeInsets.symmetric(
-        horizontal: 8,
-        vertical: 4,
-      ),
-      decoration: BoxDecoration(
-        color: Colors.white10,
-        borderRadius:
-            BorderRadius.circular(20),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(icon,
-              color: color, size: 14),
-          const SizedBox(width: 4),
-          Text(
-            text,
-            style: const TextStyle(
-              color: Colors.white,
-              fontSize: 11,
-            ),
-          ),
+ static Widget _chip(
+  IconData icon,
+  String text,
+  Color color,
+) {
+  return Container(
+    padding: const EdgeInsets.symmetric(
+      horizontal: 12,
+      vertical: 7,
+    ),
+    decoration: BoxDecoration(
+      gradient: LinearGradient(
+        colors: [
+          color,
+          color.withOpacity(.75),
         ],
       ),
-    );
-  }
+      borderRadius: BorderRadius.circular(30),
+      border: Border.all(
+        color: Colors.white.withOpacity(.25),
+      ),
+      boxShadow: [
+        BoxShadow(
+          color: color.withOpacity(.35),
+          blurRadius: 14,
+          offset: const Offset(0, 6),
+        ),
+      ],
+    ),
+    child: Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+
+        Icon(
+          icon,
+          color: Colors.white,
+          size: 14,
+        ),
+
+        const SizedBox(width: 5),
+
+        Text(
+          text,
+          style: const TextStyle(
+            color: Colors.white,
+            fontSize: 11,
+            fontWeight: FontWeight.w800,
+            letterSpacing: .3,
+          ),
+        ),
+
+        if (text == "Verified") ...[
+          const SizedBox(width: 5),
+          const Icon(
+            Icons.workspace_premium_rounded,
+            color: Color(0xFFFFD54F),
+            size: 13,
+          ),
+        ],
+      ],
+    ),
+  );
+}
 
   static Widget _textChip(String text) {
     return Container(

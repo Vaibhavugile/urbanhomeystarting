@@ -22,6 +22,8 @@ class UserProfile {
   String? petOwnership;
   String? petTolerance;
   String? guestsFrequency;
+  bool isVerified;
+String verificationStatus;
 
 
   UserProfile({
@@ -44,6 +46,8 @@ class UserProfile {
     this.petOwnership,
     this.petTolerance,
     this.guestsFrequency,
+    this.isVerified = false,
+  this.verificationStatus = 'not_verified',
   });
 
   factory UserProfile.fromMap(Map<String, dynamic> data, String uid) {
@@ -62,11 +66,16 @@ class UserProfile {
       religion: data['religion'] as String?,
       bio: data['bio'] as String?,
       imageUrls: (data['imageUrls'] as List<dynamic>?)?.map((e) => e.toString()).toList(), // Potentially redundant
+isVerified: data['isVerified'] as bool? ?? false,
 
+verificationStatus:
+    (data['verification']?['verificationStatus'] as String?) ??
+    'not_verified',
       // Habits
       // Habits
 smokingHabit: (data['smokingHabit'] ??
         habitsData['smoking']) as String?,
+
 
 drinkingHabit: (data['drinkingHabit'] ??
         habitsData['drinking']) as String?,
@@ -103,6 +112,11 @@ guestsFrequency: (data['guestsFrequency'] ??
       'religion': religion,
       'bio': bio,
       'imageUrls': imageUrls, // Potentially redundant
+      'isVerified': isVerified,
+
+'verification': {
+  'verificationStatus': verificationStatus,
+},
       'habits': { // Nested map for habits
         'smoking': smokingHabit,
         'drinking': drinkingHabit,

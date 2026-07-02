@@ -4,8 +4,14 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:mytennat/screens/flatmate_profile_screen.dart'; // For FlatListingProfile
 import 'package:mytennat/screens/flat_with_flatmate_profile_screen.dart'; // For SeekingFlatmateProfile
 import 'package:intl/intl.dart';
-import 'package:mytennat/screens/chat_screen.dart';
-import 'package:mytennat/screens/filter_screen.dart';
+import 'package:mytennat/screens/filter_screen.dart'
+hide kBackgroundColor,
+         kPrimaryColor,
+         kAccentColor,
+         kPrimaryGradient,
+         kErrorColor,
+         kDarkText,
+         kMediumText;
 import 'package:mytennat/screens/filter_options.dart';
 import 'dart:math' as math; // Import for math.min
 import 'package:mytennat/screens/view_profile_screen.dart'; // Import ViewProfileScreen
@@ -18,6 +24,17 @@ import 'package:mytennat/screens/matching/services/matching_service.dart';
 import 'package:mytennat/screens/matching/widgets/ad_panel.dart';
 import 'dart:math' as math;
 import 'package:flutter_card_swiper/flutter_card_swiper.dart';
+import 'package:mytennat/screens/chat_screen.dart'
+    hide kBackgroundColor,
+         kPrimaryColor,
+         kPrimaryGradient,
+         kErrorColor,
+         kDarkText,
+         kMediumText;
+
+
+
+
 // NEW: Enum to manage different view types
 enum _ViewType {
   card,
@@ -2862,10 +2879,570 @@ if (_profiles.length <= 10 &&
   );
 }
 
-  double _calculateMatchPercentage(dynamic userProfile, dynamic otherProfile) {
-    // Implement your matching logic here
-    return 0.0;
+int _calculateMatchPercentage(
+  dynamic userProfile,
+  dynamic otherProfile,
+) {
+  int score = 0;
+
+  final myLat = userProfile.latitude;
+  final myLng = userProfile.longitude;
+
+  final otherLat = otherProfile.latitude;
+  final otherLng = otherProfile.longitude;
+
+  if (myLat != null &&
+      myLng != null &&
+      otherLat != null &&
+      otherLng != null) {
+
+    final distance = _calculateDistanceKm(
+      myLat,
+      myLng,
+      otherLat,
+      otherLng,
+    );
+
+    if (distance <= 2) {
+      score += 25;
+    } else if (distance <= 5) {
+      score += 22;
+    } else if (distance <= 10) {
+      score += 18;
+    } else if (distance <= 20) {
+      score += 14;
+    } else if (distance <= 40) {
+      score += 8;
+    } else {
+      score += 2;
+    }
   }
+  // -------------------------
+// BUDGET SCORE (20)
+// -------------------------
+
+if (userProfile is SeekingFlatmateProfile &&
+    otherProfile is FlatListingProfile) {
+
+  final budgetMin = userProfile.budgetMin ?? 0;
+  final budgetMax = userProfile.budgetMax ?? 0;
+  final rent = otherProfile.rentPrice ?? 0;
+
+  if (rent >= budgetMin && rent <= budgetMax) {
+
+    score += 20;
+
+  } else if (rent <= budgetMax * 1.10) {
+
+    score += 12;
+
+  } else if (rent <= budgetMax * 1.20) {
+
+    score += 6;
+  }
+}
+
+else if (userProfile is FlatListingProfile &&
+         otherProfile is SeekingFlatmateProfile) {
+
+  final rent = userProfile.rentPrice ?? 0;
+  final budgetMin = otherProfile.budgetMin ?? 0;
+  final budgetMax = otherProfile.budgetMax ?? 0;
+
+  if (rent >= budgetMin && rent <= budgetMax) {
+
+    score += 20;
+
+  } else if (rent <= budgetMax * 1.10) {
+
+    score += 12;
+
+  } else if (rent <= budgetMax * 1.20) {
+
+    score += 6;
+  }
+}
+// -------------------------
+// MOVE-IN / AVAILABILITY (10)
+// -------------------------
+
+if (userProfile is SeekingFlatmateProfile &&
+    otherProfile is FlatListingProfile) {
+
+  final moveIn = userProfile.moveInDate;
+  final available = otherProfile.availabilityDate;
+
+  if (moveIn != null && available != null) {
+
+    final difference =
+        (moveIn.difference(available).inDays).abs();
+
+    if (difference <= 7) {
+
+      score += 10;
+
+    } else if (difference <= 15) {
+
+      score += 7;
+
+    } else if (difference <= 30) {
+
+      score += 4;
+    }
+  }
+}
+
+else if (userProfile is FlatListingProfile &&
+         otherProfile is SeekingFlatmateProfile) {
+
+  final available = userProfile.availabilityDate;
+  final moveIn = otherProfile.moveInDate;
+
+  if (moveIn != null && available != null) {
+
+    final difference =
+        (moveIn.difference(available).inDays).abs();
+
+    if (difference <= 7) {
+
+      score += 10;
+
+    } else if (difference <= 15) {
+
+      score += 7;
+
+    } else if (difference <= 30) {
+
+      score += 4;
+    }
+  }
+}
+// -------------------------
+// GENDER PREFERENCE (10)
+// -------------------------
+
+String? myGender;
+String? otherGender;
+
+if (userProfile is FlatListingProfile) {
+  myGender = userProfile.userProfile.gender;
+} else if (userProfile is SeekingFlatmateProfile) {
+  myGender = userProfile.userProfile.gender;
+}
+
+if (otherProfile is FlatListingProfile) {
+  otherGender = otherProfile.userProfile.gender;
+} else if (otherProfile is SeekingFlatmateProfile) {
+  otherGender = otherProfile.userProfile.gender;
+}
+
+// Flat Owner's preference
+if (userProfile is FlatListingProfile &&
+    otherProfile is SeekingFlatmateProfile) {
+
+  final preferredGender =
+      userProfile.preferredGender?.trim().toLowerCase();
+
+  if (preferredGender == null ||
+      preferredGender.isEmpty ||
+      preferredGender == "any" ||
+      preferredGender == "no preference") {
+
+    score += 10;
+
+  } else if (otherGender != null &&
+      preferredGender == otherGender.toLowerCase()) {
+
+    score += 10;
+  }
+}
+
+// Flatmate's preference
+else if (userProfile is SeekingFlatmateProfile &&
+         otherProfile is FlatListingProfile) {
+
+  final preferredGender =
+      userProfile.preferredFlatmateGender
+          ?.trim()
+          .toLowerCase();
+
+  if (preferredGender == null ||
+      preferredGender.isEmpty ||
+      preferredGender == "any" ||
+      preferredGender == "no preference") {
+
+    score += 10;
+
+  } else if (otherGender != null &&
+      preferredGender == otherGender.toLowerCase()) {
+
+    score += 10;
+  }
+}
+// -------------------------
+// OCCUPATION (8)
+// -------------------------
+
+String? myOccupation;
+String? otherOccupation;
+
+if (userProfile is FlatListingProfile) {
+  myOccupation = userProfile.userProfile.occupation;
+} else if (userProfile is SeekingFlatmateProfile) {
+  myOccupation = userProfile.userProfile.occupation;
+}
+
+if (otherProfile is FlatListingProfile) {
+  otherOccupation = otherProfile.userProfile.occupation;
+} else if (otherProfile is SeekingFlatmateProfile) {
+  otherOccupation = otherProfile.userProfile.occupation;
+}
+
+// Flat Owner preference
+if (userProfile is FlatListingProfile &&
+    otherProfile is SeekingFlatmateProfile) {
+
+  final preferredOccupation =
+      userProfile.preferredOccupation
+          ?.trim()
+          .toLowerCase();
+
+  if (preferredOccupation == null ||
+      preferredOccupation.isEmpty ||
+      preferredOccupation == "any" ||
+      preferredOccupation == "no preference") {
+
+    score += 8;
+
+  } else if (otherOccupation != null &&
+      preferredOccupation ==
+          otherOccupation.toLowerCase()) {
+
+    score += 8;
+
+  } else {
+
+    score += 2;
+  }
+}
+
+// Flatmate preference
+else if (userProfile is SeekingFlatmateProfile &&
+         otherProfile is FlatListingProfile) {
+
+  final preferredOccupation =
+      userProfile.preferredOccupation
+          ?.trim()
+          .toLowerCase();
+
+  if (preferredOccupation == null ||
+      preferredOccupation.isEmpty ||
+      preferredOccupation == "any" ||
+      preferredOccupation == "no preference") {
+
+    score += 8;
+
+  } else if (otherOccupation != null &&
+      preferredOccupation ==
+          otherOccupation.toLowerCase()) {
+
+    score += 8;
+
+  } else {
+
+    score += 2;
+  }
+}
+// -------------------------
+// PROPERTY COMPATIBILITY (8)
+// -------------------------
+
+if (userProfile is SeekingFlatmateProfile &&
+    otherProfile is FlatListingProfile) {
+
+  // Flat Type
+  if (userProfile.preferredFlatType != null &&
+      userProfile.preferredFlatType!.isNotEmpty &&
+      otherProfile.flatType != null &&
+      userProfile.preferredFlatType!
+              .toLowerCase() ==
+          otherProfile.flatType!
+              .toLowerCase()) {
+    score += 3;
+  }
+
+  // Room Type
+  if (userProfile.preferredRoomType != null &&
+      userProfile.preferredRoomType!.isNotEmpty &&
+      otherProfile.roomType != null &&
+      userProfile.preferredRoomType!
+              .toLowerCase() ==
+          otherProfile.roomType!
+              .toLowerCase()) {
+    score += 3;
+  }
+
+  // Furnished
+  if (userProfile.preferredFurnishedStatus != null &&
+      userProfile.preferredFurnishedStatus!.isNotEmpty &&
+      otherProfile.furnishedStatus != null &&
+      userProfile.preferredFurnishedStatus!
+              .toLowerCase() ==
+          otherProfile.furnishedStatus!
+              .toLowerCase()) {
+    score += 2;
+  }
+
+  // Bathroom
+ 
+}
+
+else if (userProfile is FlatListingProfile &&
+         otherProfile is SeekingFlatmateProfile) {
+
+  // Flat Type
+  if (otherProfile.preferredFlatType != null &&
+      otherProfile.preferredFlatType!.isNotEmpty &&
+      userProfile.flatType != null &&
+      otherProfile.preferredFlatType!
+              .toLowerCase() ==
+          userProfile.flatType!
+              .toLowerCase()) {
+    score += 3;
+  }
+
+  // Room Type
+  if (otherProfile.preferredRoomType != null &&
+      otherProfile.preferredRoomType!.isNotEmpty &&
+      userProfile.roomType != null &&
+      otherProfile.preferredRoomType!
+              .toLowerCase() ==
+          userProfile.roomType!
+              .toLowerCase()) {
+    score += 3;
+  }
+
+  // Furnished
+  if (otherProfile.preferredFurnishedStatus != null &&
+      otherProfile.preferredFurnishedStatus!.isNotEmpty &&
+      userProfile.furnishedStatus != null &&
+      otherProfile.preferredFurnishedStatus!
+              .toLowerCase() ==
+          userProfile.furnishedStatus!
+              .toLowerCase()) {
+    score += 2;
+  }
+
+  // Bathroom
+ 
+}
+// -------------------------
+// LIFESTYLE (10)
+// -------------------------
+
+String? myCleanliness;
+String? otherCleanliness;
+
+String? mySmoking;
+String? otherSmoking;
+
+String? myDrinking;
+String? otherDrinking;
+
+String? myFood;
+String? otherFood;
+
+String? myPets;
+String? otherPets;
+
+if (userProfile is FlatListingProfile) {
+  myCleanliness = userProfile.userProfile.cleanlinessLevel;
+  mySmoking = userProfile.userProfile.smokingHabit;
+  myDrinking = userProfile.userProfile.drinkingHabit;
+  myFood = userProfile.userProfile.foodPreference;
+  myPets = userProfile.userProfile.petTolerance;
+} else if (userProfile is SeekingFlatmateProfile) {
+  myCleanliness = userProfile.userProfile.cleanlinessLevel;
+  mySmoking = userProfile.userProfile.smokingHabit;
+  myDrinking = userProfile.userProfile.drinkingHabit;
+  myFood = userProfile.userProfile.foodPreference;
+  myPets = userProfile.userProfile.petTolerance;
+}
+
+if (otherProfile is FlatListingProfile) {
+  otherCleanliness = otherProfile.userProfile.cleanlinessLevel;
+  otherSmoking = otherProfile.userProfile.smokingHabit;
+  otherDrinking = otherProfile.userProfile.drinkingHabit;
+  otherFood = otherProfile.userProfile.foodPreference;
+  otherPets = otherProfile.userProfile.petTolerance;
+} else if (otherProfile is SeekingFlatmateProfile) {
+  otherCleanliness = otherProfile.userProfile.cleanlinessLevel;
+  otherSmoking = otherProfile.userProfile.smokingHabit;
+  otherDrinking = otherProfile.userProfile.drinkingHabit;
+  otherFood = otherProfile.userProfile.foodPreference;
+  otherPets = otherProfile.userProfile.petTolerance;
+}
+
+if (_equals(myCleanliness, otherCleanliness)) score += 2;
+
+if (_equals(mySmoking, otherSmoking)) score += 2;
+
+if (_equals(myDrinking, otherDrinking)) score += 2;
+
+if (_equals(myFood, otherFood)) score += 2;
+
+if (_equals(myPets, otherPets)) score += 2;
+// -------------------------
+// AMENITIES (5)
+// -------------------------
+
+if (userProfile is SeekingFlatmateProfile &&
+    otherProfile is FlatListingProfile) {
+
+  final wanted =
+      userProfile.amenitiesDesired ?? [];
+
+  final available =
+      otherProfile.amenities ?? [];
+
+  if (wanted.isNotEmpty) {
+
+    int matched = 0;
+
+    for (final amenity in wanted) {
+
+      if (available.any(
+        (a) =>
+            a.toLowerCase() ==
+            amenity.toLowerCase(),
+      )) {
+        matched++;
+      }
+    }
+
+    final ratio = matched / wanted.length;
+
+    if (ratio >= 1) {
+      score += 5;
+    } else if (ratio >= .75) {
+      score += 4;
+    } else if (ratio >= .50) {
+      score += 3;
+    } else if (ratio >= .25) {
+      score += 2;
+    } else if (ratio > 0) {
+      score += 1;
+    }
+  }
+}
+
+else if (userProfile is FlatListingProfile &&
+         otherProfile is SeekingFlatmateProfile) {
+
+  final wanted =
+      otherProfile.amenitiesDesired ?? [];
+
+  final available =
+      userProfile.amenities ?? [];
+
+  if (wanted.isNotEmpty) {
+
+    int matched = 0;
+
+    for (final amenity in wanted) {
+
+      if (available.any(
+        (a) =>
+            a.toLowerCase() ==
+            amenity.toLowerCase(),
+      )) {
+        matched++;
+      }
+    }
+
+    final ratio = matched / wanted.length;
+
+    if (ratio >= 1) {
+      score += 5;
+    } else if (ratio >= .75) {
+      score += 4;
+    } else if (ratio >= .50) {
+      score += 3;
+    } else if (ratio >= .25) {
+      score += 2;
+    } else if (ratio > 0) {
+      score += 1;
+    }
+  }
+}
+// -------------------------
+// AGE PREFERENCE (4)
+// -------------------------
+
+if (userProfile is FlatListingProfile &&
+    otherProfile is SeekingFlatmateProfile) {
+
+  final otherAge =
+      otherProfile.userProfile.age;
+
+  if (_ageMatches(
+    otherAge,
+    userProfile.preferredAgeGroup,
+  )) {
+    score += 4;
+  }
+}
+
+else if (userProfile is SeekingFlatmateProfile &&
+         otherProfile is FlatListingProfile) {
+
+  final otherAge =
+      otherProfile.userProfile.age;
+
+  if (_ageMatches(
+    otherAge,
+    userProfile.preferredFlatmateAge,
+  )) {
+    score += 4;
+  }
+}
+
+return score.clamp(0, 100);
+}
+bool _equals(String? a, String? b) {
+  if (a == null || b == null) return false;
+
+  return a.trim().toLowerCase() ==
+      b.trim().toLowerCase();
+}
+bool _ageMatches(
+  int? age,
+  String? preferredRange,
+) {
+  if (age == null ||
+      preferredRange == null ||
+      preferredRange.isEmpty) {
+    return false;
+  }
+
+  final match = RegExp(r'(\d+)\D+(\d+)')
+      .firstMatch(preferredRange);
+
+  if (match == null) return false;
+
+  final minAge =
+      int.tryParse(match.group(1)!);
+
+  final maxAge =
+      int.tryParse(match.group(2)!);
+
+  if (minAge == null || maxAge == null) {
+    return false;
+  }
+
+  return age >= minAge &&
+      age <= maxAge;
+}
 // NEW: Method to build the list view of profiles
   Widget _buildListView() {
     if (_profiles.isEmpty) {
@@ -2921,7 +3498,10 @@ if (_profiles.length <= 10 &&
 
   distanceText:
       _getDistanceText(profile),
-
+matchPercentage: _calculateMatchPercentage(
+  _currentUserParsedProfile,
+  profile,
+),
   onLike: () {
 
     if (widget.isExploreMode) {
@@ -3169,6 +3749,10 @@ final double nopeOpacity =
       child: ProfileCard(
         profile: profile,
         distanceText: _getDistanceText(profile),
+          matchPercentage: _calculateMatchPercentage(
+    _currentUserParsedProfile,
+    profile,
+  ),
 
         onLike: () {
 
@@ -3310,6 +3894,39 @@ Widget _buildSwipeBadge({
     ),
   );
 }
+Widget _buildActionButton({
+  required IconData icon,
+  required Color color,
+  required VoidCallback onTap,
+  required String tooltip,
+}) {
+  return Tooltip(
+    message: tooltip,
+    child: InkWell(
+      borderRadius:
+          BorderRadius.circular(16),
+      onTap: onTap,
+      child: Ink(
+        width: 46,
+        height: 46,
+        decoration: BoxDecoration(
+          color: Colors.white.withOpacity(.12),
+          borderRadius:
+              BorderRadius.circular(16),
+          border: Border.all(
+            color:
+                Colors.white.withOpacity(.15),
+          ),
+        ),
+        child: Icon(
+          icon,
+          color: Colors.white,
+          size: 22,
+        ),
+      ),
+    ),
+  );
+}
 
   @override
   Widget build(BuildContext context) {
@@ -3319,46 +3936,135 @@ Widget _buildSwipeBadge({
       key: _scaffoldKey, // Assign the key to Scaffold
       
       appBar: AppBar(
-        title: const Text('UrbanHomey Matching', style: TextStyle(color: Colors.white)),
-        // Changed to a consistent gradient background
-        flexibleSpace: Container(
-          decoration: const BoxDecoration(
-            gradient: LinearGradient(
-              colors: [Color(0xFF6A1B9A), Color(0xFFAD1457)],
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-            ),
+  automaticallyImplyLeading: false,
+  toolbarHeight: 72,
+  centerTitle: false,
+  elevation: 0,
+  scrolledUnderElevation: 0,
+  backgroundColor: Colors.transparent,
+
+  flexibleSpace: Container(
+    decoration: const BoxDecoration(
+      gradient: kPrimaryGradient,
+    ),
+  ),
+
+  titleSpacing: 8,
+
+  title: Row(
+    children: [
+
+      Container(
+        width: 42,
+        height: 42,
+        decoration: BoxDecoration(
+          color: Colors.white.withOpacity(.15),
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(
+            color: Colors.white.withOpacity(.15),
           ),
         ),
-        iconTheme: const IconThemeData(color: Colors.white),
-        elevation: 0,
-        actions: [
-          // NEW: Button to toggle between card and list view
-            if (_canUndoPass)
-    IconButton(
-      tooltip: "Undo Pass",
-      icon: const Icon(Icons.undo_rounded),
-      onPressed: _undoLastPass,
-    ),
-          IconButton(
-            icon: Icon(
-              _currentViewType == _ViewType.card ? Icons.list : Icons.view_carousel,
+        child: const Icon(
+          Icons.favorite_rounded,
+          color: Colors.white,
+          size: 22,
+        ),
+      ),
+
+      const SizedBox(width: 12),
+
+      const Column(
+        crossAxisAlignment:
+            CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+
+          Text(
+            "Discover",
+            style: TextStyle(
+              color: Colors.white,
+              fontSize: 20,
+              fontWeight: FontWeight.w800,
+              letterSpacing: .2,
             ),
-            onPressed: () {
-              setState(() {
-                _currentViewType = _currentViewType == _ViewType.card ? _ViewType.list : _ViewType.card;
-              });
-            },
           ),
-          if (!isLargeScreen) // Show filter icon only on smaller screens
-            IconButton(
-              icon: const Icon(Icons.filter_list),
-              onPressed: () {
-                _scaffoldKey.currentState?.openDrawer(); // Open the drawer
-              },
+
+          SizedBox(height: 2),
+
+          Text(
+            "Find your perfect flatmate",
+            style: TextStyle(
+              color: Colors.white70,
+              fontSize: 11,
+              fontWeight: FontWeight.w500,
             ),
+          ),
         ],
       ),
+    ],
+  ),
+
+  iconTheme: const IconThemeData(
+    color: Colors.white,
+    size: 24,
+  ),
+
+  actions: [
+
+    if (_canUndoPass)
+      Padding(
+        padding: const EdgeInsets.only(
+          right: 6,
+        ),
+        child: _buildActionButton(
+          icon: Icons.undo_rounded,
+          tooltip: "Undo Pass",
+          color: const Color(0xFFFFB020),
+          onTap: _undoLastPass,
+        ),
+      ),
+
+    Padding(
+      padding: const EdgeInsets.only(
+        right: 6,
+      ),
+      child: _buildActionButton(
+        icon: _currentViewType ==
+                _ViewType.card
+            ? Icons.view_list_rounded
+            : Icons.swipe_rounded,
+        tooltip: "Change View",
+        color: const Color(0xFF22C55E),
+        onTap: () {
+          setState(() {
+            _currentViewType =
+                _currentViewType ==
+                        _ViewType.card
+                    ? _ViewType.list
+                    : _ViewType.card;
+          });
+        },
+      ),
+    ),
+
+    if (!isLargeScreen)
+      Padding(
+        padding:
+            const EdgeInsets.only(
+          right: 14,
+        ),
+        child: _buildActionButton(
+          icon: Icons.tune_rounded,
+          tooltip: "Filters",
+          color: kAccentColor,
+          onTap: () {
+            _scaffoldKey.currentState
+                ?.openDrawer();
+          },
+        ),
+      ),
+  ],
+),
       drawer: isLargeScreen ? null // No drawer on large screens, as filter is inline
           : Drawer(
         child: FilterScreen(

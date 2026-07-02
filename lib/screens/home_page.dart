@@ -573,17 +573,26 @@ void _openExploreMode() {
 ),
       
       body: Container(
-        width: double.infinity,
-        height: double.infinity,
-       color: const Color(0xFFF8FAFC),
-        child: _isLoadingProfileType
-            ? const Center(child: CircularProgressIndicator(color: Colors.white))
-            : SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(horizontal: 16.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-
+  width: double.infinity,
+  height: double.infinity,
+  color: const Color(0xFFF8FAFC),
+  child: _isLoadingProfileType
+      ? const Center(
+          child: CircularProgressIndicator(
+            color: Color(0xFF7C3AED),
+          ),
+        )
+      : RefreshIndicator(
+          color: const Color(0xFF7C3AED),
+          onRefresh: () async {
+            await _fetchUserData();
+          },
+          child: SingleChildScrollView(
+            physics: const AlwaysScrollableScrollPhysics(),
+            padding: const EdgeInsets.symmetric(horizontal: 16.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
 const SizedBox(height: 20),
 Container(
   padding: const EdgeInsets.all(20),
@@ -1112,6 +1121,7 @@ const SizedBox(height: 32),
           ),
         ),
       ),
+    ),
       bottomNavigationBar: BottomNavigationBar(
         backgroundColor: Colors.white,
         type: BottomNavigationBarType.fixed,

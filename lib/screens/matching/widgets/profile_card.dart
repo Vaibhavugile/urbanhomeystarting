@@ -18,12 +18,14 @@ class ProfileCard extends StatefulWidget {
   final VoidCallback onLike;
   final VoidCallback onPass;
 final String? distanceText;
+ final int matchPercentage; // NEW
  const ProfileCard({
   super.key,
   required this.profile,
   required this.onLike,
   required this.onPass,
   this.distanceText,
+  required this.matchPercentage, // NEW
 });
 
 @override
@@ -267,6 +269,66 @@ print(profile.preferredFurnishedStatus);
 print(profile.preferredFlatmateGender);
 print(profile.preferredFlatmateAge);
 }
+final isVerified = profile.userProfile.isVerified;
+
+final verificationStatus =
+    profile.userProfile.verificationStatus;
+Color badgeColor;
+List<Color> badgeGradient;
+IconData badgeIcon;
+String badgeText;
+
+if (isVerified) {
+  badgeColor = const Color(0xFF00C853);
+
+  badgeGradient = const [
+    Color(0xFF00C853),
+    Color(0xFF64DD17),
+  ];
+
+  badgeIcon = Icons.verified_rounded;
+
+  badgeText = "Verified";
+
+} else if (verificationStatus == "pending") {
+
+  badgeColor = const Color(0xFFFF9800);
+
+  badgeGradient = const [
+    Color(0xFFFF9800),
+    Color(0xFFFFC107),
+  ];
+
+  badgeIcon = Icons.hourglass_top_rounded;
+
+  badgeText = "Verification Pending";
+
+} else if (verificationStatus == "rejected") {
+
+  badgeColor = const Color(0xFFFF5252);
+
+  badgeGradient = const [
+    Color(0xFFFF5252),
+    Color(0xFFFF1744),
+  ];
+
+  badgeIcon = Icons.gpp_bad_rounded;
+
+  badgeText = "Verification Failed";
+
+} else {
+
+  badgeColor = const Color(0xFF607D8B);
+
+  badgeGradient = const [
+    Color(0xFF607D8B),
+    Color(0xFF90A4AE),
+  ];
+
+  badgeIcon = Icons.shield_outlined;
+
+  badgeText = "Not Verified";
+}
     return Container(
       height: MediaQuery.of(context).size.height * 0.82,
       margin: const EdgeInsets.all(12),
@@ -427,7 +489,7 @@ Positioned(
             
 
 Positioned(
-  top: 20,
+  top: 30,
   left: 20,
   child: Container(
     padding: const EdgeInsets.symmetric(
@@ -448,45 +510,66 @@ Positioned(
         ),
       ],
     ),
-    child: const Row(
+    child: Row(
+  mainAxisSize: MainAxisSize.min,
+  children: [
+    const Text(
+      '🔥',
+      style: TextStyle(fontSize: 16),
+    ),
+    const SizedBox(width: 6),
+    Text(
+      '${widget.matchPercentage}% Match',
+      style: const TextStyle(
+        color: Colors.white,
+        fontWeight: FontWeight.w700,
+        fontSize: 14,
+      ),
+    ),
+  ],
+),
+  ),
+),
+
+           Positioned(
+  top: 30,
+  right: 20,
+  child: Container(
+    padding: const EdgeInsets.symmetric(
+      horizontal: 16,
+      vertical: 10,
+    ),
+    decoration: BoxDecoration(
+      color: Colors.black.withOpacity(0.35),
+      borderRadius: BorderRadius.circular(30),
+      border: Border.all(
+        color: Colors.white.withOpacity(0.25),
+      ),
+      boxShadow: [
+        BoxShadow(
+          color: Colors.black.withOpacity(0.25),
+          blurRadius: 15,
+          offset: const Offset(0, 8),
+        ),
+      ],
+    ),
+    child: Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        Text(
-          '🔥',
+        const Text(
+          '💰',
           style: TextStyle(fontSize: 16),
         ),
-        SizedBox(width: 6),
+        const SizedBox(width: 6),
         Text(
-          '92% Match',
-          style: TextStyle(
+          budgetText,
+          style: const TextStyle(
             color: Colors.white,
             fontWeight: FontWeight.w700,
             fontSize: 14,
           ),
         ),
       ],
-    ),
-  ),
-),
-
-                  Positioned(
-  top: 20,
-  right: 20,
-  child: Container(
-    padding: const EdgeInsets.symmetric(
-      horizontal: 14,
-      vertical: 8,
-    ),
-    decoration: BoxDecoration(
-      color: Colors.black87,
-      borderRadius: BorderRadius.circular(30),
-    ),
-    child: Text(
-      budgetText,
-      style: const TextStyle(
-        color: Colors.white,
-        fontWeight: FontWeight.bold,
-      ),
     ),
   ),
 ),
@@ -537,84 +620,225 @@ Positioned(
     ),
 
     Container(
-      padding: const EdgeInsets.symmetric(
-        horizontal: 10,
-        vertical: 6,
+  padding: const EdgeInsets.symmetric(
+    horizontal: 14,
+    vertical: 8,
+  ),
+  decoration: BoxDecoration(
+    gradient: LinearGradient(
+      colors: badgeGradient,
+      begin: Alignment.topLeft,
+      end: Alignment.bottomRight,
+    ),
+    borderRadius: BorderRadius.circular(999),
+    border: Border.all(
+      color: Colors.white.withOpacity(.28),
+      width: 1.2,
+    ),
+    boxShadow: [
+      BoxShadow(
+        color: badgeColor.withOpacity(.45),
+        blurRadius: 18,
+        spreadRadius: 1,
+        offset: const Offset(0, 8),
       ),
-      decoration: BoxDecoration(
-        color: Colors.blue.withOpacity(.15),
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(
-          color: Colors.blue.withOpacity(.4),
+      BoxShadow(
+        color: Colors.white.withOpacity(.08),
+        blurRadius: 2,
+        offset: const Offset(0, -1),
+      ),
+    ],
+  ),
+  child: Row(
+    mainAxisSize: MainAxisSize.min,
+    children: [
+
+      Container(
+        width: 24,
+        height: 24,
+        decoration: BoxDecoration(
+          color: Colors.white.withOpacity(.18),
+          shape: BoxShape.circle,
+        ),
+        child: Icon(
+          badgeIcon,
+          color: Colors.white,
+          size: 14,
         ),
       ),
-      child: const Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(
-            Icons.verified,
-            color: Colors.blue,
-            size: 14,
+
+      const SizedBox(width: 8),
+
+      Text(
+        badgeText,
+        style: const TextStyle(
+          color: Colors.white,
+          fontSize: 11.5,
+          fontWeight: FontWeight.w800,
+          letterSpacing: .35,
+          height: 1,
+        ),
+      ),
+
+      if (isVerified) ...[
+        const SizedBox(width: 6),
+
+        Container(
+          width: 20,
+          height: 20,
+          decoration: const BoxDecoration(
+            shape: BoxShape.circle,
+            gradient: LinearGradient(
+              colors: [
+                Color(0xFFFFF176),
+                Color(0xFFFFC107),
+              ],
+            ),
           ),
-          SizedBox(width: 4),
-          Text(
-            'Verified',
+          child: const Icon(
+            Icons.workspace_premium_rounded,
+            color: Colors.white,
+            size: 12,
+          ),
+        ),
+      ],
+
+      if (verificationStatus == "pending") ...[
+        const SizedBox(width: 6),
+
+        Container(
+          padding: const EdgeInsets.symmetric(
+            horizontal: 6,
+            vertical: 2,
+          ),
+          decoration: BoxDecoration(
+            color: Colors.white.withOpacity(.18),
+            borderRadius: BorderRadius.circular(20),
+          ),
+          child: const Text(
+            "LIVE",
             style: TextStyle(
               color: Colors.white,
-              fontSize: 11,
-              fontWeight: FontWeight.w600,
+              fontSize: 8,
+              fontWeight: FontWeight.w900,
+              letterSpacing: 1,
+            ),
+          ),
+        ),
+      ],
+    ],
+  ),
+),
+  ],
+),
+                  const SizedBox(height: 8),
+
+                Column(
+  crossAxisAlignment: CrossAxisAlignment.start,
+  children: [
+
+    // CITY
+    Container(
+      padding: const EdgeInsets.symmetric(
+        horizontal: 12,
+        vertical: 7,
+      ),
+      decoration: BoxDecoration(
+        color: Colors.white.withOpacity(.12),
+        borderRadius: BorderRadius.circular(30),
+        border: Border.all(
+          color: Colors.white.withOpacity(.18),
+        ),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+
+          Container(
+            width: 22,
+            height: 22,
+            decoration: BoxDecoration(
+              color: const Color(0xFF3B82F6)
+                  .withOpacity(.18),
+              shape: BoxShape.circle,
+            ),
+            child: const Icon(
+              Icons.location_on_rounded,
+              color: Color(0xFF60A5FA),
+              size: 14,
+            ),
+          ),
+
+          const SizedBox(width: 8),
+
+          Flexible(
+            child: Text(
+              city,
+              overflow: TextOverflow.ellipsis,
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 14,
+                fontWeight: FontWeight.w700,
+              ),
             ),
           ),
         ],
       ),
     ),
-  ],
-),
-                  const SizedBox(height: 8),
 
-                  Row(
-                    children: [
-                      const Icon(
-                        Icons.location_on,
-                        color: Colors.white70,
-                        size: 18,
-                      ),
-                      const SizedBox(width: 4),
-                      Text(
-                        city,
-                        style: const TextStyle(
-                          color: Colors.white70,
-                          fontSize: 16,
-                        ),
-                      ),
-                    ],
-                  ),
-                  if (distanceText != null) ...[
+    if (distanceText != null) ...[
 
-  const SizedBox(height: 6),
+      const SizedBox(height: 10),
 
-  Row(
-    children: [
+      Container(
+        padding: const EdgeInsets.symmetric(
+          horizontal: 12,
+          vertical: 7,
+        ),
+        decoration: BoxDecoration(
+          gradient: const LinearGradient(
+            colors: [
+              Color(0xFF10B981),
+              Color(0xFF34D399),
+            ],
+          ),
+          borderRadius: BorderRadius.circular(30),
+          boxShadow: [
+            BoxShadow(
+              color: const Color(0xFF10B981)
+                  .withOpacity(.35),
+              blurRadius: 16,
+              offset: const Offset(0, 8),
+            ),
+          ],
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
 
-      const Icon(
-        Icons.near_me_rounded,
-        color: Colors.greenAccent,
-        size: 16,
-      ),
+            const Icon(
+              Icons.near_me_rounded,
+              color: Colors.white,
+              size: 15,
+            ),
 
-      const SizedBox(width: 4),
+            const SizedBox(width: 6),
 
-      Text(
-        distanceText!,
-        style: const TextStyle(
-          color: Colors.greenAccent,
-          fontSize: 14,
-          fontWeight: FontWeight.w600,
+            Text(
+              distanceText!,
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 13,
+                fontWeight: FontWeight.w800,
+                letterSpacing: .2,
+              ),
+            ),
+          ],
         ),
       ),
     ],
-  ),
-],
+  ],
+),
 
                   const SizedBox(height: 8),
 
@@ -824,68 +1048,68 @@ Wrap(
 
 
 
-                  const SizedBox(height: 20),
-                  const SizedBox(height: 16),
+//                   const SizedBox(height: 20),
+//                   const SizedBox(height: 16),
 
-GestureDetector(
-  onTap: () {
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (_) => ProfileDetailsSheet(
-  profile: profile,
+// GestureDetector(
+//   onTap: () {
+//     showModalBottomSheet(
+//       context: context,
+//       isScrollControlled: true,
+//       backgroundColor: Colors.transparent,
+//       builder: (_) => ProfileDetailsSheet(
+//   profile: profile,
 
-  name: name,
-  age: age,
-  city: city,
-  occupation: occupation,
-  imageUrl: imageUrl,
+//   name: name,
+//   age: age,
+//   city: city,
+//   occupation: occupation,
+//   imageUrl: imageUrl,
 
-  bio: bio,
-  cleanliness: cleanliness,
-  smoking: smoking,
-  drinking: drinking,
-  food: food,
-  petTolerance: petTolerance,
-  socialPreference: socialPreference,
-  desiredAmenities: desiredAmenities,
-),
-    );
-  },
-  child: Container(
-    width: double.infinity,
-    padding: const EdgeInsets.symmetric(
-      vertical: 12,
-    ),
-    decoration: BoxDecoration(
-      color: Colors.white.withOpacity(.08),
-      borderRadius: BorderRadius.circular(18),
-      border: Border.all(
-        color: Colors.white.withOpacity(.12),
-      ),
-    ),
-    child: const Row(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        Text(
-          'View More',
-          style: TextStyle(
-            color: Colors.white,
-            fontSize: 14,
-            fontWeight: FontWeight.w600,
-          ),
-        ),
-        SizedBox(width: 6),
-        Icon(
-          Icons.keyboard_arrow_up_rounded,
-          color: Colors.white,
-          size: 18,
-        ),
-      ],
-    ),
-  ),
-),
+//   bio: bio,
+//   cleanliness: cleanliness,
+//   smoking: smoking,
+//   drinking: drinking,
+//   food: food,
+//   petTolerance: petTolerance,
+//   socialPreference: socialPreference,
+//   desiredAmenities: desiredAmenities,
+// ),
+//     );
+//   },
+//   child: Container(
+//     width: double.infinity,
+//     padding: const EdgeInsets.symmetric(
+//       vertical: 12,
+//     ),
+//     decoration: BoxDecoration(
+//       color: Colors.white.withOpacity(.08),
+//       borderRadius: BorderRadius.circular(18),
+//       border: Border.all(
+//         color: Colors.white.withOpacity(.12),
+//       ),
+//     ),
+//     child: const Row(
+//       mainAxisAlignment: MainAxisAlignment.center,
+//       children: [
+//         Text(
+//           'View More',
+//           style: TextStyle(
+//             color: Colors.white,
+//             fontSize: 14,
+//             fontWeight: FontWeight.w600,
+//           ),
+//         ),
+//         SizedBox(width: 6),
+//         Icon(
+//           Icons.keyboard_arrow_up_rounded,
+//           color: Colors.white,
+//           size: 18,
+//         ),
+//       ],
+//     ),
+//   ),
+// ),
 
 const SizedBox(height: 16),
 

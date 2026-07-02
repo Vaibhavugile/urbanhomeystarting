@@ -1274,6 +1274,51 @@ return Scaffold(
     ),
 
     actions: [
+      
+  if (widget.userId != null)
+    PopupMenuButton<String>(
+      icon: const Icon(
+        Icons.more_vert_rounded,
+        color: Colors.white,
+      ),
+      onSelected: (value) {
+        switch (value) {
+          case 'report':
+            _showReportDialog();
+            break;
+
+          case 'block':
+            _showBlockDialog();
+            break;
+        }
+      },
+      itemBuilder: (context) => const [
+        PopupMenuItem(
+          value: 'report',
+          child: Row(
+            children: [
+              Icon(Icons.flag_outlined),
+              SizedBox(width: 10),
+              Text("Report User"),
+            ],
+          ),
+        ),
+        PopupMenuItem(
+          value: 'block',
+          child: Row(
+            children: [
+              Icon(
+                Icons.block,
+                color: Colors.red,
+              ),
+              SizedBox(width: 10),
+              Text("Block User"),
+            ],
+          ),
+        ),
+      ],
+    ),
+
       if (widget.userId == null &&
           (_flatListingProfiles.isNotEmpty ||
               _seekingFlatmateProfiles.isNotEmpty))

@@ -6,6 +6,7 @@ import 'package:mytennat/screens/complete_user_profile_screen.dart';
 import 'package:mytennat/screens/my_listings_screen.dart';
 import 'package:mytennat/screens/view_profile_screen.dart';
 import 'package:mytennat/screens/verification_screen.dart';
+import 'package:mytennat/services/account_deletion_service.dart';
 import 'package:mytennat/screens/login_screen.dart'  hide kBackgroundColor,
          kPrimaryColor,
          kAccentColor,
@@ -27,13 +28,21 @@ class _UserScreenState extends State<UserScreen> {
   bool _showAdditionalData = false;
   double _completionPercentage = 0.0;
 String _verificationStatus = 'Not Verified';
+final TextEditingController _deleteController =
+    TextEditingController();
 bool _isVerified = false;
+bool _isDeletingAccount = false;
   @override
   void initState() {
     super.initState();
     _fetchUserProfile();
   }
 
+@override
+void dispose() {
+  _deleteController.dispose();
+  super.dispose();
+}
   Future<void> _fetchUserProfile() async {
     final user = FirebaseAuth.instance.currentUser;
     if (user == null) {
@@ -128,7 +137,164 @@ bool _isVerified = false;
       ),
     );
   }
+Future<void> _showDeleteAccountDialog() async {
+  _deleteController.clear();
 
+  bool canDelete = false;
+
+  await showDialog(
+    context: context,
+    barrierDismissible: false,
+    builder: (dialogContext) {
+      return StatefulBuilder(
+        builder: (context, setState) {
+          return AlertDialog(
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(20),
+            ),
+            title: const Row(
+              children: [
+                Icon(
+                  Icons.delete_forever_rounded,
+                  color: Colors.red,
+                ),
+                SizedBox(width: 10),
+                Text("Delete Account"),
+              ],
+            ),
+            content: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    "Deleting your UrbanHomey account will permanently remove:",
+                  ),
+
+                  const SizedBox(height: 15),
+
+                  const Text("• Your profile"),
+                  const Text("• Flat listings"),
+                  const Text("• Flatmate profiles"),
+                  const Text("• Photos"),
+                  const Text("• Account information"),
+
+                  const SizedBox(height: 20),
+
+                  const Text(
+                    "This action cannot be undone.",
+                    style: TextStyle(
+                      color: Colors.red,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+
+                  const SizedBox(height: 20),
+
+                  const Text(
+                    "Type DELETE below to continue.",
+                  ),
+
+                  const SizedBox(height: 10),
+
+                  TextField(
+                    controller: _deleteController,
+                    onChanged: (value) {
+                      setState(() {
+                        canDelete =
+                            value.trim() == "DELETE";
+                      });
+                    },
+                    decoration: const InputDecoration(
+                      border: OutlineInputBorder(),
+                      hintText: "DELETE",
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () {
+                  Navigator.pop(dialogContext);
+                },
+                child: const Text("Cancel"),
+              ),
+              ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.red,
+                ),
+               onPressed: canDelete && !_isDeletingAccount
+    ? () async {
+        setState(() {
+          _isDeletingAccount = true;
+        });
+
+        try {
+          await AccountDeletionService.deleteUserDocument();
+
+          if (!mounted) return;
+
+          Navigator.pop(dialogContext);
+
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text("Your account has been deleted."),
+            ),
+          );
+
+          Navigator.pushAndRemoveUntil(
+            context,
+            MaterialPageRoute(
+              builder: (_) => const LoginScreen(),
+            ),
+            (route) => false,
+          );
+        } catch (e) {
+          if (!mounted) return;
+
+          Navigator.pop(dialogContext);
+
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(e.toString()),
+            ),
+          );
+        } finally {
+          if (mounted) {
+            setState(() {
+              _isDeletingAccount = false;
+            });
+          }
+        }
+      }
+    : null,
+                _isDeletingAccount
+    ? const SizedBox(
+        width: 20,
+        height: 20,
+        child: CircularProgressIndicator(
+          strokeWidth: 2,
+          valueColor:
+              AlwaysStoppedAnimation<Color>(
+            Colors.white,
+          ),
+        ),
+      )
+    : const Text(
+        "Delete Account",
+        style: TextStyle(
+          color: Colors.white,
+        ),
+      ),
+              ),
+            ],
+          );
+        },
+      );
+    },
+  );
+}
   @override
 Widget build(BuildContext context) {
   return Scaffold(
@@ -452,40 +618,9 @@ const SizedBox(height: 12),
 _buildActionButton(
   label: 'Request Account Deletion',
   icon: Icons.delete_forever_rounded,
-  onPressed: () async {
-
-    final user =
-    FirebaseAuth.instance.currentUser;
-
-await FirebaseFirestore.instance
-    .collection(
-        'accountDeletionRequests')
-    .doc(user!.uid)
-    .set({
-
-  'userId': user.uid,
-
-  'phoneNumber':
-      user.phoneNumber,
-
-  'status': 'pending',
-
-  'createdAt':
-      FieldValue.serverTimestamp(),
-});
-
-    if (!mounted) return;
-
-    ScaffoldMessenger.of(context)
-        .showSnackBar(
-
-      const SnackBar(
-        content: Text(
-          'Account deletion request submitted.',
-        ),
-      ),
-    );
-  },
+  onPressed: () {
+  _showDeleteAccountDialog();
+},
 ),
 const SizedBox(height: 12),
 

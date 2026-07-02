@@ -30,6 +30,9 @@ class _UserActivityScreenState extends State<UserActivityScreen> {
   List<dynamic> _userProfilesList = []; // List of all current user's profiles (FlatListing and SeekingFlatmate)
 
   // key: userProfileId, value: list of profiles that liked it
+  final Map<String, FlatListingProfile> _flatListingCache = {};
+
+final Map<String, SeekingFlatmateProfile> _seekingFlatmateCache = {};
   final Map<String, List<dynamic>> _incomingLikes = {};
   // key: userProfileId, value: list of profiles it liked
   final Map<String, List<dynamic>> _outgoingLikes = {};
@@ -42,6 +45,24 @@ class _UserActivityScreenState extends State<UserActivityScreen> {
   int _selectedIndex = 3; // Set initial index to 3 for 'Activity'
 
 bool _isBannerPopupShowing = false;
+// ---------------- Pagination ----------------
+
+static const int _pageSize = 20;
+
+// Incoming Likes
+DocumentSnapshot? _lastIncomingLikeDoc;
+bool _hasMoreIncomingLikes = true;
+bool _isLoadingIncomingLikes = false;
+
+// Outgoing Likes
+DocumentSnapshot? _lastOutgoingLikeDoc;
+bool _hasMoreOutgoingLikes = true;
+bool _isLoadingOutgoingLikes = false;
+
+// Matches
+DocumentSnapshot? _lastMatchDoc;
+bool _hasMoreMatches = true;
+bool _isLoadingMatches = false;
 
 int _remainingContacts = 0;
   @override
@@ -65,329 +86,405 @@ int _remainingContacts = 0;
     }
   }
 
-  Future<void> _fetchUserActivities() async {
-    setState(() {
-      _isLoading = true;
-      _userProfilesList.clear();
-      _incomingLikes.clear();
-      _outgoingLikes.clear();
-      _matches.clear();
-    });
+Future<void> _fetchUserActivities() async {
+  if (_currentUser == null) return;
 
-    try {
-      final String currentUserId = _currentUser!.uid;
-      print('Fetching activities for current user ID: $currentUserId');
+  setState(() {
+    _isLoading = true;
 
-      // 1. Fetch all of the current user's profiles
-      print('Fetching all user profiles...');
-      await _fetchAllUserProfiles(currentUserId);
-      print('Fetched user profiles: ${_userProfilesList.length} profiles found.');
+    _userProfilesList.clear();
 
-      // 2. Fetch incoming likes for each of the user's profiles
-      print('Fetching incoming likes...');
-      await _fetchIncomingLikes(currentUserId);
-      print('Incoming likes processed. Total entries: ${_incomingLikes.keys.length}');
+    _incomingLikes.clear();
+    _outgoingLikes.clear();
+    _matches.clear();
+    _matchLookup.clear();
 
-      // 3. Fetch outgoing likes from each of the user's profiles
-      print('Fetching outgoing likes...');
-      await _fetchOutgoingLikes(currentUserId);
-      print('Outgoing likes processed. Total entries: ${_outgoingLikes.keys.length}');
+    _flatListingCache.clear();
+    _seekingFlatmateCache.clear();
+  });
 
-      // 4. Fetch matches involving any of the user's profiles
-      print('Fetching matches...');
-      await _fetchMatches(currentUserId);
-      print('Matches processed. Total entries: ${_matches.keys.length}');
+  try {
+    final String currentUserId = _currentUser!.uid;
 
-    } catch (e) {
-      print('Error fetching user activities: $e');
+    debugPrint(
+      'Fetching activities for user: $currentUserId',
+    );
+
+    // Step 1: Load user's own profiles
+    await _fetchAllUserProfiles(currentUserId);
+
+    debugPrint(
+      'Profiles Loaded: ${_userProfilesList.length}',
+    );
+
+    // Step 2: Load everything else in parallel
+    await Future.wait([
+      _fetchIncomingLikes(currentUserId),
+      _fetchOutgoingLikes(currentUserId),
+      _fetchMatches(currentUserId),
+    ]);
+
+    debugPrint(
+      'Incoming Likes: ${_incomingLikes.length}',
+    );
+
+    debugPrint(
+      'Outgoing Likes: ${_outgoingLikes.length}',
+    );
+
+    debugPrint(
+      'Matches: ${_matches.length}',
+    );
+  } catch (e, stackTrace) {
+    debugPrint(
+      'Activity Fetch Error: $e',
+    );
+
+    debugPrint(
+      stackTrace.toString(),
+    );
+
+    if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Failed to load activities: $e')),
+        SnackBar(
+          content: Text(
+            'Failed to load activities: $e',
+          ),
+        ),
       );
-    } finally {
+    }
+  } finally {
+    if (mounted) {
       setState(() {
         _isLoading = false;
       });
-      print('Finished fetching user activities. Is loading: $_isLoading');
-    }
-  }
-  Future<void> _loadRemainingContacts() async {
-
-  if (_currentUser == null) {
-    return;
-  }
-
-  try {
-
-    final userDoc =
-        await FirebaseFirestore
-            .instance
-            .collection('users')
-            .doc(_currentUser!.uid)
-            .get();
-
-    if (!userDoc.exists) {
-      return;
     }
 
-    setState(() {
-
-      _remainingContacts =
-          userDoc.data()?[
-                  'remainingContacts'] ??
-              0;
-    });
-
     debugPrint(
-      'REMAINING CONTACTS = $_remainingContacts',
-    );
-
-  } catch (e) {
-
-    debugPrint(
-      'LOAD CONTACT ERROR: $e',
+      'Activity Screen Loaded',
     );
   }
 }
 
-  Future<void> _fetchAllUserProfiles(String userId) async {
-    _userProfilesList.clear();
-    print('fetchAllUserProfiles: Clearing existing profiles.');
+Future<void> _loadRemainingContacts() async {
+  if (_currentUser == null) return;
 
-    // Fetch Flat Listings
-    print('fetchAllUserProfiles: Fetching flatListings for $userId');
-    QuerySnapshot flatListings = await _firestore
+  try {
+    final userDoc = await FirebaseFirestore.instance
+        .collection('users')
+        .doc(_currentUser!.uid)
+        .get();
+
+    if (!userDoc.exists) return;
+
+    final remaining =
+        userDoc.data()?['remainingContacts'] ?? 0;
+
+    if (!mounted) return;
+
+    setState(() {
+      _remainingContacts = remaining;
+    });
+
+    debugPrint(
+      'Remaining Contacts: $_remainingContacts',
+    );
+  } catch (e) {
+    debugPrint(
+      'Load Remaining Contacts Error: $e',
+    );
+  }
+}
+
+Future<void> _fetchAllUserProfiles(String userId) async {
+  _userProfilesList.clear();
+
+  debugPrint('Fetching user profiles...');
+
+  final results = await Future.wait([
+    _firestore
         .collection('users')
         .doc(userId)
         .collection('flatListings')
-        .get();
-    print('fetchAllUserProfiles: Found ${flatListings.docs.length} flatListings.');
-    for (var doc in flatListings.docs) {
-      _userProfilesList.add(FlatListingProfile.fromMap(doc.data() as Map<String, dynamic>, doc.id));
-      print('fetchAllUserProfiles: Added FlatListing ${doc.id}');
-    }
-
-    // Fetch Seeking Flatmate Profiles
-    print('fetchAllUserProfiles: Fetching seekingFlatmateProfiles for $userId');
-    QuerySnapshot seekingFlatmateProfiles = await _firestore
+        .get(),
+    _firestore
         .collection('users')
         .doc(userId)
         .collection('seekingFlatmateProfiles')
-        .get();
-    print('fetchAllUserProfiles: Found ${seekingFlatmateProfiles.docs.length} seekingFlatmateProfiles.');
-    for (var doc in seekingFlatmateProfiles.docs) {
-      _userProfilesList.add(SeekingFlatmateProfile.fromMap(doc.data() as Map<String, dynamic>, doc.id));
-      print('fetchAllUserProfiles: Added SeekingFlatmateProfile ${doc.id}');
-    }
+        .get(),
+  ]);
+
+  final QuerySnapshot flatListings = results[0];
+  final QuerySnapshot seekingFlatmateProfiles = results[1];
+
+  for (final doc in flatListings.docs) {
+    final profile = FlatListingProfile.fromMap(
+      doc.data() as Map<String, dynamic>,
+      doc.id,
+    );
+
+    _userProfilesList.add(profile);
+
+    // Warm up cache
+    _flatListingCache[doc.id] = profile;
   }
+
+  for (final doc in seekingFlatmateProfiles.docs) {
+    final profile = SeekingFlatmateProfile.fromMap(
+      doc.data() as Map<String, dynamic>,
+      doc.id,
+    );
+
+    _userProfilesList.add(profile);
+
+    // Warm up cache
+    _seekingFlatmateCache[doc.id] = profile;
+  }
+
+  debugPrint(
+    'Loaded ${_userProfilesList.length} profiles',
+  );
+}
 
   Future<void> _fetchIncomingLikes(String userId) async {
-    _incomingLikes.clear();
-    print('fetchIncomingLikes: Clearing existing incoming likes.');
+  _incomingLikes.clear();
 
-    for (var userProfile in _userProfilesList) {
-      final String userProfileId = userProfile.documentId!;
-      print('fetchIncomingLikes: Querying collectionGroup "likes" for userProfileId: $userProfileId (likedUserId: $userId)');
-      QuerySnapshot incomingLikesSnapshot = await _firestore.collectionGroup('likes')
-          .where('likedUserId', isEqualTo: userId)
-          .where('likedProfileDocumentId', isEqualTo: userProfileId)
-          .get();
-      print('fetchIncomingLikes: Found ${incomingLikesSnapshot.docs.length} incoming likes for profile $userProfileId.');
+  debugPrint('fetchIncomingLikes: Started');
 
-      List<dynamic> profilesThatLikedMe = [];
-      for (var doc in incomingLikesSnapshot.docs) {
-        final data = doc.data() as Map<String, dynamic>;
-        final likingUserId = data['likingUserId'];
-        final likingUserProfileId = data['likingUserProfileId'];
-        final likingUserProfileType = data['likingUserProfileType'];
+  for (final userProfile in _userProfilesList) {
+    final String userProfileId = userProfile.documentId!;
 
-        dynamic likedByProfile;
+    final QuerySnapshot incomingLikesSnapshot = await _firestore
+        .collectionGroup('likes')
+        .where('likedUserId', isEqualTo: userId)
+        .where('likedProfileDocumentId', isEqualTo: userProfileId)
+        .get();
+
+    debugPrint(
+      'Incoming Likes for $userProfileId : ${incomingLikesSnapshot.docs.length}',
+    );
+
+    final List<dynamic> profilesThatLikedMe = [];
+
+    final results = await Future.wait<dynamic?>(
+      incomingLikesSnapshot.docs.map((doc) async {
         try {
-          if (likingUserProfileType == 'flat_listing') {
-            DocumentSnapshot otherDoc = await _firestore
-                .collection('users')
-                .doc(likingUserId)
-                .collection('flatListings')
-                .doc(likingUserProfileId)
-                .get();
-            if (otherDoc.exists) {
-              likedByProfile = FlatListingProfile.fromMap(otherDoc.data() as Map<String, dynamic>, otherDoc.id);
-            }
-          } else if (likingUserProfileType == 'seeking_flatmate') {
-            DocumentSnapshot otherDoc = await _firestore
-                .collection('users')
-                .doc(likingUserId)
-                .collection('seekingFlatmateProfiles')
-                .doc(likingUserProfileId)
-                .get();
-            if (otherDoc.exists) {
-              likedByProfile = SeekingFlatmateProfile.fromMap(otherDoc.data() as Map<String, dynamic>, otherDoc.id);
-            }
-          }
-        } catch (e) {
-          print("Error fetching liking profile details for incoming like: $e");
-        }
+          final data = doc.data() as Map<String, dynamic>;
 
-        if (likedByProfile != null) {
-          profilesThatLikedMe.add(likedByProfile);
+          return await _getProfile(
+            data['likingUserId'],
+            data['likingUserProfileId'],
+            data['likingUserProfileType'],
+          );
+        } catch (e) {
+          debugPrint(
+            'Incoming Like Profile Fetch Error: $e',
+          );
+          return null;
         }
-      }
-      if (profilesThatLikedMe.isNotEmpty) {
-        _incomingLikes[userProfileId] = profilesThatLikedMe;
-      }
+      }),
+    );
+
+    profilesThatLikedMe.addAll(
+      results.whereType<dynamic>(),
+    );
+
+    if (profilesThatLikedMe.isNotEmpty) {
+      _incomingLikes[userProfileId] = profilesThatLikedMe;
     }
   }
 
-  Future<void> _fetchOutgoingLikes(String userId) async {
-    _outgoingLikes.clear();
-    print('fetchOutgoingLikes: Clearing existing outgoing likes.');
-    for (var userProfile in _userProfilesList) {
-      final String userProfileId = userProfile.documentId!;
-      print('fetchOutgoingLikes: Querying user_likes/${userId}/likes for likingUserProfileId: $userProfileId');
-      QuerySnapshot outgoingLikesSnapshot = await _firestore.collection('user_likes')
-          .doc(userId)
-          .collection('likes')
-          .where('likingUserProfileId', isEqualTo: userProfileId)
-          .get();
+  debugPrint('fetchIncomingLikes: Completed');
+}
+ Future<void> _fetchOutgoingLikes(String userId) async {
+  _outgoingLikes.clear();
 
-      List<dynamic> profilesLikedByMe = [];
-      for (var doc in outgoingLikesSnapshot.docs) {
-        final data = doc.data() as Map<String, dynamic>;
-        final likedUserId = data['likedUserId'];
-        final likedProfileDocumentId = data['likedProfileDocumentId'];
-        final likedUserProfileType = data['likedUserProfileType'];
+  debugPrint('fetchOutgoingLikes: Started');
 
-        dynamic likedProfile;
+  for (final userProfile in _userProfilesList) {
+    final String userProfileId = userProfile.documentId!;
+
+    final QuerySnapshot outgoingLikesSnapshot = await _firestore
+        .collection('user_likes')
+        .doc(userId)
+        .collection('likes')
+        .where(
+          'likingUserProfileId',
+          isEqualTo: userProfileId,
+        )
+        .get();
+
+    debugPrint(
+      'Outgoing Likes for $userProfileId : ${outgoingLikesSnapshot.docs.length}',
+    );
+
+    final List<dynamic> profilesLikedByMe = [];
+
+    final results = await Future.wait<dynamic?>(
+      outgoingLikesSnapshot.docs.map((doc) async {
         try {
-          if (likedUserProfileType == 'flat_listing') {
-            DocumentSnapshot otherDoc = await _firestore
-                .collection('users')
-                .doc(likedUserId)
-                .collection('flatListings')
-                .doc(likedProfileDocumentId)
-                .get();
-            if (otherDoc.exists) {
-              likedProfile = FlatListingProfile.fromMap(otherDoc.data() as Map<String, dynamic>, otherDoc.id);
-            }
-          } else if (likedUserProfileType == 'seeking_flatmate') {
-            DocumentSnapshot otherDoc = await _firestore
-                .collection('users')
-                .doc(likedUserId)
-                .collection('seekingFlatmateProfiles')
-                .doc(likedProfileDocumentId)
-                .get();
-            if (otherDoc.exists) {
-              likedProfile = SeekingFlatmateProfile.fromMap(otherDoc.data() as Map<String, dynamic>, otherDoc.id);
-            }
-          }
-        } catch (e) {
-          print("Error fetching liked profile details for outgoing like: $e");
-        }
+          final data =
+              doc.data() as Map<String, dynamic>;
 
-        if (likedProfile != null) {
-          profilesLikedByMe.add(likedProfile);
+          return await _getProfile(
+            data['likedUserId'],
+            data['likedProfileDocumentId'],
+            data['likedUserProfileType'],
+          );
+        } catch (e) {
+          debugPrint(
+            'Outgoing Like Profile Fetch Error: $e',
+          );
+          return null;
         }
-      }
-      if (profilesLikedByMe.isNotEmpty) {
-        _outgoingLikes[userProfileId] = profilesLikedByMe;
-      }
+      }),
+    );
+
+    profilesLikedByMe.addAll(
+      results.whereType<dynamic>(),
+    );
+
+    if (profilesLikedByMe.isNotEmpty) {
+      _outgoingLikes[userProfileId] =
+          profilesLikedByMe;
     }
   }
 
-  Future<void> _fetchMatches(String userId) async {
-    _matches.clear();
-    print('fetchMatches: Clearing existing matches.');
+  debugPrint('fetchOutgoingLikes: Completed');
+}
 
-    QuerySnapshot matchesSnapshot1 = await _firestore.collection('matches')
+Future<void> _fetchMatches(String userId) async {
+  _matches.clear();
+  _matchLookup.clear();
+
+  debugPrint('fetchMatches: Started');
+
+  final results = await Future.wait([
+    _firestore
+        .collection('matches')
         .where('user1_uid', isEqualTo: userId)
-        .get();
-
-    QuerySnapshot matchesSnapshot2 = await _firestore.collection('matches')
+        .get(),
+    _firestore
+        .collection('matches')
         .where('user2_uid', isEqualTo: userId)
-        .get();
+        .get(),
+  ]);
 
-    final allMatchDocs = {...matchesSnapshot1.docs, ...matchesSnapshot2.docs};
+  final QuerySnapshot matchesSnapshot1 = results[0];
+  final QuerySnapshot matchesSnapshot2 = results[1];
 
-    for (var doc in allMatchDocs) {
-      final data = doc.data() as Map<String, dynamic>;
-      final String user1Uid = data['user1_uid'];
-      final String user2Uid = data['user2_uid'];
-      final String user1ProfileId = data['user1_profile_id'];
-      final String user2ProfileId = data['user2_profile_id'];
-      final String user1ProfileType = data['user1_profile_type'];
-      final String user2ProfileType = data['user2_profile_type'];
-      final String chatRoomId = data['chatRoomId'];
-      final sortedIds = [
-  user1ProfileId,
-  user2ProfileId,
-]..sort();
+  final allMatchDocs = {
+    ...matchesSnapshot1.docs,
+    ...matchesSnapshot2.docs,
+  };
 
-final matchId =
-    '${sortedIds[0]}_${sortedIds[1]}';
-
-_matchLookup[matchId] = {
-  'conversationUnlocked':
-      data['conversationUnlocked'] ??
-          false,
-  'chatRoomId':
-      data['chatRoomId'],
-};
-
-      String currentUserProfileIdInMatch;
-      String otherUserUid;
-      String otherUserProfileId;
-      String otherUserProfileType;
-
-      if (user1Uid == userId) {
-        currentUserProfileIdInMatch = user1ProfileId;
-        otherUserUid = user2Uid;
-        otherUserProfileId = user2ProfileId;
-        otherUserProfileType = user2ProfileType;
-      } else {
-        currentUserProfileIdInMatch = user2ProfileId;
-        otherUserUid = user1Uid;
-        otherUserProfileId = user1ProfileId;
-        otherUserProfileType = user1ProfileType;
-      }
-
-      // Fetch the details of the other user's profile involved in the match
-      dynamic otherProfile;
+  final matchResults = await Future.wait<Map<String, dynamic>?>(
+    allMatchDocs.map((doc) async {
       try {
-        if (otherUserProfileType == 'flat_listing') {
-          DocumentSnapshot otherDoc = await _firestore
-              .collection('users')
-              .doc(otherUserUid)
-              .collection('flatListings')
-              .doc(otherUserProfileId)
-              .get();
-          if (otherDoc.exists) {
-            otherProfile = FlatListingProfile.fromMap(otherDoc.data() as Map<String, dynamic>, otherDoc.id);
-          }
-        } else if (otherUserProfileType == 'seeking_flatmate') {
-          DocumentSnapshot otherDoc = await _firestore
-              .collection('users')
-              .doc(otherUserUid)
-              .collection('seekingFlatmateProfiles')
-              .doc(otherUserProfileId)
-              .get();
-          if (otherDoc.exists) {
-            otherProfile = SeekingFlatmateProfile.fromMap(otherDoc.data() as Map<String, dynamic>, otherDoc.id);
-          }
-        }
-      } catch (e) {
-        print("Error fetching matched profile details: $e");
-      }
+        final data = doc.data() as Map<String, dynamic>;
 
-      if (otherProfile != null) {
-        if (!_matches.containsKey(currentUserProfileIdInMatch)) {
-          _matches[currentUserProfileIdInMatch] = [];
+        final String user1Uid = data['user1_uid'];
+        final String user2Uid = data['user2_uid'];
+
+        final String user1ProfileId =
+            data['user1_profile_id'];
+
+        final String user2ProfileId =
+            data['user2_profile_id'];
+
+        final String user1ProfileType =
+            data['user1_profile_type'];
+
+        final String user2ProfileType =
+            data['user2_profile_type'];
+
+        final String chatRoomId =
+            data['chatRoomId'];
+
+        final sortedIds = [
+          user1ProfileId,
+          user2ProfileId,
+        ]..sort();
+
+        final matchId =
+            '${sortedIds[0]}_${sortedIds[1]}';
+
+        _matchLookup[matchId] = {
+          'conversationUnlocked':
+              data['conversationUnlocked'] ??
+                  false,
+          'chatRoomId': chatRoomId,
+        };
+
+        late String currentUserProfileId;
+        late String otherUserUid;
+        late String otherProfileId;
+        late String otherProfileType;
+
+        if (user1Uid == userId) {
+          currentUserProfileId =
+              user1ProfileId;
+          otherUserUid = user2Uid;
+          otherProfileId =
+              user2ProfileId;
+          otherProfileType =
+              user2ProfileType;
+        } else {
+          currentUserProfileId =
+              user2ProfileId;
+          otherUserUid = user1Uid;
+          otherProfileId =
+              user1ProfileId;
+          otherProfileType =
+              user1ProfileType;
         }
-        _matches[currentUserProfileIdInMatch]!.add({
+
+        final otherProfile =
+            await _getProfile(
+          otherUserUid,
+          otherProfileId,
+          otherProfileType,
+        );
+
+        if (otherProfile == null) {
+          return null;
+        }
+
+        return {
+          'ownerProfileId':
+              currentUserProfileId,
           'profile': otherProfile,
           'chatRoomId': chatRoomId,
-        });
+        };
+      } catch (e) {
+        debugPrint(
+          'Match Fetch Error: $e',
+        );
+        return null;
       }
-    }
+    }),
+  );
+
+  for (final match in matchResults.whereType<Map<String, dynamic>>()) {
+    final ownerProfileId =
+        match['ownerProfileId'];
+
+    _matches.putIfAbsent(
+      ownerProfileId,
+      () => [],
+    );
+
+    _matches[ownerProfileId]!.add({
+      'profile': match['profile'],
+      'chatRoomId':
+          match['chatRoomId'],
+    });
   }
+
+  debugPrint(
+    'fetchMatches: Completed (${allMatchDocs.length} matches)',
+  );
+}
 
   String? _findChatRoomId(String currentUserProfileId, String otherUserUid, String otherUserProfileId) {
     final List<Map<String, dynamic>>? matchesForCurrentUserProfile = _matches[currentUserProfileId];
@@ -431,6 +528,67 @@ String _getProfileDisplayName(dynamic profile) {
   }
 
   return 'Unknown Profile';
+}
+Future<dynamic> _getProfile(
+  String userId,
+  String profileId,
+  String profileType,
+) async {
+  try {
+    // ---------- Flat Listing ----------
+    if (profileType == 'flat_listing') {
+      if (_flatListingCache.containsKey(profileId)) {
+        return _flatListingCache[profileId];
+      }
+
+      final doc = await _firestore
+          .collection('users')
+          .doc(userId)
+          .collection('flatListings')
+          .doc(profileId)
+          .get();
+
+      if (!doc.exists) return null;
+
+      final profile = FlatListingProfile.fromMap(
+        doc.data() as Map<String, dynamic>,
+        doc.id,
+      );
+
+      _flatListingCache[profileId] = profile;
+
+      return profile;
+    }
+
+    // ---------- Seeking Flatmate ----------
+    if (profileType == 'seeking_flatmate') {
+      if (_seekingFlatmateCache.containsKey(profileId)) {
+        return _seekingFlatmateCache[profileId];
+      }
+
+      final doc = await _firestore
+          .collection('users')
+          .doc(userId)
+          .collection('seekingFlatmateProfiles')
+          .doc(profileId)
+          .get();
+
+      if (!doc.exists) return null;
+
+      final profile = SeekingFlatmateProfile.fromMap(
+        doc.data() as Map<String, dynamic>,
+        doc.id,
+      );
+
+      _seekingFlatmateCache[profileId] = profile;
+
+      return profile;
+    }
+  } catch (e) {
+    debugPrint('Profile fetch error: $e');
+  }
+
+  return null;
 }
 
   String _getProfileTypeDisplay(dynamic profile) {
