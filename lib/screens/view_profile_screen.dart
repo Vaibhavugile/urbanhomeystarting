@@ -9,7 +9,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../services/chat_unlock_service.dart';
 import 'package:mytennat/screens/banner_popup_screen.dart'; // NEW: Import the banner popup screen
 import 'package:mytennat/screens/PlansScreen.dart';
-
+import 'package:mytennat/widgets/profile_action_menu.dart';
 import 'package:mytennat/screens/chat_screen.dart'
     hide kBackgroundColor,
          kPrimaryColor,
@@ -1274,51 +1274,11 @@ return Scaffold(
     ),
 
     actions: [
-      
-  if (widget.userId != null)
-    PopupMenuButton<String>(
-      icon: const Icon(
-        Icons.more_vert_rounded,
-        color: Colors.white,
-      ),
-      onSelected: (value) {
-        switch (value) {
-          case 'report':
-            _showReportDialog();
-            break;
-
-          case 'block':
-            _showBlockDialog();
-            break;
-        }
-      },
-      itemBuilder: (context) => const [
-        PopupMenuItem(
-          value: 'report',
-          child: Row(
-            children: [
-              Icon(Icons.flag_outlined),
-              SizedBox(width: 10),
-              Text("Report User"),
-            ],
-          ),
-        ),
-        PopupMenuItem(
-          value: 'block',
-          child: Row(
-            children: [
-              Icon(
-                Icons.block,
-                color: Colors.red,
-              ),
-              SizedBox(width: 10),
-              Text("Block User"),
-            ],
-          ),
-        ),
-      ],
+        if (widget.userId != null)
+    ProfileActionMenu(
+      userId: widget.userId!,
+      profileId: widget.profileDocumentId!,
     ),
-
       if (widget.userId == null &&
           (_flatListingProfiles.isNotEmpty ||
               _seekingFlatmateProfiles.isNotEmpty))

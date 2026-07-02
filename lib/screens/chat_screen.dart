@@ -6,6 +6,7 @@ import 'package:flutter/scheduler.dart'; // For post-frame callbacks
 import 'package:rxdart/rxdart.dart'; // Ensure rxdart is imported if not already
 import 'dart:async';
 import 'package:mytennat/screens/PlansScreen.dart';
+import 'package:mytennat/widgets/profile_action_menu.dart';
 
 // Custom Colors for a modern look, aligned with your gradient theme
 // ======================================================
@@ -984,56 +985,26 @@ if (_isMarkingRead) return;
                         .circular(
                             14),
               ),
-              child: IconButton(
-                onPressed: () {},
-                icon: const Icon(
-                  Icons.call_rounded,
-                  color:
-                      Colors.white,
-                  size: 20,
-                ),
-              ),
+              
             ),
 
             const SizedBox(width: 8),
 
-            Container(
-              width: 42,
-              height: 42,
-              decoration:
-                  BoxDecoration(
-                color: Colors.white
-                    .withOpacity(.15),
-                borderRadius:
-                    BorderRadius
-                        .circular(
-                            14),
-              ),
-              child: PopupMenuButton(
-                icon: const Icon(
-                  Icons.more_vert,
-                  color:
-                      Colors.white,
-                ),
-                itemBuilder: (context) =>
-                    [
-                  const PopupMenuItem(
-                    value:
-                        "profile",
-                    child: Text(
-                      "View Profile",
-                    ),
-                  ),
-                  const PopupMenuItem(
-                    value:
-                        "block",
-                    child: Text(
-                      "Block User",
-                    ),
-                  ),
-                ],
-              ),
-            ),
+           Container(
+  width: 42,
+  height: 42,
+  decoration: BoxDecoration(
+    color: Colors.white.withOpacity(.15),
+    borderRadius: BorderRadius.circular(14),
+  ),
+  child: ProfileActionMenu(
+    userId: widget.chatPartnerId,
+    profileId: '',
+    onBlocked: () {
+      Navigator.pop(context);
+    },
+  ),
+),
           ],
         ),
       ),

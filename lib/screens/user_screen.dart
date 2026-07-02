@@ -221,73 +221,72 @@ Future<void> _showDeleteAccountDialog() async {
                 child: const Text("Cancel"),
               ),
               ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.red,
-                ),
-               onPressed: canDelete && !_isDeletingAccount
-    ? () async {
-        setState(() {
-          _isDeletingAccount = true;
-        });
+  style: ElevatedButton.styleFrom(
+    backgroundColor: Colors.red,
+  ),
+  onPressed: canDelete && !_isDeletingAccount
+      ? () async {
+          setState(() {
+            _isDeletingAccount = true;
+          });
 
-        try {
-          await AccountDeletionService.deleteUserDocument();
+          try {
+            await AccountDeletionService.deleteUserDocument();
 
-          if (!mounted) return;
+            if (!mounted) return;
 
-          Navigator.pop(dialogContext);
+            Navigator.pop(dialogContext);
 
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text("Your account has been deleted."),
-            ),
-          );
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text("Your account has been deleted."),
+              ),
+            );
 
-          Navigator.pushAndRemoveUntil(
-            context,
-            MaterialPageRoute(
-              builder: (_) => const LoginScreen(),
-            ),
-            (route) => false,
-          );
-        } catch (e) {
-          if (!mounted) return;
+            Navigator.pushAndRemoveUntil(
+              context,
+              MaterialPageRoute(
+                builder: (_) => const LoginScreen(),
+              ),
+              (route) => false,
+            );
+          } catch (e) {
+            if (!mounted) return;
 
-          Navigator.pop(dialogContext);
+            Navigator.pop(dialogContext);
 
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(e.toString()),
-            ),
-          );
-        } finally {
-          if (mounted) {
-            setState(() {
-              _isDeletingAccount = false;
-            });
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(e.toString()),
+              ),
+            );
+          } finally {
+            if (mounted) {
+              setState(() {
+                _isDeletingAccount = false;
+              });
+            }
           }
         }
-      }
-    : null,
-                _isDeletingAccount
-    ? const SizedBox(
-        width: 20,
-        height: 20,
-        child: CircularProgressIndicator(
-          strokeWidth: 2,
-          valueColor:
-              AlwaysStoppedAnimation<Color>(
-            Colors.white,
+      : null,
+  child: _isDeletingAccount
+      ? const SizedBox(
+          width: 20,
+          height: 20,
+          child: CircularProgressIndicator(
+            strokeWidth: 2,
+            valueColor: AlwaysStoppedAnimation<Color>(
+              Colors.white,
+            ),
+          ),
+        )
+      : const Text(
+          "Delete Account",
+          style: TextStyle(
+            color: Colors.white,
           ),
         ),
-      )
-    : const Text(
-        "Delete Account",
-        style: TextStyle(
-          color: Colors.white,
-        ),
-      ),
-              ),
+),
             ],
           );
         },

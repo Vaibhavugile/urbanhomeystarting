@@ -7,7 +7,7 @@ import 'package:rxdart/rxdart.dart';
 import 'package:mytennat/screens/chat_screen.dart';
 import 'package:mytennat/screens/flatmate_profile_screen.dart'; // FlatListingProfile
 import 'package:mytennat/screens/flat_with_flatmate_profile_screen.dart'; // SeekingFlatmateProfile
-
+import 'package:mytennat/services/block_user_service.dart';
 class MatchesListScreen extends StatefulWidget {
   const MatchesListScreen({
     super.key,
@@ -362,7 +362,21 @@ return Column(
               }
 
               // Use FutureBuilder to fetch the partner's specific profile data from the subcollection
-              return FutureBuilder<DocumentSnapshot>(
+              return FutureBuilder<bool>(
+  future: BlockUserService.isUserBlocked(
+    otherUserId: partnerId,
+  ),
+  builder: (context, blockedSnapshot) {
+    if (blockedSnapshot.connectionState ==
+        ConnectionState.waiting) {
+      return const SizedBox.shrink();
+    }
+
+    if (blockedSnapshot.data == true) {
+      return const SizedBox.shrink();
+    }
+
+    return FutureBuilder<DocumentSnapshot>(
                 future: _firestore
                     .collection('users')
                     .doc(partnerId)
@@ -499,6 +513,8 @@ return Column(
                   );
                 },
               );
+  },
+);
             },
                 ),
     ),
