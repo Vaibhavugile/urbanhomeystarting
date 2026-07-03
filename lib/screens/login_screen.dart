@@ -11,7 +11,7 @@ import 'package:mytennat/screens/initial_profile_screen.dart'; // Import Initial
 import 'package:mytennat/screens/complete_user_profile_screen.dart'; // Import CompleteUserProfileScreen
 import 'package:cloud_functions/cloud_functions.dart';
 import 'package:mytennat/services/notification_service.dart';
-
+import 'package:url_launcher/url_launcher.dart';
 const Color kPrimaryColor = Color(0xFF7C3AED);
 const Color kSecondaryColor = Color(0xFF9333EA);
 const Color kAccentColor = Color(0xFFEC4899);
@@ -71,6 +71,7 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
   int _resendOtpTimer = 60;
   bool _canResendOtp = false;
   Timer? _timer;
+  bool _acceptedTerms = false;
 
   late AnimationController _animationController;
   late Animation<Offset> _slideUpAnimation;
@@ -169,6 +170,16 @@ Future<void> _verifyPhoneNumber() async {
           'Failed to send OTP: $e',
         ),
       ),
+    );
+  }
+}
+Future<void> _openUrl(String url) async {
+  final uri = Uri.parse(url);
+
+  if (await canLaunchUrl(uri)) {
+    await launchUrl(
+      uri,
+      mode: LaunchMode.externalApplication,
     );
   }
 }
@@ -640,28 +651,103 @@ Widget _buildMobileLoginUi(BuildContext context) {
                           ),
 
                         const SizedBox(height: 28),
+                        CheckboxListTile(
+  value: _acceptedTerms,
+  onChanged: (value) {
+    setState(() {
+      _acceptedTerms = value ?? false;
+    });
+  },
+  controlAffinity: ListTileControlAffinity.leading,
+  contentPadding: EdgeInsets.zero,
+  title: RichText(
+  text: TextSpan(
+    style: const TextStyle(
+      color: Colors.black87,
+      fontSize: 13,
+    ),
+    children: [
+      const TextSpan(
+        text: "I agree to the ",
+      ),
+
+      WidgetSpan(
+        child: GestureDetector(
+          onTap: () {
+            _openUrl(
+              'https://urbanhomey-363dc.web.app/terms',
+            );
+          },
+          child: const Text(
+            "Terms of Use",
+            style: TextStyle(
+              color: Colors.blue,
+              fontWeight: FontWeight.bold,
+              decoration: TextDecoration.underline,
+            ),
+          ),
+        ),
+      ),
+
+      const TextSpan(
+        text: " and ",
+      ),
+
+      WidgetSpan(
+        child: GestureDetector(
+          onTap: () {
+            _openUrl(
+              'https://urbanhomey-363dc.web.app/privacy',
+            );
+          },
+          child: const Text(
+            "Privacy Policy",
+            style: TextStyle(
+              color: Colors.blue,
+              fontWeight: FontWeight.bold,
+              decoration: TextDecoration.underline,
+            ),
+          ),
+        ),
+      ),
+    ],
+  ),
+),
+),
+const SizedBox(height: 10),
 
                         SizedBox(
                           width: double.infinity,
                           height: 58,
                           child: DecoratedBox(
-                            decoration: BoxDecoration(
-                              gradient: kPrimaryGradient,
-                              borderRadius: BorderRadius.circular(18),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: kPrimaryColor.withOpacity(.35),
-                                  blurRadius: 18,
-                                  offset: const Offset(0, 8),
-                                ),
-                              ],
-                            ),
+                           decoration: BoxDecoration(
+  gradient: _acceptedTerms
+      ? kPrimaryGradient
+      : LinearGradient(
+          colors: [
+            Colors.grey.shade400,
+            Colors.grey.shade500,
+          ],
+        ),
+  borderRadius: BorderRadius.circular(18),
+  boxShadow: _acceptedTerms
+      ? [
+          BoxShadow(
+            color: kPrimaryColor.withOpacity(.35),
+            blurRadius: 18,
+            offset: const Offset(0, 8),
+          ),
+        ]
+      : [],
+),
                             child: ElevatedButton(
-                              onPressed: _loading
-                                  ? null
-                                  : (_isOtpSent
-                                      ? _verifyOtpAndSignIn
-                                      : _verifyPhoneNumber),
+                             onPressed: _loading
+    ? null
+    : !_acceptedTerms
+        ? null
+        : (_isOtpSent
+            ? _verifyOtpAndSignIn
+            : _verifyPhoneNumber),
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: Colors.transparent,
                                 shadowColor: Colors.transparent,
@@ -835,17 +921,8 @@ TextButton(
                 ),
               ),
 
-              const SizedBox(height: 10),
 
-              const Text(
-                'By continuing, you agree to our Terms & Privacy Policy',
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  color: kMediumText,
-                  fontSize: 12,
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
+              
             ],
           ),
         ),
@@ -954,8 +1031,12 @@ TextButton(
                         width: double.infinity,
                         child: ElevatedButton(
                           onPressed: _loading
-                              ? null
-                              : (_isOtpSent ? _verifyOtpAndSignIn : _verifyPhoneNumber),
+    ? null
+    : !_acceptedTerms
+        ? null
+        : (_isOtpSent
+            ? _verifyOtpAndSignIn
+            : _verifyPhoneNumber),
                           style: ElevatedButton.styleFrom(
                             backgroundColor: Colors.redAccent,
                             foregroundColor: Colors.white,

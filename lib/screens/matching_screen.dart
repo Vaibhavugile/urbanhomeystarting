@@ -262,6 +262,10 @@ if (widget.isExploreMode) {
 }
 String? _getDistanceText(dynamic profile) {
 
+  if (profile == null) {
+    return null;
+  }
+
   if (_activeLatitude == null ||
       _activeLongitude == null ||
       profile.latitude == null ||
@@ -269,8 +273,7 @@ String? _getDistanceText(dynamic profile) {
     return null;
   }
 
-  final distance =
-      _calculateDistanceKm(
+  final distance = _calculateDistanceKm(
     _activeLatitude!,
     _activeLongitude!,
     profile.latitude!,
@@ -2883,40 +2886,48 @@ int _calculateMatchPercentage(
   dynamic userProfile,
   dynamic otherProfile,
 ) {
-  int score = 0;
+ int score = 0;
 
-  final myLat = userProfile.latitude;
-  final myLng = userProfile.longitude;
+// Prevent NoSuchMethodError when either profile is null
+if (userProfile == null || otherProfile == null) {
+  return 0;
+}
 
-  final otherLat = otherProfile.latitude;
-  final otherLng = otherProfile.longitude;
+final double? myLat = userProfile.latitude;
+final double? myLng = userProfile.longitude;
 
-  if (myLat != null &&
-      myLng != null &&
-      otherLat != null &&
-      otherLng != null) {
+final double? otherLat = otherProfile.latitude;
+final double? otherLng = otherProfile.longitude;
 
-    final distance = _calculateDistanceKm(
-      myLat,
-      myLng,
-      otherLat,
-      otherLng,
-    );
+// -------------------------
+// LOCATION SCORE (25)
+// -------------------------
+if (myLat != null &&
+    myLng != null &&
+    otherLat != null &&
+    otherLng != null) {
 
-    if (distance <= 2) {
-      score += 25;
-    } else if (distance <= 5) {
-      score += 22;
-    } else if (distance <= 10) {
-      score += 18;
-    } else if (distance <= 20) {
-      score += 14;
-    } else if (distance <= 40) {
-      score += 8;
-    } else {
-      score += 2;
-    }
+  final distance = _calculateDistanceKm(
+    myLat,
+    myLng,
+    otherLat,
+    otherLng,
+  );
+
+  if (distance <= 2) {
+    score += 25;
+  } else if (distance <= 5) {
+    score += 22;
+  } else if (distance <= 10) {
+    score += 18;
+  } else if (distance <= 20) {
+    score += 14;
+  } else if (distance <= 40) {
+    score += 8;
+  } else {
+    score += 2;
   }
+}
   // -------------------------
 // BUDGET SCORE (20)
 // -------------------------

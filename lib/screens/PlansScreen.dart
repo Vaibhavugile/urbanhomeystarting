@@ -19,7 +19,7 @@ String? _selectedContacts;
   final List<Map<String, dynamic>> _plans = [
     {
       'title': 'Basic',
-      'price': '₹99',
+      'price': '₹29',
       'contacts': '5 Contacts',
       'features': [
         'Basic features',
@@ -28,28 +28,28 @@ String? _selectedContacts;
       ],
       'isHighlighted': false,
     },
-    {
-      'title': 'Standard',
-      'price': '₹299',
-      'contacts': '20 Contacts',
-      'features': [
-        'All Basic features',
-        'Priority support',
-        'Ad-free experience',
-      ],
-      'isHighlighted': false,
-    },
-    {
-      'title': 'Pro',
-      'price': '₹499',
-      'contacts': '40 Contacts',
-      'features': [
-        'Priority support',
-        'Ad-free experience',
-        'Exclusive insights'
-      ],
-      'isHighlighted': true,
-    },
+    // {
+    //   'title': 'Standard',
+    //   'price': '₹299',
+    //   'contacts': '20 Contacts',
+    //   'features': [
+    //     'All Basic features',
+    //     'Priority support',
+    //     'Ad-free experience',
+    //   ],
+    //   'isHighlighted': false,
+    // },
+    // {
+    //   'title': 'Pro',
+    //   'price': '₹499',
+    //   'contacts': '40 Contacts',
+    //   'features': [
+    //     'Priority support',
+    //     'Ad-free experience',
+    //     'Exclusive insights'
+    //   ],
+    //   'isHighlighted': true,
+    // },
   ];
 
 @override
