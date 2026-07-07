@@ -12,6 +12,7 @@ import 'package:mytennat/screens/complete_user_profile_screen.dart'; // Import C
 import 'package:cloud_functions/cloud_functions.dart';
 import 'package:mytennat/services/notification_service.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:flutter/services.dart';
 const Color kPrimaryColor = Color(0xFF7C3AED);
 const Color kSecondaryColor = Color(0xFF9333EA);
 const Color kAccentColor = Color(0xFFEC4899);
@@ -56,6 +57,12 @@ const LinearGradient kMessageGradient =
     Color(0xFF8B5CF6),
   ],
 );
+enum SnackBarType {
+  success,
+  error,
+  warning,
+  info,
+}
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
 
@@ -128,7 +135,173 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
       });
     });
   }
+void _showPremiumSnackBar({
+  required String message,
+  required SnackBarType type,
+}) {
+  if (!mounted) return;
 
+  ScaffoldMessenger.of(context).hideCurrentSnackBar();
+
+  late final IconData icon;
+  late final String title;
+  late final List<Color> gradientColors;
+
+  switch (type) {
+    case SnackBarType.success:
+      icon = Icons.check_circle_rounded;
+      title = 'Success';
+      gradientColors = const [
+        Color(0xFF059669),
+        Color(0xFF10B981),
+      ];
+      break;
+
+    case SnackBarType.error:
+      icon = Icons.error_rounded;
+      title = 'Something went wrong';
+      gradientColors = const [
+        Color(0xFFDC2626),
+        Color(0xFFEF4444),
+      ];
+      break;
+
+    case SnackBarType.warning:
+      icon = Icons.warning_amber_rounded;
+      title = 'Attention';
+      gradientColors = const [
+        Color(0xFFD97706),
+        Color(0xFFF59E0B),
+      ];
+      break;
+
+    case SnackBarType.info:
+      icon = Icons.info_rounded;
+      title = 'UrbanHomey';
+      gradientColors = const [
+        kPrimaryColor,
+        kSecondaryColor,
+        kAccentColor,
+      ];
+      break;
+  }
+
+  ScaffoldMessenger.of(context).showSnackBar(
+    SnackBar(
+      behavior: SnackBarBehavior.floating,
+
+      backgroundColor: Colors.transparent,
+      elevation: 0,
+
+      margin: const EdgeInsets.symmetric(
+        horizontal: 18,
+        vertical: 16,
+      ),
+
+      padding: EdgeInsets.zero,
+
+      duration: const Duration(seconds: 3),
+
+      content: Container(
+        padding: const EdgeInsets.symmetric(
+          horizontal: 18,
+          vertical: 16,
+        ),
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: gradientColors,
+          ),
+          borderRadius: BorderRadius.circular(18),
+          boxShadow: [
+            BoxShadow(
+              color: gradientColors.first.withOpacity(.30),
+              blurRadius: 22,
+              offset: const Offset(0, 10),
+            ),
+          ],
+        ),
+
+        child: Row(
+          children: [
+            Container(
+              width: 44,
+              height: 44,
+              decoration: BoxDecoration(
+                color: Colors.white.withOpacity(.18),
+                borderRadius: BorderRadius.circular(14),
+                border: Border.all(
+                  color: Colors.white.withOpacity(.20),
+                ),
+              ),
+              child: Icon(
+                icon,
+                color: Colors.white,
+                size: 25,
+              ),
+            ),
+
+            const SizedBox(width: 14),
+
+            Expanded(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment:
+                    CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 15,
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
+
+                  const SizedBox(height: 3),
+
+                  Text(
+                    message,
+                    maxLines: 3,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      color: Colors.white.withOpacity(.90),
+                      fontSize: 13,
+                      fontWeight: FontWeight.w500,
+                      height: 1.35,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+
+            const SizedBox(width: 8),
+
+            GestureDetector(
+              onTap: () {
+                ScaffoldMessenger.of(context)
+                    .hideCurrentSnackBar();
+              },
+              child: Container(
+                padding: const EdgeInsets.all(5),
+                decoration: BoxDecoration(
+                  color: Colors.white.withOpacity(.15),
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(
+                  Icons.close_rounded,
+                  color: Colors.white,
+                  size: 17,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    ),
+  );
+}
 Future<void> _verifyPhoneNumber() async {
   setState(() {
     _loading = true;
@@ -150,27 +323,19 @@ Future<void> _verifyPhoneNumber() async {
 
     _startResendTimer();
 
-    ScaffoldMessenger.of(context)
-        .showSnackBar(
-      const SnackBar(
-        content: Text(
-          'OTP sent on WhatsApp',
-        ),
-      ),
-    );
+    _showPremiumSnackBar(
+  message: 'OTP sent successfully on WhatsApp.',
+  type: SnackBarType.success,
+);
   } catch (e) {
     setState(() {
       _loading = false;
     });
 
-    ScaffoldMessenger.of(context)
-        .showSnackBar(
-      SnackBar(
-        content: Text(
-          'Failed to send OTP: $e',
-        ),
-      ),
-    );
+    _showPremiumSnackBar(
+  message: 'Unable to send OTP. Please try again.',
+  type: SnackBarType.error,
+);
   }
 }
 Future<void> _openUrl(String url) async {
@@ -296,14 +461,44 @@ Future<void> _verifyOtpAndSignIn() async {
       _loading = false;
     });
 
-    ScaffoldMessenger.of(context)
-        .showSnackBar(
-      SnackBar(
-        content: Text(
-          e.toString(),
-        ),
-      ),
+   _showPremiumSnackBar(
+  message: 'Invalid or expired OTP. Please check and try again.',
+  type: SnackBarType.error,
+);
+  }
+}
+Future<void> _openWhatsAppSupport() async {
+  const String phoneNumber = '918793744117'; // Replace with your WhatsApp number
+
+  const String message =
+      'Hi UrbanHomey Support, I am having trouble logging into the app. Please help me.';
+
+  final Uri whatsappUri = Uri.parse(
+    'https://wa.me/$phoneNumber'
+    '?text=${Uri.encodeComponent(message)}',
+  );
+
+  try {
+    final bool opened = await launchUrl(
+      whatsappUri,
+      mode: LaunchMode.externalApplication,
     );
+
+    if (!opened && mounted) {
+      _showPremiumSnackBar(
+        message: 'Unable to open WhatsApp. Please try again.',
+        type: SnackBarType.error,
+      );
+    }
+  } catch (e) {
+    debugPrint('WHATSAPP OPEN ERROR: $e');
+
+    if (mounted) {
+      _showPremiumSnackBar(
+        message: 'Unable to open WhatsApp. Please try again.',
+        type: SnackBarType.error,
+      );
+    }
   }
 }
 Future<void> _createOrUpdateUser() async {
@@ -337,13 +532,10 @@ Future<void> _createOrUpdateUser() async {
       'Authentication failed: No current user after sign-in attempt.',
     );
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text(
-          'Authentication failed. Please try again.',
-        ),
-      ),
-    );
+   _showPremiumSnackBar(
+  message: 'Authentication failed. Please try again.',
+  type: SnackBarType.error,
+);
 
     return;
   }
@@ -573,36 +765,55 @@ Widget _buildMobileLoginUi(BuildContext context) {
                             ),
                           ),
                           child: TextField(
-                            controller: _phoneController,
-                            keyboardType: TextInputType.phone,
-                            style: const TextStyle(
-                              color: kDarkText,
-                              fontSize: 16,
-                              fontWeight: FontWeight.w600,
-                            ),
-                            decoration: InputDecoration(
-                              hintText: 'Enter Phone Number',
-                              hintStyle: const TextStyle(
-                                color: kLightText,
-                              ),
-                              prefixIcon: Container(
-                                margin: const EdgeInsets.all(10),
-                                decoration: BoxDecoration(
-                                  color: kPrimaryColor.withOpacity(.08),
-                                  borderRadius: BorderRadius.circular(12),
-                                ),
-                                child: const Icon(
-                                  Icons.phone,
-                                  color: kPrimaryColor,
-                                ),
-                              ),
-                              border: InputBorder.none,
-                              contentPadding: const EdgeInsets.symmetric(
-                                vertical: 20,
-                                horizontal: 20,
-                              ),
-                            ),
-                          ),
+  controller: _phoneController,
+  keyboardType: TextInputType.number,
+  maxLength: 10,
+
+  inputFormatters: [
+    FilteringTextInputFormatter.digitsOnly,
+    LengthLimitingTextInputFormatter(10),
+  ],
+
+  onChanged: (value) {
+    if (value.length == 10) {
+      FocusScope.of(context).unfocus();
+    }
+  },
+
+  style: const TextStyle(
+    color: kDarkText,
+    fontSize: 16,
+    fontWeight: FontWeight.w600,
+  ),
+
+  decoration: InputDecoration(
+    hintText: 'Enter 10 Digit Whatsapp Number',
+    counterText: '',
+
+    hintStyle: const TextStyle(
+      color: kLightText,
+    ),
+
+    prefixIcon: Container(
+      margin: const EdgeInsets.all(10),
+      decoration: BoxDecoration(
+        color: kPrimaryColor.withOpacity(.08),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: const Icon(
+        Icons.phone,
+        color: kPrimaryColor,
+      ),
+    ),
+
+    border: InputBorder.none,
+
+    contentPadding: const EdgeInsets.symmetric(
+      vertical: 20,
+      horizontal: 20,
+    ),
+  ),
+),
                         ),
 
                         const SizedBox(height: 18),
@@ -617,37 +828,56 @@ Widget _buildMobileLoginUi(BuildContext context) {
                               ),
                             ),
                             child: TextField(
-                              controller: _otpController,
-                              keyboardType: TextInputType.number,
-                              style: const TextStyle(
-                                color: kDarkText,
-                                fontSize: 16,
-                                fontWeight: FontWeight.w600,
-                                letterSpacing: 3,
-                              ),
-                              decoration: InputDecoration(
-                                hintText: 'Enter OTP',
-                                hintStyle: const TextStyle(
-                                  color: kLightText,
-                                ),
-                                prefixIcon: Container(
-                                  margin: const EdgeInsets.all(10),
-                                  decoration: BoxDecoration(
-                                    color: kPrimaryColor.withOpacity(.08),
-                                    borderRadius: BorderRadius.circular(12),
-                                  ),
-                                  child: const Icon(
-                                    Icons.lock_outline,
-                                    color: kPrimaryColor,
-                                  ),
-                                ),
-                                border: InputBorder.none,
-                                contentPadding: const EdgeInsets.symmetric(
-                                  vertical: 20,
-                                  horizontal: 20,
-                                ),
-                              ),
-                            ),
+  controller: _otpController,
+  keyboardType: TextInputType.number,
+  maxLength: 6,
+
+  inputFormatters: [
+    FilteringTextInputFormatter.digitsOnly,
+    LengthLimitingTextInputFormatter(6),
+  ],
+
+  onChanged: (value) {
+    if (value.length == 6) {
+      FocusScope.of(context).unfocus();
+    }
+  },
+
+  style: const TextStyle(
+    color: kDarkText,
+    fontSize: 16,
+    fontWeight: FontWeight.w600,
+    letterSpacing: 3,
+  ),
+
+  decoration: InputDecoration(
+    hintText: 'Enter 6 Digit OTP',
+    counterText: '',
+
+    hintStyle: const TextStyle(
+      color: kLightText,
+    ),
+
+    prefixIcon: Container(
+      margin: const EdgeInsets.all(10),
+      decoration: BoxDecoration(
+        color: kPrimaryColor.withOpacity(.08),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: const Icon(
+        Icons.lock_outline,
+        color: kPrimaryColor,
+      ),
+    ),
+
+    border: InputBorder.none,
+
+    contentPadding: const EdgeInsets.symmetric(
+      vertical: 20,
+      horizontal: 20,
+    ),
+  ),
+),
                           ),
 
                         const SizedBox(height: 28),
@@ -887,13 +1117,7 @@ SizedBox(
 const SizedBox(height: 24),
 
 TextButton(
-  onPressed: () {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('Opening feedback form...'),
-                    ),
-                  );
-                },
+onPressed: _openWhatsAppSupport,
                 child: Column(
                   children: [
                     Container(

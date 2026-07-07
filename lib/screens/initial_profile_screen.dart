@@ -21,8 +21,11 @@ class InitialProfileScreen extends StatefulWidget {
 
 class _InitialProfileScreenState extends State<InitialProfileScreen> {
   final _formKey = GlobalKey<FormState>();
-  final TextEditingController _nameController = TextEditingController();
-  final TextEditingController _ageController = TextEditingController();
+final TextEditingController _firstNameController =
+    TextEditingController();
+
+final TextEditingController _lastNameController =
+    TextEditingController();  final TextEditingController _ageController = TextEditingController();
   final TextEditingController _cityController = TextEditingController();
   String _selectedGender = 'Male';
   File? _profileImageFile;
@@ -145,10 +148,14 @@ Future<String?> _uploadImage(File imageFile, String uid) async {
       if (_profileImageFile != null) {
         profileImageUrl = await _uploadImage(_profileImageFile!, user.uid);
       }
+      final String fullName = [
+  _firstNameController.text.trim(),
+  _lastNameController.text.trim(),
+].where((value) => value.isNotEmpty).join(' ');
 
       final userProfile = UserProfile(
         uid: user.uid,
-        name: _nameController.text.trim(),
+        name: fullName,
         age: int.tryParse(_ageController.text.trim()),
         gender: _selectedGender,
         city: _cityController.text.trim(),
@@ -604,22 +611,42 @@ Widget build(BuildContext context) {
 
                               const SizedBox(height: 24),
 
-                              _buildTextFormField(
-                                controller:
-                                    _nameController,
-                                label: 'Full Name',
-                                icon: Icons.person,
-                                validator:
-                                    (value) {
-                                  if (value ==
-                                          null ||
-                                      value
-                                          .isEmpty) {
-                                    return 'Please enter your name';
-                                  }
-                                  return null;
-                                },
-                              ),
+                              Row(
+  crossAxisAlignment: CrossAxisAlignment.start,
+  children: [
+    Expanded(
+      child: _buildTextFormField(
+        controller: _firstNameController,
+        label: 'First Name',
+        icon: Icons.person_outline_rounded,
+        validator: (value) {
+          if (value == null || value.trim().isEmpty) {
+            return 'Required';
+          }
+
+          return null;
+        },
+      ),
+    ),
+
+    const SizedBox(width: 12),
+
+    Expanded(
+      child: _buildTextFormField(
+        controller: _lastNameController,
+        label: 'Last Name',
+        icon: Icons.person_outline_rounded,
+        validator: (value) {
+          if (value == null || value.trim().isEmpty) {
+            return 'Required';
+          }
+
+          return null;
+        },
+      ),
+    ),
+  ],
+),
 
                               const SizedBox(
                                   height: 18),
