@@ -107,28 +107,60 @@ class _LocationSelectorWidgetState
     'Coimbatore',
     'Mysore',
   ];
+final FocusNode _addressFocusNode = FocusNode();
+ @override
+void initState() {
+  super.initState();
 
-  @override
-  void initState() {
-    super.initState();
+  _selectedCity =
+      widget.initialCity != null &&
+              widget.initialCity!.isNotEmpty
+          ? widget.initialCity
+          : null;
 
-    _selectedCity =
-    (widget.initialCity != null &&
-            widget.initialCity!.isNotEmpty)
-        ? widget.initialCity
-        : null;
+  _addressController = TextEditingController(
+    text: widget.initialAddress ?? '',
+  );
 
-    _addressController = TextEditingController(
-      text: widget.initialAddress ?? '',
-    );
+  _addressController.addListener(
+    _handleAddressTextChanged,
+  );
+}
+
+@override
+void dispose() {
+  _addressController.removeListener(
+    _handleAddressTextChanged,
+  );
+
+  _addressController.dispose();
+
+  super.dispose();
+}
+void _handleAddressTextChanged() {
+  // User changed/cleared the selected Google address.
+  // Do not change _addressController.text here.
+
+  if (_addressController.text.isEmpty) {
+    if (_latitude == null &&
+        _longitude == null &&
+        _placeId == null) {
+      return;
+    }
+
+    setState(() {
+      _latitude = null;
+      _longitude = null;
+      _placeId = null;
+    });
+  } else {
+    // Refresh widgets that depend on controller.text,
+    // such as your selected-location preview.
+    if (mounted) {
+      setState(() {});
+    }
   }
-
-  @override
-  void dispose() {
-    _addressController.dispose();
-    super.dispose();
-  }
-
+}
   void _notifyParent() {
     widget.onLocationSelected(
       LocationResult(
@@ -429,191 +461,209 @@ if (_selectedCity == null)
     const SizedBox(height: 8),
 
     GooglePlaceAutoCompleteTextField(
+  textEditingController: _addressController,
 
-      textEditingController:
-          _addressController,
+  focusNode: _addressFocusNode,
 
-      googleAPIKey:
+  googleAPIKey:
           'AIzaSyBK82kg-QdV1TdTrOoC3-jvbSstRhz1wZ0',
 
-      debounceTime: 600,
+  debounceTime: 600,
 
-      isLatLngRequired: true,
+  isLatLngRequired: true,
 
-      countries: const ["in"],
+  countries: const ["in"],
 
-      inputDecoration: InputDecoration(
+  // Disable package clear button.
+  // We use our own reliable clear button below.
+  isCrossBtnShown: false,
 
-        hintText:
-            _selectedCity == null
-                ? "Select city first"
-                : "Search in $_selectedCity",
+  inputDecoration: InputDecoration(
+    hintText: _selectedCity == null
+        ? "Select city first"
+        : "Search in $_selectedCity",
 
-        hintStyle: const TextStyle(
-          color: kMediumText,
-        ),
+    hintStyle: const TextStyle(
+      color: kMediumText,
+    ),
 
-        prefixIcon: Container(
-          margin: const EdgeInsets.all(10),
-
-          decoration:
-              const BoxDecoration(
-            shape: BoxShape.circle,
-            gradient:
-                kPrimaryGradient,
-          ),
-
-          child: const Icon(
-            Icons.search_rounded,
-            color: Colors.white,
-            size: 18,
-          ),
-        ),
-
-        filled: true,
-
-        fillColor: kCardColor,
-
-        contentPadding:
-            const EdgeInsets.symmetric(
-          horizontal: 16,
-          vertical: 18,
-        ),
-
-        border: OutlineInputBorder(
-          borderRadius:
-              BorderRadius.circular(18),
-        ),
-
-        enabledBorder:
-            OutlineInputBorder(
-          borderRadius:
-              BorderRadius.circular(18),
-          borderSide: BorderSide(
-            color: kBorderColor,
-          ),
-        ),
-
-        focusedBorder:
-            OutlineInputBorder(
-          borderRadius:
-              BorderRadius.circular(18),
-          borderSide:
-              const BorderSide(
-            color: kPrimaryColor,
-            width: 2,
-          ),
-        ),
+    prefixIcon: Container(
+      margin: const EdgeInsets.all(10),
+      decoration: const BoxDecoration(
+        shape: BoxShape.circle,
+        gradient: kPrimaryGradient,
       ),
+      child: const Icon(
+        Icons.search_rounded,
+        color: Colors.white,
+        size: 18,
+      ),
+    ),
 
-      itemClick: (Prediction prediction) {
+    // ============================================================
+    // CUSTOM CLEAR BUTTON
+    // ============================================================
 
-        FocusScope.of(context).unfocus();
+    suffixIcon: ValueListenableBuilder<TextEditingValue>(
+      valueListenable: _addressController,
+      builder: (context, value, child) {
+        if (value.text.isEmpty) {
+          return const SizedBox.shrink();
+        }
 
-        setState(() {
-
-          _addressController.text =
-              prediction.description ?? '';
-
-          _addressController.selection =
-              TextSelection.fromPosition(
-            TextPosition(
-              offset: _addressController.text.length,
-            ),
-          );
-
-          _placeId =
-              prediction.placeId;
-
-        });
-
-      },
-
-      getPlaceDetailWithLatLng:
-          (Prediction prediction) {
-
-        setState(() {
-
-          _latitude =
-              double.tryParse(
-            prediction.lat ?? '',
-          );
-
-          _longitude =
-              double.tryParse(
-            prediction.lng ?? '',
-          );
-
-          _placeId =
-              prediction.placeId;
-
-        });
-
-        _notifyParent();
-
-      },
-
-      seperatedBuilder:
-          const Divider(),
-
-      isCrossBtnShown: true,
-
-      itemBuilder: (
-        context,
-        index,
-        Prediction prediction,
-      ) {
-
-        return Container(
-
-          padding:
-              const EdgeInsets.all(14),
-
-          child: Row(
-
-            children: [
-
-              Container(
-                width: 40,
-                height: 40,
-
-                decoration:
-                    BoxDecoration(
-                  shape:
-                      BoxShape.circle,
-
-                  color:
-                      kPrimaryColor
-                          .withOpacity(.10),
-                ),
-
-                child: const Icon(
-                  Icons.location_on,
-                  color: kPrimaryColor,
-                ),
-              ),
-
-              const SizedBox(width: 12),
-
-              Expanded(
-                child: Text(
-                  prediction.description ?? '',
-                  maxLines: 2,
-                  overflow:
-                      TextOverflow.ellipsis,
-                  style:
-                      const TextStyle(
-                    fontWeight:
-                        FontWeight.w600,
-                  ),
-                ),
-              ),
-            ],
+        return IconButton(
+          tooltip: "Clear location",
+          icon: const Icon(
+            Icons.close_rounded,
+            color: kMediumText,
           ),
-        );
+          onPressed: () {
+            // Close keyboard.
+            _addressFocusNode.unfocus();
+            FocusManager.instance.primaryFocus?.unfocus();
 
+            // Clear the TextField immediately.
+            _addressController.clear();
+
+            setState(() {
+              _latitude = null;
+              _longitude = null;
+              _placeId = null;
+            });
+
+            // Tell parent that selected address was cleared.
+            _notifyParent();
+          },
+        );
       },
     ),
+
+    filled: true,
+    fillColor: kCardColor,
+
+    contentPadding: const EdgeInsets.symmetric(
+      horizontal: 16,
+      vertical: 18,
+    ),
+
+    border: OutlineInputBorder(
+      borderRadius: BorderRadius.circular(18),
+    ),
+
+    enabledBorder: OutlineInputBorder(
+      borderRadius: BorderRadius.circular(18),
+      borderSide: const BorderSide(
+        color: kBorderColor,
+      ),
+    ),
+
+    focusedBorder: OutlineInputBorder(
+      borderRadius: BorderRadius.circular(18),
+      borderSide: const BorderSide(
+        color: kPrimaryColor,
+        width: 2,
+      ),
+    ),
+  ),
+
+  // ============================================================
+  // USER CLICKS A GOOGLE SUGGESTION
+  // ============================================================
+
+  itemClick: (Prediction prediction) {
+  final selectedAddress =
+      prediction.description ?? '';
+
+  // The package already manages the text controller.
+  // Do not update controller text inside setState().
+  _addressController.value = TextEditingValue(
+    text: selectedAddress,
+    selection: TextSelection.collapsed(
+      offset: selectedAddress.length,
+    ),
+  );
+
+  _placeId = prediction.placeId;
+
+  // Hide keyboard after the suggestion tap has completed.
+  WidgetsBinding.instance.addPostFrameCallback((_) {
+    if (!mounted) return;
+
+    FocusManager.instance.primaryFocus?.unfocus();
+  });
+},
+
+  // ============================================================
+  // GOOGLE RETURNS LATITUDE / LONGITUDE
+  // ============================================================
+
+  getPlaceDetailWithLatLng: (Prediction prediction) {
+    setState(() {
+      _latitude = double.tryParse(
+        prediction.lat ?? '',
+      );
+
+      _longitude = double.tryParse(
+        prediction.lng ?? '',
+      );
+
+      _placeId = prediction.placeId;
+    });
+
+    _notifyParent();
+
+    // Hide keyboard again after location details are returned.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) {
+        return;
+      }
+
+      _addressFocusNode.unfocus();
+      FocusManager.instance.primaryFocus?.unfocus();
+    });
+  },
+
+  seperatedBuilder: const Divider(),
+
+  itemBuilder: (
+    context,
+    index,
+    Prediction prediction,
+  ) {
+    return Container(
+      padding: const EdgeInsets.all(14),
+      child: Row(
+        children: [
+          Container(
+            width: 40,
+            height: 40,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: kPrimaryColor.withOpacity(.10),
+            ),
+            child: const Icon(
+              Icons.location_on,
+              color: kPrimaryColor,
+            ),
+          ),
+
+          const SizedBox(width: 12),
+
+          Expanded(
+            child: Text(
+              prediction.description ?? '',
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+              style: const TextStyle(
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  },
+),
   ],
 ),
 
