@@ -589,7 +589,6 @@ void _openExploreMode() {
           },
           child: SingleChildScrollView(
             physics: const AlwaysScrollableScrollPhysics(),
-            padding: const EdgeInsets.symmetric(horizontal: 16.0),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
@@ -619,6 +618,14 @@ HeroBanner(
 ),
 
 const SizedBox(height: 24),
+Padding(
+  padding: const EdgeInsets.symmetric(horizontal: 16),
+  child: Column(
+    crossAxisAlignment: CrossAxisAlignment.stretch,
+    children: [
+
+      const SizedBox(height: 24),
+
 const Text(
   "List Your Requirement",
   style: TextStyle(
@@ -1117,6 +1124,10 @@ const SizedBox(height: 32),
 ),
                 ),
               const SizedBox(height: 20),
+                  ], // closes NEW Column
+  ),  // closes NEW Column
+
+), // closes Padding
             ],
           ),
         ),

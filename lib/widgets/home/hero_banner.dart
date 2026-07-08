@@ -25,7 +25,6 @@ class _HeroBannerState extends State<HeroBanner> {
     "assets/banners/banner7.png",
     "assets/banners/banner8.png",
     "assets/banners/banner5.png",
-
   ];
 
   Timer? _timer;
@@ -34,36 +33,55 @@ class _HeroBannerState extends State<HeroBanner> {
   void initState() {
     super.initState();
 
+    _startAutoSlide();
+  }
+
+  // ============================================================
+  // AUTO SLIDE
+  // ============================================================
+
+  void _startAutoSlide() {
+    _timer?.cancel();
+
     _timer = Timer.periodic(
       const Duration(seconds: 4),
       (_) {
-        if (!_controller.hasClients) return;
+        if (!mounted) return;
 
-        _currentPage++;
-
-        if (_currentPage >= images.length) {
-          _currentPage = 0;
+        if (!_controller.hasClients || images.isEmpty) {
+          return;
         }
 
+        final nextPage = (_currentPage + 1) % images.length;
+
         _controller.animateToPage(
-          _currentPage,
+          nextPage,
           duration: const Duration(milliseconds: 600),
-          curve: Curves.easeInOut,
+          curve: Curves.easeInOutCubic,
         );
       },
     );
   }
 
+  // ============================================================
+  // DISPOSE
+  // ============================================================
+
   @override
   void dispose() {
     _timer?.cancel();
     _controller.dispose();
+
     super.dispose();
   }
 
+  // ============================================================
+  // FALLBACK BACKGROUND
+  // ============================================================
+
   Widget _fallbackBackground() {
-    return Container(
-      decoration: const BoxDecoration(
+    return const DecoratedBox(
+      decoration: BoxDecoration(
         gradient: LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
@@ -77,150 +95,176 @@ class _HeroBannerState extends State<HeroBanner> {
     );
   }
 
-@override
-Widget build(BuildContext context) {
-  final width = MediaQuery.of(context).size.width;
-  final bannerHeight = width * 1.25; // 3:4 ratio
+  // ============================================================
+  // BUILD
+  // ============================================================
 
-  return Container(
-    height: bannerHeight,
-    margin: const EdgeInsets.symmetric(
-      horizontal: 16,
-      vertical: 8,
-    ),
-    child: DecoratedBox(
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(32),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(.12),
-            blurRadius: 25,
-            offset: const Offset(0, 10),
-          ),
-        ],
-      ),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(32),
-        child: Stack(
-          fit: StackFit.expand,
-          children: [
-            PageView.builder(
-              controller: _controller,
-              itemCount: images.length,
-              onPageChanged: (index) {
-                setState(() {
-                  _currentPage = index;
-                });
-              },
-              itemBuilder: (context, index) {
-                return Image.asset(
-                  images[index],
-                  fit: BoxFit.cover,
-                  alignment: Alignment.topCenter,
-                  errorBuilder: (_, __, ___) =>
-                      _fallbackBackground(),
-                );
-              },
-            ),
+  @override
+  Widget build(BuildContext context) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        /*
+         * Use the width actually provided to HeroBanner.
+         *
+         * If HeroBanner is directly inside the screen Column,
+         * this will be the complete screen width.
+         */
+        final bannerWidth = constraints.maxWidth;
 
-            // Bottom gradient
-            Container(
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.bottomCenter,
-                  end: Alignment.topCenter,
-                  colors: [
-                    Colors.black.withOpacity(.20),
-                    Colors.transparent,
-                  ],
-                ),
+        // Horizontal 16:9 ratio.
+        final bannerHeight = bannerWidth * 9 / 16;
+
+        return SizedBox(
+          width: bannerWidth,
+          height: bannerHeight,
+          child: Stack(
+            fit: StackFit.expand,
+            children: [
+              // ==================================================
+              // BANNER CAROUSEL
+              // ==================================================
+
+              PageView.builder(
+                controller: _controller,
+                itemCount: images.length,
+                padEnds: false,
+                onPageChanged: (index) {
+                  if (!mounted) return;
+
+                  setState(() {
+                    _currentPage = index;
+                  });
+
+                  // Restart auto-slide countdown after page change.
+                  _startAutoSlide();
+                },
+                itemBuilder: (context, index) {
+                  return SizedBox.expand(
+                    child: Image.asset(
+                      images[index],
+                      width: bannerWidth,
+                      height: bannerHeight,
+
+                      // Completely fill the banner.
+                      fit: BoxFit.cover,
+
+                      alignment: Alignment.center,
+
+                      errorBuilder: (
+                        BuildContext context,
+                        Object error,
+                        StackTrace? stackTrace,
+                      ) {
+                        return _fallbackBackground();
+                      },
+                    ),
+                  );
+                },
               ),
-            ),
 
-            // Verified Badge
-            Positioned(
-              left: 16,
-              bottom: 16,
-              child: Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 14,
-                  vertical: 8,
-                ),
-                decoration: BoxDecoration(
-                  color: Colors.black.withOpacity(.55),
-                  borderRadius: BorderRadius.circular(30),
-                ),
-                child: const Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(
-                      Icons.verified_rounded,
-                      color: Colors.white,
-                      size: 15,
-                    ),
-                    SizedBox(width: 6),
-                    Text(
-                      "50K+ Verified Members",
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontWeight: FontWeight.w600,
-                        fontSize: 13,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
+              // ==================================================
+              // BOTTOM GRADIENT
+              // ==================================================
 
-            // Page Indicators
-            Positioned(
-              right: 16,
-              bottom: 20,
-              child: Row(
-                children: List.generate(
-                  images.length,
-                  (index) => AnimatedContainer(
-                    duration: const Duration(
-                      milliseconds: 300,
-                    ),
-                    margin: const EdgeInsets.only(left: 5),
-                    height: 8,
-                    width: _currentPage == index ? 24 : 8,
-                    decoration: BoxDecoration(
-                      color: _currentPage == index
-                          ? Colors.white
-                          : Colors.white54,
-                      borderRadius:
-                          BorderRadius.circular(20),
+              IgnorePointer(
+                child: DecoratedBox(
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.bottomCenter,
+                      end: Alignment.topCenter,
+                      stops: const [
+                        0.0,
+                        0.50,
+                        1.0,
+                      ],
+                      colors: [
+                        Colors.black.withOpacity(0.38),
+                        Colors.black.withOpacity(0.05),
+                        Colors.transparent,
+                      ],
                     ),
                   ),
                 ),
               ),
-            ),
-          ],
-        ),
-      ),
-    ),
-  );
-}
 
-Widget _tag(String text) {
-  return Container(
-    padding: const EdgeInsets.symmetric(
-      horizontal: 10,
-      vertical: 6,
-    ),
-    decoration: BoxDecoration(
-      color: const Color(0xFFF3F4F6),
-      borderRadius: BorderRadius.circular(20),
-    ),
-    child: Text(
-      text,
-      style: const TextStyle(
-        fontSize: 11,
-        fontWeight: FontWeight.w600,
-      ),
-    ),
-  );
-}
+              // ==================================================
+              // VERIFIED MEMBERS BADGE
+              // ==================================================
+
+              Positioned(
+                left: 16,
+                bottom: 16,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 13,
+                    vertical: 8,
+                  ),
+                  decoration: BoxDecoration(
+                    color: Colors.black.withOpacity(0.60),
+                    borderRadius: BorderRadius.circular(100),
+                  ),
+                  child: const Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(
+                        Icons.verified_rounded,
+                        color: Colors.white,
+                        size: 17,
+                      ),
+
+                      SizedBox(width: 7),
+
+                      Text(
+                        "50K+ Verified Members",
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 12,
+                          fontWeight: FontWeight.w700,
+                          height: 1,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+
+              // ==================================================
+              // PAGE INDICATORS
+              // ==================================================
+
+              Positioned(
+                right: 16,
+                bottom: 20,
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: List.generate(
+                    images.length,
+                    (index) {
+                      final bool isActive = _currentPage == index;
+
+                      return AnimatedContainer(
+                        duration: const Duration(
+                          milliseconds: 300,
+                        ),
+                        curve: Curves.easeInOut,
+                        margin: const EdgeInsets.only(left: 5),
+                        height: 7,
+                        width: isActive ? 24 : 7,
+                        decoration: BoxDecoration(
+                          color: isActive
+                              ? Colors.white
+                              : Colors.white.withOpacity(0.55),
+                          borderRadius: BorderRadius.circular(100),
+                        ),
+                      );
+                    },
+                  ),
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
 }
