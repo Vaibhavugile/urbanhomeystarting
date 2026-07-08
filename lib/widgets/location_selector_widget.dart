@@ -1,3 +1,4 @@
+import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:google_places_flutter/google_places_flutter.dart';
 import 'package:google_places_flutter/model/prediction.dart';
@@ -80,11 +81,36 @@ class _LocationSelectorWidgetState
   late TextEditingController _addressController;
 
   String? _selectedCity;
+double? _selectedCityLatitude;
+double? _selectedCityLongitude;
 
+static const int _searchRadiusMeters = 100000; // 100 km
   double? _latitude;
   double? _longitude;
 
   String? _placeId;
+  final Map<String, LatLng> _cityCoordinates = {
+  'Bangalore': const LatLng(12.9716, 77.5946),
+  'Mumbai': const LatLng(19.0760, 72.8777),
+  'Delhi': const LatLng(28.6139, 77.2090),
+  'Pune': const LatLng(18.5204, 73.8567),
+  'Hyderabad': const LatLng(17.3850, 78.4867),
+  'Chennai': const LatLng(13.0827, 80.2707),
+  'Kolkata': const LatLng(22.5726, 88.3639),
+  'Ahmedabad': const LatLng(23.0225, 72.5714),
+  'Jaipur': const LatLng(26.9124, 75.7873),
+  'Lucknow': const LatLng(26.8467, 80.9462),
+  'Chandigarh': const LatLng(30.7333, 76.7794),
+  'Indore': const LatLng(22.7196, 75.8577),
+  'Bhopal': const LatLng(23.2599, 77.4126),
+  'Nagpur': const LatLng(21.1458, 79.0882),
+  'Surat': const LatLng(21.1702, 72.8311),
+  'Vadodara': const LatLng(22.3072, 73.1812),
+  'Patna': const LatLng(25.5941, 85.1376),
+  'Kochi': const LatLng(9.9312, 76.2673),
+  'Coimbatore': const LatLng(11.0168, 76.9558),
+  'Mysore': const LatLng(12.2958, 76.6394),
+};
   final List<String> _cities = [
     'Bangalore',
     'Mumbai',
@@ -108,7 +134,7 @@ class _LocationSelectorWidgetState
     'Mysore',
   ];
 final FocusNode _addressFocusNode = FocusNode();
- @override
+@override
 void initState() {
   super.initState();
 
@@ -117,6 +143,17 @@ void initState() {
               widget.initialCity!.isNotEmpty
           ? widget.initialCity
           : null;
+
+  if (_selectedCity != null) {
+    final coordinates =
+        _cityCoordinates[_selectedCity];
+
+    _selectedCityLatitude =
+        coordinates?.latitude;
+
+    _selectedCityLongitude =
+        coordinates?.longitude;
+  }
 
   _addressController = TextEditingController(
     text: widget.initialAddress ?? '',
@@ -133,6 +170,7 @@ void dispose() {
     _handleAddressTextChanged,
   );
 
+  _addressFocusNode.dispose();
   _addressController.dispose();
 
   super.dispose();
@@ -160,6 +198,35 @@ void _handleAddressTextChanged() {
       setState(() {});
     }
   }
+}
+double _calculateDistanceKm(
+  double lat1,
+  double lon1,
+  double lat2,
+  double lon2,
+) {
+  const double earthRadiusKm = 6371.0;
+
+  final double dLat =
+      (lat2 - lat1) * math.pi / 180;
+
+  final double dLon =
+      (lon2 - lon1) * math.pi / 180;
+
+  final double a =
+      math.sin(dLat / 2) * math.sin(dLat / 2) +
+      math.cos(lat1 * math.pi / 180) *
+          math.cos(lat2 * math.pi / 180) *
+          math.sin(dLon / 2) *
+          math.sin(dLon / 2);
+
+  final double c = 2 *
+      math.atan2(
+        math.sqrt(a),
+        math.sqrt(1 - a),
+      );
+
+  return earthRadiusKm * c;
 }
   void _notifyParent() {
     widget.onLocationSelected(
@@ -376,19 +443,31 @@ if (_selectedCity == null)
 
     if (city == null) return;
 
-    setState(() {
+final LatLng? cityCoordinates =
+    _cityCoordinates[city];
 
-      _selectedCity = city;
+setState(() {
+  _selectedCity = city;
 
-      _addressController.clear();
+  _selectedCityLatitude =
+      cityCoordinates?.latitude;
 
-      _latitude = null;
+  _selectedCityLongitude =
+      cityCoordinates?.longitude;
 
-      _longitude = null;
+  _addressController.clear();
 
-      _placeId = null;
+  _latitude = null;
+  _longitude = null;
+  _placeId = null;
+});
 
-    });
+// Give focus to address search after city selection.
+WidgetsBinding.instance.addPostFrameCallback((_) {
+  if (!mounted) return;
+
+  _addressFocusNode.requestFocus();
+});
 
   },
 
@@ -473,6 +552,9 @@ if (_selectedCity == null)
   isLatLngRequired: true,
 
   countries: const ["in"],
+  latitude: _selectedCityLatitude,
+longitude: _selectedCityLongitude,
+radius: _searchRadiusMeters,
 
   // Disable package clear button.
   // We use our own reliable clear button below.
@@ -597,31 +679,75 @@ if (_selectedCity == null)
   // GOOGLE RETURNS LATITUDE / LONGITUDE
   // ============================================================
 
-  getPlaceDetailWithLatLng: (Prediction prediction) {
-    setState(() {
-      _latitude = double.tryParse(
-        prediction.lat ?? '',
-      );
+  getPlaceDetailWithLatLng:
+    (Prediction prediction) {
+  final double? selectedLatitude =
+      double.tryParse(prediction.lat ?? '');
 
-      _longitude = double.tryParse(
-        prediction.lng ?? '',
-      );
+  final double? selectedLongitude =
+      double.tryParse(prediction.lng ?? '');
 
-      _placeId = prediction.placeId;
-    });
+  if (selectedLatitude == null ||
+      selectedLongitude == null) {
+    return;
+  }
 
-    _notifyParent();
+  // ============================================================
+  // VALIDATE 100 KM SEARCH RADIUS
+  // ============================================================
 
-    // Hide keyboard again after location details are returned.
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (!mounted) {
-        return;
-      }
+  if (_selectedCityLatitude != null &&
+      _selectedCityLongitude != null) {
+    final double distanceKm =
+        _calculateDistanceKm(
+      _selectedCityLatitude!,
+      _selectedCityLongitude!,
+      selectedLatitude,
+      selectedLongitude,
+    );
 
+    if (distanceKm > 100) {
       _addressFocusNode.unfocus();
-      FocusManager.instance.primaryFocus?.unfocus();
-    });
-  },
+FocusManager.instance.primaryFocus?.unfocus();
+      _addressController.clear();
+
+      setState(() {
+        _latitude = null;
+        _longitude = null;
+        _placeId = null;
+      });
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            "Please select a location within 100 km of $_selectedCity.",
+          ),
+        ),
+      );
+
+      return;
+    }
+  }
+
+  // ============================================================
+  // VALID LOCATION
+  // ============================================================
+
+  setState(() {
+    _latitude = selectedLatitude;
+    _longitude = selectedLongitude;
+    _placeId = prediction.placeId;
+  });
+
+  _notifyParent();
+
+  WidgetsBinding.instance.addPostFrameCallback((_) {
+    if (!mounted) return;
+
+    _addressFocusNode.unfocus();
+    FocusManager.instance.primaryFocus?.unfocus();
+  });
+},
 
   seperatedBuilder: const Divider(),
 
