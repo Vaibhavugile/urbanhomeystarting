@@ -239,33 +239,46 @@ Widget build(BuildContext context) {
                 height: 24,
               ),
 
-              if (buttonText != null)
-                Padding(
-                  padding:
-                      const EdgeInsets
-                          .all(24),
-                  child:
-                      ElevatedButton(
-                    onPressed:
-                        onButtonPressed,
-                    style:
-                        ElevatedButton
-                            .styleFrom(
-                      backgroundColor:
-                          const Color(
-                        0xFF7C3AED,
-                      ),
-                      minimumSize:
-                          const Size
-                              .fromHeight(
-                        58,
-                      ),
-                    ),
-                    child: Text(
-                      buttonText!,
-                    ),
-                  ),
-                ),
+             if (buttonText != null)
+  Padding(
+    padding: const EdgeInsets.all(24),
+    child: ElevatedButton(
+      onPressed: onButtonPressed,
+
+      style: ElevatedButton.styleFrom(
+        backgroundColor:
+            const Color(0xFF7C3AED),
+
+        foregroundColor: Colors.white,
+
+        disabledBackgroundColor:
+            const Color(0xFF7C3AED)
+                .withOpacity(0.55),
+
+        disabledForegroundColor:
+            Colors.white.withOpacity(0.75),
+
+        minimumSize:
+            const Size.fromHeight(58),
+
+        elevation: 2,
+
+        shape: RoundedRectangleBorder(
+          borderRadius:
+              BorderRadius.circular(18),
+        ),
+      ),
+
+      child: Text(
+        buttonText!,
+        style: const TextStyle(
+          color: Colors.white,
+          fontSize: 16,
+          fontWeight: FontWeight.w700,
+        ),
+      ),
+    ),
+  ),
             ],
           ),
         ),

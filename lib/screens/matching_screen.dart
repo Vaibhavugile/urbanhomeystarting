@@ -36,7 +36,9 @@ import 'package:mytennat/screens/chat_screen.dart'
 import '../widgets/location_selector_widget.dart'
       hide kPrimaryGradient,
       kAccentColor;
+import 'package:mytennat/screens/user_activity_screen.dart';
 
+import 'package:mytennat/screens/matches_list_screen.dart';
 
 // NEW: Enum to manage different view types
 enum _ViewType {
@@ -102,7 +104,7 @@ bool _isLoadingMore = false;
 final CardSwiperController _cardController =
     CardSwiperController();
 static const int _pageSize = 50;
-
+int _selectedBottomIndex = 1;
   String? _bannerMessage;
   String? _lastLikedProfileName; // Name of the person you just liked who didn't like back
 
@@ -366,6 +368,7 @@ String? get _defaultCity {
 
   return null;
 }
+
 String? get _selectedAppBarCity {
   // Explore mode uses Explore location.
   if (widget.isExploreMode) {
@@ -901,6 +904,54 @@ profile.imageUrls!.isEmpty,
       'Failed to load flat listing profiles: $e',
       () {},
     );
+  }
+}
+void _onBottomNavigationTapped(int index) {
+  if (index == 1) {
+    return;
+  }
+
+  switch (index) {
+    case 0:
+      // HomePage is already below MatchingScreen in the stack
+      Navigator.pop(context);
+      break;
+
+    case 1:
+      return;
+
+    case 2:
+      if (widget.isExploreMode ||
+          widget.profileId.trim().isEmpty) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text(
+              'Create a profile to access chats and matches.',
+            ),
+          ),
+        );
+        return;
+      }
+
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (_) => MatchesListScreen(
+            profileType: widget.profileType,
+            profileId: widget.profileId,
+          ),
+        ),
+      );
+      break;
+
+    case 3:
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (_) => const UserActivityScreen(),
+        ),
+      );
+      break;
   }
 }
 Future<void> _loadMoreFlatListings() async {
@@ -3910,7 +3961,7 @@ final double nopeOpacity =
     top: 70,
     left: 28,
     child: _buildSwipeBadge(
-      text: "LIKE",
+      text: "YUP",
       color: const Color(0xFF22C55E),
       opacity: likeOpacity,
       angle: -.25,
@@ -4054,12 +4105,221 @@ Widget _buildActionButton({
     ),
   );
 }
+Future<void> _handleBrowseTypeTap(String browseType) async {
+  // ============================================================
+  // ALREADY SELECTED
+  // ============================================================
+
+  if (_selectedBrowseType == browseType) {
+    return;
+  }
+
+  // ============================================================
+  // EXPLORE MODE
+  // ============================================================
+
+  if (widget.isExploreMode) {
+    setState(() {
+      _exploreType = browseType;
+    });
+
+    await _loadExploreProfiles();
+
+    return;
+  }
+
+  // ============================================================
+  // NORMAL MATCHING MODE
+  // ============================================================
+
+  await _switchToProfileForBrowseType(browseType);
+}
+
+
+Future<void> _switchToProfileForBrowseType(
+  String browseType,
+) async {
+  if (_currentUser == null) {
+    return;
+  }
+
+  setState(() {
+    _isLoading = true;
+  });
+
+  try {
+    // ==========================================================
+    // WHICH PROFILE IS REQUIRED?
+    //
+    // Browse Rooms
+    // requires SeekingFlatmateProfile
+    //
+    // Browse Flatmates
+    // requires FlatListingProfile
+    // ==========================================================
+
+    final bool wantsRooms =
+        browseType == "flat_listing";
+
+    final String requiredProfileType = wantsRooms
+        ? "seeking_flatmate"
+        : "flat_listing";
+
+    final String requiredCollection = wantsRooms
+        ? "seekingFlatmateProfiles"
+        : "flatListings";
+
+    // ==========================================================
+    // FIND USER'S PROFILE
+    // ==========================================================
+
+    final QuerySnapshot profileSnapshot =
+        await _firestore
+            .collection("users")
+            .doc(_currentUser!.uid)
+            .collection(requiredCollection)
+            .limit(1)
+            .get();
+
+    if (!mounted) {
+      return;
+    }
+
+    // ==========================================================
+    // PROFILE DOES NOT EXIST
+    // ==========================================================
+
+    if (profileSnapshot.docs.isEmpty) {
+      setState(() {
+        _isLoading = false;
+      });
+
+      _showCreateProfileDialogForBrowseType(
+        browseType,
+      );
+
+      return;
+    }
+
+    // ==========================================================
+    // PROFILE EXISTS
+    // ==========================================================
+
+    final String profileId =
+        profileSnapshot.docs.first.id;
+
+    // Replace current MatchingScreen instead of stacking
+    // multiple MatchingScreens.
+    await Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(
+        builder: (_) => MatchingScreen(
+          profileType: requiredProfileType,
+          profileId: profileId,
+          isExploreMode: false,
+        ),
+      ),
+    );
+  } catch (e) {
+    debugPrint(
+      "SWITCH PROFILE ERROR: $e",
+    );
+
+    if (!mounted) {
+      return;
+    }
+
+    setState(() {
+      _isLoading = false;
+    });
+
+    _showAlertDialog(
+      "Unable to switch profile",
+      "Something went wrong while checking your profile.",
+      () {},
+    );
+  }
+}
+
+
+void _showCreateProfileDialogForBrowseType(
+  String browseType,
+) {
+  final bool wantsRooms =
+      browseType == "flat_listing";
+
+  showDialog<void>(
+    context: context,
+    builder: (dialogContext) {
+      return AlertDialog(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20),
+        ),
+        title: const Text(
+          "Create Profile First",
+        ),
+        content: Text(
+          wantsRooms
+              ? "To browse and interact with rooms, create your flatmate-seeking profile first."
+              : "To browse and interact with flatmates, create your flat listing profile first.",
+        ),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.of(dialogContext).pop();
+            },
+            child: const Text("Cancel"),
+          ),
+
+          ElevatedButton(
+            onPressed: () {
+              Navigator.of(dialogContext).pop();
+
+              if (wantsRooms) {
+                // Create SeekingFlatmateProfile
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) =>
+                        FlatWithFlatmateProfileScreen(
+                      initialPhoneNumber: null,
+                    ),
+                  ),
+                );
+              } else {
+                // Create FlatListingProfile
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) =>
+                        FlatmateProfileScreen(
+                      initialPhoneNumber: null,
+                    ),
+                  ),
+                );
+              }
+            },
+            child: const Text(
+              "Create Profile",
+            ),
+          ),
+        ],
+      );
+    },
+  );
+}
 
 Widget _buildExploreTypeSelector() {
-  final selectedType = _selectedBrowseType;
+  final String selectedType =
+      _selectedBrowseType;
 
   return Container(
-    margin: const EdgeInsets.fromLTRB(16, 12, 16, 10),
+    margin: const EdgeInsets.fromLTRB(
+      16,
+      12,
+      16,
+      10,
+    ),
     padding: const EdgeInsets.all(4),
     height: 52,
     decoration: BoxDecoration(
@@ -4069,46 +4329,59 @@ Widget _buildExploreTypeSelector() {
     child: Row(
       children: [
         // ============================================================
-        // ROOMS
+        // ROOMS TAB
         // ============================================================
 
         Expanded(
           child: GestureDetector(
+            behavior: HitTestBehavior.opaque,
+
             onTap: () {
-              // For now normal matching follows parsed profile.
-              if (!widget.isExploreMode) {
-                return;
-              }
-
-              if (_exploreType == "flat_listing") {
-                return;
-              }
-
-              setState(() {
-                _exploreType = "flat_listing";
-              });
-
-              _loadExploreProfiles();
+              _handleBrowseTypeTap(
+                "flat_listing",
+              );
             },
+
             child: AnimatedContainer(
-              duration: const Duration(milliseconds: 250),
+              duration:
+                  const Duration(milliseconds: 250),
               curve: Curves.easeInOut,
               alignment: Alignment.center,
               decoration: BoxDecoration(
-                gradient: selectedType == "flat_listing"
-                    ? kPrimaryGradient
-                    : null,
-                borderRadius: BorderRadius.circular(14),
+                gradient:
+                    selectedType == "flat_listing"
+                        ? kPrimaryGradient
+                        : null,
+                borderRadius:
+                    BorderRadius.circular(14),
               ),
-              child: Text(
-                "Rooms",
-                style: TextStyle(
-                  color: selectedType == "flat_listing"
-                      ? Colors.white
-                      : const Color(0xFF64748B),
-                  fontSize: 14,
-                  fontWeight: FontWeight.w700,
-                ),
+              child: Row(
+                mainAxisAlignment:
+                    MainAxisAlignment.center,
+                children: [
+                  Icon(
+                    Icons.home_rounded,
+                    size: 18,
+                    color:
+                        selectedType == "flat_listing"
+                            ? Colors.white
+                            : const Color(0xFF64748B),
+                  ),
+
+                  const SizedBox(width: 6),
+
+                  Text(
+                    "Flats",
+                    style: TextStyle(
+                      color:
+                          selectedType == "flat_listing"
+                              ? Colors.white
+                              : const Color(0xFF64748B),
+                      fontSize: 14,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ],
               ),
             ),
           ),
@@ -4117,46 +4390,61 @@ Widget _buildExploreTypeSelector() {
         const SizedBox(width: 4),
 
         // ============================================================
-        // FLATMATES
+        // FLATMATES TAB
         // ============================================================
 
         Expanded(
           child: GestureDetector(
+            behavior: HitTestBehavior.opaque,
+
             onTap: () {
-              // For now normal matching follows parsed profile.
-              if (!widget.isExploreMode) {
-                return;
-              }
-
-              if (_exploreType == "seeking_flatmate") {
-                return;
-              }
-
-              setState(() {
-                _exploreType = "seeking_flatmate";
-              });
-
-              _loadExploreProfiles();
+              _handleBrowseTypeTap(
+                "seeking_flatmate",
+              );
             },
+
             child: AnimatedContainer(
-              duration: const Duration(milliseconds: 250),
+              duration:
+                  const Duration(milliseconds: 250),
               curve: Curves.easeInOut,
               alignment: Alignment.center,
               decoration: BoxDecoration(
-                gradient: selectedType == "seeking_flatmate"
-                    ? kPrimaryGradient
-                    : null,
-                borderRadius: BorderRadius.circular(14),
+                gradient:
+                    selectedType == "seeking_flatmate"
+                        ? kPrimaryGradient
+                        : null,
+                borderRadius:
+                    BorderRadius.circular(14),
               ),
-              child: Text(
-                "Flatmates",
-                style: TextStyle(
-                  color: selectedType == "seeking_flatmate"
-                      ? Colors.white
-                      : const Color(0xFF64748B),
-                  fontSize: 14,
-                  fontWeight: FontWeight.w700,
-                ),
+              child: Row(
+                mainAxisAlignment:
+                    MainAxisAlignment.center,
+                children: [
+                  Icon(
+                    Icons.people_alt_rounded,
+                    size: 18,
+                    color:
+                        selectedType ==
+                                "seeking_flatmate"
+                            ? Colors.white
+                            : const Color(0xFF64748B),
+                  ),
+
+                  const SizedBox(width: 6),
+
+                  Text(
+                    "Flatmates",
+                    style: TextStyle(
+                      color:
+                          selectedType ==
+                                  "seeking_flatmate"
+                              ? Colors.white
+                              : const Color(0xFF64748B),
+                      fontSize: 14,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ],
               ),
             ),
           ),
@@ -4356,341 +4644,451 @@ Future<void> _openExploreLocationPicker() async {
     },
   );
 }
-  @override
-  Widget build(BuildContext context) {
-    final double screenWidth = MediaQuery.of(context).size.width;
-    final bool isLargeScreen = screenWidth > 900; // Define your breakpoint for web layout
-    return Scaffold(
-      key: _scaffoldKey, // Assign the key to Scaffold
-      
-      appBar: AppBar(
-  automaticallyImplyLeading: false,
-  toolbarHeight: 72,
-  centerTitle: false,
-  elevation: 0,
-  scrolledUnderElevation: 0,
-  backgroundColor: Colors.transparent,
+@override
+Widget build(BuildContext context) {
+  final double screenWidth =
+      MediaQuery.of(context).size.width;
 
-  flexibleSpace: Container(
-    decoration: const BoxDecoration(
-      gradient: kPrimaryGradient,
-    ),
-  ),
+  final bool isLargeScreen =
+      screenWidth > 900;
 
-  titleSpacing: 8,
+  return Scaffold(
+    key: _scaffoldKey,
 
-  title: InkWell(
-  borderRadius: BorderRadius.circular(14),
+    // ============================================================
+    // APP BAR
+    // ============================================================
 
-  // Explore mode can change the location.
-  // Normal mode displays the parsed profile city.
-  onTap: _openExploreLocationPicker,
+    appBar: AppBar(
+      automaticallyImplyLeading: false,
+      toolbarHeight: 72,
+      centerTitle: false,
+      elevation: 0,
+      scrolledUnderElevation: 0,
+      backgroundColor: Colors.transparent,
 
-  child: Padding(
-    padding: const EdgeInsets.symmetric(
-      horizontal: 4,
-      vertical: 4,
-    ),
-    child: Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        // ============================================================
-        // LOCATION ICON
-        // ============================================================
-
-        Container(
-          width: 42,
-          height: 42,
-          decoration: BoxDecoration(
-            color: Colors.white.withOpacity(.15),
-            borderRadius: BorderRadius.circular(14),
-            border: Border.all(
-              color: Colors.white.withOpacity(.15),
-            ),
-          ),
-          child: const Icon(
-            Icons.location_on_rounded,
-            color: Colors.white,
-            size: 22,
-          ),
+      flexibleSpace: Container(
+        decoration: const BoxDecoration(
+          gradient: kPrimaryGradient,
         ),
+      ),
 
-        const SizedBox(width: 12),
+      titleSpacing: 8,
 
-        // ============================================================
-        // CITY + SUBTITLE
-        // ============================================================
+      // ============================================================
+      // LOCATION TITLE
+      // ============================================================
 
-        Flexible(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+      title: InkWell(
+        borderRadius: BorderRadius.circular(14),
+        onTap: _openExploreLocationPicker,
+
+        child: Padding(
+          padding: const EdgeInsets.symmetric(
+            horizontal: 4,
+            vertical: 4,
+          ),
+          child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Text(
-                _selectedAppBarCity != null &&
-                        _selectedAppBarCity!.trim().isNotEmpty
-                    ? _selectedAppBarCity!
-                    : "Select a city",
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: const TextStyle(
+              // ==================================================
+              // LOCATION ICON
+              // ==================================================
+
+              Container(
+                width: 42,
+                height: 42,
+                decoration: BoxDecoration(
+                  color: Colors.white.withOpacity(.15),
+                  borderRadius: BorderRadius.circular(14),
+                  border: Border.all(
+                    color: Colors.white.withOpacity(.15),
+                  ),
+                ),
+                child: const Icon(
+                  Icons.location_on_rounded,
                   color: Colors.white,
-                  fontSize: 19,
-                  fontWeight: FontWeight.w800,
-                  letterSpacing: .2,
+                  size: 22,
                 ),
               ),
 
-              const SizedBox(height: 2),
+              const SizedBox(width: 12),
 
-              Text(
-                widget.isExploreMode
-                    ? (_selectedAppBarCity != null &&
-                            _selectedAppBarCity!.trim().isNotEmpty
-                        ? "Tap to change location"
-                        : "Choose your explore location")
-                    : (_selectedBrowseType == "flat_listing"
-                        ? "Discover rooms near this location"
-                        : "Discover flatmates near this location"),
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: const TextStyle(
+              // ==================================================
+              // CITY + SUBTITLE
+              // ==================================================
+
+              Flexible(
+                child: Column(
+                  crossAxisAlignment:
+                      CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      _selectedAppBarCity != null &&
+                              _selectedAppBarCity!
+                                  .trim()
+                                  .isNotEmpty
+                          ? _selectedAppBarCity!
+                          : "Select a city",
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 19,
+                        fontWeight: FontWeight.w800,
+                        letterSpacing: .2,
+                      ),
+                    ),
+
+                    const SizedBox(height: 2),
+
+                    Text(
+                      widget.isExploreMode
+                          ? (_selectedAppBarCity != null &&
+                                  _selectedAppBarCity!
+                                      .trim()
+                                      .isNotEmpty
+                              ? "Tap to change location"
+                              : "Choose your explore location")
+                          : (_selectedBrowseType ==
+                                  "flat_listing"
+                              ? "Discover rooms near this location"
+                              : "Discover flatmates near this location"),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                        color: Colors.white70,
+                        fontSize: 11,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+
+              // ==================================================
+              // DROPDOWN ICON
+              // ==================================================
+
+              if (widget.isExploreMode) ...[
+                const SizedBox(width: 4),
+                const Icon(
+                  Icons.keyboard_arrow_down_rounded,
                   color: Colors.white70,
-                  fontSize: 11,
-                  fontWeight: FontWeight.w500,
+                  size: 21,
                 ),
-              ),
+              ],
             ],
           ),
         ),
+      ),
 
-        // ============================================================
-        // DROPDOWN ICON
-        // ============================================================
+      // ============================================================
+      // ICON THEME
+      // ============================================================
 
-        if (widget.isExploreMode) ...[
-          const SizedBox(width: 4),
-          const Icon(
-            Icons.keyboard_arrow_down_rounded,
-            color: Colors.white70,
-            size: 21,
+      iconTheme: const IconThemeData(
+        color: Colors.white,
+        size: 24,
+      ),
+
+      // ============================================================
+      // ACTIONS
+      // ============================================================
+
+      actions: [
+        // UNDO
+
+        if (_canUndoPass)
+          Padding(
+            padding: const EdgeInsets.only(
+              right: 6,
+            ),
+            child: _buildActionButton(
+              icon: Icons.undo_rounded,
+              tooltip: "Undo Pass",
+              color: const Color(0xFFFFB020),
+              onTap: _undoLastPass,
+            ),
           ),
-        ],
+
+        // CARD / LIST VIEW
+
+        Padding(
+          padding: const EdgeInsets.only(
+            right: 6,
+          ),
+          child: _buildActionButton(
+            icon: _currentViewType == _ViewType.card
+                ? Icons.view_list_rounded
+                : Icons.swipe_rounded,
+            tooltip: "Change View",
+            color: const Color(0xFF22C55E),
+            onTap: () {
+              setState(() {
+                _currentViewType =
+                    _currentViewType == _ViewType.card
+                        ? _ViewType.list
+                        : _ViewType.card;
+              });
+            },
+          ),
+        ),
+
+        // FILTER
+
+        if (!isLargeScreen)
+          Padding(
+            padding: const EdgeInsets.only(
+              right: 14,
+            ),
+            child: _buildActionButton(
+              icon: Icons.tune_rounded,
+              tooltip: "Filters",
+              color: kAccentColor,
+              onTap: () {
+                _scaffoldKey.currentState
+                    ?.openDrawer();
+              },
+            ),
+          ),
       ],
     ),
-  ),
-),
 
-// ============================================================
-// APPBAR ICON THEME
-// ============================================================
+    // ============================================================
+    // FILTER DRAWER
+    // ============================================================
 
-iconTheme: const IconThemeData(
-  color: Colors.white,
-  size: 24,
-),
+    drawer: isLargeScreen
+        ? null
+        : Drawer(
+            child: FilterScreen(
+              initialFilters:
+                  _currentFilters.copyWith(),
 
-// ============================================================
-// APPBAR ACTIONS
-// ============================================================
+              isSeekingFlatmate:
+                  _selectedBrowseType ==
+                      'seeking_flatmate',
 
-actions: [
-  // UNDO BUTTON
+              onFiltersChanged:
+                  _onFiltersChanged,
+            ),
+          ),
 
-  if (_canUndoPass)
-    Padding(
-      padding: const EdgeInsets.only(
-        right: 6,
-      ),
-      child: _buildActionButton(
-        icon: Icons.undo_rounded,
-        tooltip: "Undo Pass",
-        color: const Color(0xFFFFB020),
-        onTap: _undoLastPass,
-      ),
-    ),
+    // ============================================================
+    // BODY
+    // ============================================================
 
-  // CARD / LIST VIEW BUTTON
+    body: _isLoading
 
-  Padding(
-    padding: const EdgeInsets.only(
-      right: 6,
-    ),
-    child: _buildActionButton(
-      icon: _currentViewType == _ViewType.card
-          ? Icons.view_list_rounded
-          : Icons.swipe_rounded,
-      tooltip: "Change View",
-      color: const Color(0xFF22C55E),
-      onTap: () {
-        setState(() {
-          _currentViewType =
-              _currentViewType == _ViewType.card
-                  ? _ViewType.list
-                  : _ViewType.card;
-        });
-      },
-    ),
-  ),
+        // ========================================================
+        // LOADING
+        // ========================================================
 
-  // FILTER BUTTON ON MOBILE
+        ? const Center(
+            child: CircularProgressIndicator(
+              color: Color(0xFF6A1B9A),
+            ),
+          )
 
-  if (!isLargeScreen)
-    Padding(
-      padding: const EdgeInsets.only(
-        right: 14,
-      ),
-      child: _buildActionButton(
-        icon: Icons.tune_rounded,
-        tooltip: "Filters",
-        color: kAccentColor,
-        onTap: () {
-          _scaffoldKey.currentState?.openDrawer();
-        },
-      ),
-    ),
-],
-),
+        // ========================================================
+        // MAIN CONTENT
+        // ========================================================
 
-// ============================================================
-// MOBILE FILTER DRAWER
-// ============================================================
+        : Column(
+            children: [
+              // ==================================================
+              // ROOMS / FLATMATES SELECTOR
+              // ==================================================
 
-drawer: isLargeScreen
-    ? null
-    : Drawer(
-        child: FilterScreen(
-          initialFilters: _currentFilters.copyWith(),
+              _buildExploreTypeSelector(),
 
-          // The filter UI follows what is currently being browsed.
-          //
-          // Rooms      -> flat_listing
-          // Flatmates  -> seeking_flatmate
-          isSeekingFlatmate:
-              _selectedBrowseType == 'seeking_flatmate',
+              // ==================================================
+              // MATCHING CONTENT
+              // ==================================================
 
-          onFiltersChanged: _onFiltersChanged,
-        ),
-      ),
-     body: _isLoading
-    ? const Center(
-        child: CircularProgressIndicator(
-          color: Color(0xFF6A1B9A),
-        ),
-      )
-    : Column(
-        children: [
-          // ============================================================
-          // EXPLORE MODE TYPE SELECTOR
-          // Shows only when MatchingScreen is opened in Explore Mode
-          // ============================================================
+              Expanded(
+                child: isLargeScreen
 
-          _buildExploreTypeSelector(),
+                    // ============================================
+                    // LARGE SCREEN
+                    // ============================================
 
-          // ============================================================
-          // EXISTING MATCHING CONTENT
-          // ============================================================
+                    ? Row(
+                        children: [
+                          // FILTER PANEL
 
-          Expanded(
-            child: isLargeScreen
+                          SizedBox(
+                            width: math.min(
+                              350.0,
+                              screenWidth * 0.3,
+                            ),
+                            child: FilterScreen(
+                              initialFilters:
+                                  _currentFilters
+                                      .copyWith(),
 
-                // ======================================================
-                // LARGE SCREEN / WEB
-                // ======================================================
-
-                ? Row(
-                    children: [
-                      // FILTER PANEL
-
-                      SizedBox(
-                        width: math.min(
-                          350.0,
-                          screenWidth * 0.3,
-                        ),
-                        child: FilterScreen(
-                          initialFilters:
-                              _currentFilters.copyWith(),
-
-                          // In Explore Mode use currently selected type.
-                          isSeekingFlatmate:
-                              widget.isExploreMode
-                                  ? _exploreType ==
-                                      'seeking_flatmate'
-                                  : _userProfileType ==
+                              isSeekingFlatmate:
+                                  _selectedBrowseType ==
                                       'seeking_flatmate',
 
-                          onFiltersChanged:
-                              _onFiltersChanged,
-                        ),
-                      ),
-
-                      // MAIN MATCHING CONTENT
-
-                      Expanded(
-                        child: Center(
-                          child: Column(
-                            mainAxisAlignment:
-                                MainAxisAlignment.center,
-                            children: [
-                              // ========================================
-                              // PLAN / CONTACT INFORMATION
-                              // ========================================
-
-                              Padding(
-                                padding:
-                                    const EdgeInsets.all(8.0),
-                                child: Row(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment
-                                          .spaceBetween,
-                                  children: [
-                                    Text(
-                                      'Plan: ${_currentPlanName ?? 'N/A'}',
-                                      style: const TextStyle(
-                                        fontSize: 16,
-                                      ),
-                                    ),
-                                    Text(
-                                      'Contacts Left: $_remainingContacts',
-                                      style: const TextStyle(
-                                        fontSize: 16,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-
-                              // ========================================
-                              // CARD / LIST VIEW
-                              // ========================================
-
-                              Expanded(
-                                child: Padding(
-                                  padding:
-                                      const EdgeInsets.all(16.0),
-                                  child: _currentViewType ==
-                                          _ViewType.card
-                                      ? _buildCardView()
-                                      : _buildListView(),
-                                ),
-                              ),
-                            ],
+                              onFiltersChanged:
+                                  _onFiltersChanged,
+                            ),
                           ),
-                        ),
-                      ),
-                    ],
-                  )
 
-                // ======================================================
-                // SMALL SCREEN / MOBILE
-                // ======================================================
+                          // ======================================
+                          // MAIN CONTENT
+                          // ======================================
 
-                : _currentViewType == _ViewType.card
-                    ? _buildCardView()
-                    : _buildListView(),
+                          Expanded(
+                            child: Center(
+                              child: Column(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.center,
+                                children: [
+                                  // ==============================
+                                  // PLAN INFORMATION
+                                  // ==============================
+
+                                  Padding(
+                                    padding:
+                                        const EdgeInsets.all(
+                                      8.0,
+                                    ),
+                                    child: Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment
+                                              .spaceBetween,
+                                      children: [
+                                        Text(
+                                          'Plan: ${_currentPlanName ?? 'N/A'}',
+                                          style:
+                                              const TextStyle(
+                                            fontSize: 16,
+                                          ),
+                                        ),
+                                        Text(
+                                          'Contacts Left: $_remainingContacts',
+                                          style:
+                                              const TextStyle(
+                                            fontSize: 16,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+
+                                  // ==============================
+                                  // CARD / LIST VIEW
+                                  // ==============================
+
+                                  Expanded(
+                                    child: Padding(
+                                      padding:
+                                          const EdgeInsets.all(
+                                        16.0,
+                                      ),
+                                      child:
+                                          _currentViewType ==
+                                                  _ViewType.card
+                                              ? _buildCardView()
+                                              : _buildListView(),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ],
+                      )
+
+                    // ============================================
+                    // MOBILE
+                    // ============================================
+
+                    : _currentViewType ==
+                            _ViewType.card
+                        ? _buildCardView()
+                        : _buildListView(),
+              ),
+            ],
           ),
-        ],
+
+    // ============================================================
+    // BOTTOM NAVIGATION BAR
+    // IMPORTANT: DIRECT CHILD OF SCAFFOLD
+    // ============================================================
+
+    bottomNavigationBar: BottomNavigationBar(
+      backgroundColor: Colors.white,
+      type: BottomNavigationBarType.fixed,
+
+      currentIndex: _selectedBottomIndex,
+
+      selectedItemColor:
+          const Color(0xFF7C3AED),
+
+      unselectedItemColor:
+          const Color(0xFF64748B),
+
+      selectedLabelStyle:
+          const TextStyle(
+        fontSize: 12,
+        fontWeight: FontWeight.w700,
       ),
-    );
-  }
+
+      unselectedLabelStyle:
+          const TextStyle(
+        fontSize: 12,
+        fontWeight: FontWeight.w500,
+      ),
+
+      onTap: _onBottomNavigationTapped,
+
+      items: const [
+        BottomNavigationBarItem(
+          icon: Icon(
+            Icons.home_outlined,
+          ),
+          activeIcon: Icon(
+            Icons.home_rounded,
+          ),
+          label: "Home",
+        ),
+
+        BottomNavigationBarItem(
+          icon: Icon(
+            Icons.people_outline_rounded,
+          ),
+          activeIcon: Icon(
+            Icons.people_alt_rounded,
+          ),
+          label: "Discover",
+        ),
+
+        BottomNavigationBarItem(
+          icon: Icon(
+            Icons.chat_bubble_outline_rounded,
+          ),
+          activeIcon: Icon(
+            Icons.chat_bubble_rounded,
+          ),
+          label: "Chat",
+        ),
+
+        BottomNavigationBarItem(
+          icon: Icon(
+            Icons.notifications_none_rounded,
+          ),
+          activeIcon: Icon(
+            Icons.notifications_rounded,
+          ),
+          label: "Activity",
+        ),
+      ],
+    ),
+  );
+}
 }

@@ -882,7 +882,7 @@ Widget build(BuildContext context) {
               icon: Icon(
                 Icons.home_rounded,
               ),
-              text: 'Room Listings',
+              text: 'Flat Listings',
             ),
 
             Tab(
@@ -921,89 +921,35 @@ Widget build(BuildContext context) {
               ],
             ),
 
-      bottomNavigationBar:
-          Container(
-        decoration: BoxDecoration(
-          color: Colors.white,
-          boxShadow: [
-
-            BoxShadow(
-              color:
-                  Colors.black.withOpacity(
-                .06,
-              ),
-              blurRadius: 20,
-              offset:
-                  const Offset(0, -4),
-            ),
-          ],
-        ),
-        child: BottomNavigationBar(
-          backgroundColor:
-              Colors.white,
-
-          elevation: 0,
-
-          type:
-              BottomNavigationBarType
-                  .fixed,
-
-          selectedItemColor:
-              kPrimaryColor,
-
-          unselectedItemColor:
-              kLightText,
-
-          selectedLabelStyle:
-              const TextStyle(
-            fontWeight:
-                FontWeight.w700,
+       bottomNavigationBar: BottomNavigationBar(
+        backgroundColor: Colors.white,
+        type: BottomNavigationBarType.fixed,
+        selectedItemColor: const Color(0xFFAD1457),
+        unselectedItemColor: Colors.grey[600],
+        items: const <BottomNavigationBarItem>[
+          BottomNavigationBarItem(
+            icon: Icon(Icons.home),
+            label: 'Home',
           ),
-
-          currentIndex:
-              _selectedIndex,
-
-          onTap:
-              _onItemTapped,
-
-          items: const [
-
-            BottomNavigationBarItem(
-              icon: Icon(
-                Icons.home_rounded,
-              ),
-              label: 'Home',
-            ),
-
-            BottomNavigationBarItem(
-              icon: Icon(
-                Icons.favorite_rounded,
-              ),
-              label: 'Matches',
-            ),
-
-            BottomNavigationBarItem(
-              icon: Icon(
-                Icons.chat_bubble_rounded,
-              ),
-              label: 'Chat',
-            ),
-
-            BottomNavigationBarItem(
-              icon: Icon(
-                Icons.local_activity_rounded,
-              ),
-              label: 'Activity',
-            ),
-
-            BottomNavigationBarItem(
-              icon: Icon(
-                Icons.more_horiz_rounded,
-              ),
-              label: 'More',
-            ),
-          ],
-        ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.group),
+            label: 'Matches',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.chat_bubble_outline),
+            label: 'Chat',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.local_activity),
+            label: 'Activity',
+          ),
+          // BottomNavigationBarItem(
+          //   icon: Icon(Icons.more_horiz),
+          //   label: 'More',
+          // ),
+        ],
+        currentIndex: _selectedIndex,
+        onTap: _onItemTapped,
       ),
     ),
   );

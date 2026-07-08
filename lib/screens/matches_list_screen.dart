@@ -8,6 +8,9 @@ import 'package:mytennat/screens/chat_screen.dart';
 import 'package:mytennat/screens/flatmate_profile_screen.dart'; // FlatListingProfile
 import 'package:mytennat/screens/flat_with_flatmate_profile_screen.dart'; // SeekingFlatmateProfile
 import 'package:mytennat/services/block_user_service.dart';
+import 'package:mytennat/screens/home_page.dart' hide FlatListingProfile, SeekingFlatmateProfile;
+import 'package:mytennat/screens/matching_screen.dart';
+import 'package:mytennat/screens/user_activity_screen.dart';
 class MatchesListScreen extends StatefulWidget {
   const MatchesListScreen({
     super.key,
@@ -26,7 +29,7 @@ class _MatchesListScreenState extends State<MatchesListScreen> {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final FirebaseAuth _auth = FirebaseAuth.instance;
   User? _currentUser;
-
+final int _selectedBottomIndex = 2;
   @override
   void initState() {
     super.initState();
@@ -35,6 +38,61 @@ class _MatchesListScreenState extends State<MatchesListScreen> {
       print("Logged in user UID in MatchesListScreen: ${_currentUser!.uid}");
     }
   }
+  void _onBottomNavigationTapped(int index) {
+  if (index == _selectedBottomIndex) {
+    return;
+  }
+
+  switch (index) {
+    // ============================================================
+    // HOME
+    // ============================================================
+    case 0:
+      Navigator.pushAndRemoveUntil(
+        context,
+        MaterialPageRoute(
+          builder: (_) => const HomePage(),
+        ),
+        (route) => false,
+      );
+      break;
+
+    // ============================================================
+    // DISCOVER / MATCHING
+    // ============================================================
+    case 1:
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(
+          builder: (_) => MatchingScreen(
+            profileType: widget.profileType,
+            profileId: widget.profileId,
+            isExploreMode: false,
+          ),
+        ),
+      );
+      break;
+
+    // ============================================================
+    // CHAT / MATCHES LIST
+    // CURRENT SCREEN
+    // ============================================================
+    case 2:
+      return;
+
+    // ============================================================
+    // ACTIVITY
+    // ============================================================
+    case 3:
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(
+          builder: (_) => const UserActivityScreen(),
+        ),
+      );
+      break;
+  }
+}
 
   @override
   Widget build(BuildContext context) {
@@ -285,6 +343,7 @@ class _MatchesListScreenState extends State<MatchesListScreen> {
       ),
     ),
   );
+  
 }
 return Column(
   children: [
@@ -522,7 +581,38 @@ return Column(
 );
         },
       ),
+      bottomNavigationBar: BottomNavigationBar(
+  backgroundColor: Colors.white,
+  type: BottomNavigationBarType.fixed,
+
+  selectedItemColor: const Color(0xFFAD1457),
+  unselectedItemColor: Colors.grey[600],
+
+  currentIndex: _selectedBottomIndex,
+
+  onTap: _onBottomNavigationTapped,
+
+  items: const [
+    BottomNavigationBarItem(
+      icon: Icon(Icons.home),
+      label: 'Home',
+    ),
+    BottomNavigationBarItem(
+      icon: Icon(Icons.group),
+      label: 'Matches',
+    ),
+    BottomNavigationBarItem(
+      icon: Icon(Icons.chat_bubble_outline),
+      label: 'Chat',
+    ),
+    BottomNavigationBarItem(
+      icon: Icon(Icons.local_activity),
+      label: 'Activity',
+    ),
+  ],
+),
     );
+    
   }
   Widget _statItem(
   String value,
