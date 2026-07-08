@@ -22,8 +22,8 @@ Row(
 children: [
   Expanded(
 child: _actionCard(
-title: "List Your flat",
-subtitle: "Already have a flat",
+title: "List Your Flat",
+subtitle: "Already have a Flat",
 icon: Icons.groups_rounded,
 gradient: const [
 Color(0xFFFCE7F3),

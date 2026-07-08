@@ -33,6 +33,9 @@ import 'package:mytennat/screens/chat_screen.dart'
          kMediumText;
 
 
+import '../widgets/location_selector_widget.dart'
+      hide kPrimaryGradient,
+      kAccentColor;
 
 
 // NEW: Enum to manage different view types
@@ -112,90 +115,120 @@ dynamic _lastLikedProfile;
   // NEW: State variable to track the current view
   _ViewType _currentViewType = _ViewType.card;
 dynamic _lastPassedProfile;
-double? get _activeLatitude {
+// ============================================================
+// EXPLORE MODE STATE
+// ============================================================
 
+late String _exploreType;
+
+String? _exploreCity;
+String? _exploreLocationName;
+String? _explorePlaceId;
+
+double? _exploreLatitude;
+double? _exploreLongitude;
+double? get _activeLatitude {
+  // FilterScreen selected location has highest priority
   if (_currentFilters.latitude != null) {
     return _currentFilters.latitude;
   }
 
+  // Explore Mode location selected inside MatchingScreen
   if (widget.isExploreMode) {
-    return widget.exploreLatitude;
+    return _exploreLatitude;
   }
 
+  // Normal Flat Listing Profile
   if (_currentUserParsedProfile is FlatListingProfile) {
-    return (_currentUserParsedProfile as FlatListingProfile)
-        .latitude;
+    return (_currentUserParsedProfile as FlatListingProfile).latitude;
   }
 
+  // Normal Seeking Flatmate Profile
   if (_currentUserParsedProfile is SeekingFlatmateProfile) {
-    return (_currentUserParsedProfile as SeekingFlatmateProfile)
-        .latitude;
+    return (_currentUserParsedProfile as SeekingFlatmateProfile).latitude;
   }
 
   return null;
 }
 
 double? get _activeLongitude {
-
+  // FilterScreen selected location has highest priority
   if (_currentFilters.longitude != null) {
     return _currentFilters.longitude;
   }
 
+  // Explore Mode location selected inside MatchingScreen
   if (widget.isExploreMode) {
-    return widget.exploreLongitude;
+    return _exploreLongitude;
   }
 
+  // Normal Flat Listing Profile
   if (_currentUserParsedProfile is FlatListingProfile) {
-    return (_currentUserParsedProfile as FlatListingProfile)
-        .longitude;
+    return (_currentUserParsedProfile as FlatListingProfile).longitude;
   }
 
+  // Normal Seeking Flatmate Profile
   if (_currentUserParsedProfile is SeekingFlatmateProfile) {
-    return (_currentUserParsedProfile as SeekingFlatmateProfile)
-        .longitude;
+    return (_currentUserParsedProfile as SeekingFlatmateProfile).longitude;
   }
 
   return null;
 }
 bool _canUndoPass = false;
+@override
+void initState() {
+  super.initState();
 
-  @override
-  void initState() {
-    super.initState();
-    _currentUser = _auth.currentUser;
-    // Initialize _userProfileType and _currentUserParsedProfile from widget properties
-    _userProfileType = widget.profileType;
-    if (_currentUser == null) {
-  WidgetsBinding.instance.addPostFrameCallback((_) {
-    _showAlertDialog(
-      'Not Logged In',
-      'Please log in to use the matching feature.',
-      () {},
-    );
-  });
-  return;
-}
+  _currentUser = _auth.currentUser;
 
-if (widget.isExploreMode) {
+  _userProfileType = widget.profileType;
 
-  if (widget.profileType == "flat_listing") {
+  // ============================================================
+  // INITIALIZE EXPLORE MODE STATE
+  // ============================================================
 
-    // Show Rooms
-    _fetchFlatListingProfiles();
+  _exploreType = widget.profileType;
 
-  } else {
+  _exploreCity = widget.exploreCity;
 
-    // Show Flatmates
-    _fetchSeekingFlatmateProfiles();
+  _exploreLocationName =
+      widget.exploreLocationName;
 
+  _explorePlaceId =
+      widget.explorePlaceId;
+
+  _exploreLatitude =
+      widget.exploreLatitude;
+
+  _exploreLongitude =
+      widget.exploreLongitude;
+
+  // ============================================================
+  // USER LOGIN CHECK
+  // ============================================================
+
+  if (_currentUser == null) {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _showAlertDialog(
+        'Not Logged In',
+        'Please log in to use the matching feature.',
+        () {},
+      );
+    });
+
+    return;
   }
 
+  // ============================================================
+  // LOAD MATCHING DATA
+  // ============================================================
+
+  if (widget.isExploreMode) {
+  _loadExploreProfiles();
 } else {
-
   _fetchUserProfile();
-
 }
-  }
+}
 
   @override
   void dispose() {
@@ -287,40 +320,70 @@ String? _getDistanceText(dynamic profile) {
   return '${distance.toStringAsFixed(1)} km away';
 }
 String? get _defaultCity {
-
-  // User selected filter wins
+  // Location selected from FilterScreen has highest priority
   if (_currentFilters.desiredCity != null &&
       _currentFilters.desiredCity!.isNotEmpty) {
     return _currentFilters.desiredCity;
   }
 
-  // Explore Mode city
+  // Explore Mode city selected inside MatchingScreen
   if (widget.isExploreMode &&
-      widget.exploreCity != null &&
-      widget.exploreCity!.isNotEmpty) {
-
-    return widget.exploreCity;
+      _exploreCity != null &&
+      _exploreCity!.isNotEmpty) {
+    return _exploreCity;
   }
 
   // Normal Flat Listing Profile
-  if (_currentUserParsedProfile
-      is FlatListingProfile) {
-
-    return (_currentUserParsedProfile
-            as FlatListingProfile)
-        .city;
+  if (_currentUserParsedProfile is FlatListingProfile) {
+    return (_currentUserParsedProfile as FlatListingProfile).city;
   }
 
   // Normal Seeking Flatmate Profile
-  if (_currentUserParsedProfile
-      is SeekingFlatmateProfile) {
-
-    return (_currentUserParsedProfile
-            as SeekingFlatmateProfile)
-        .city;
+  if (_currentUserParsedProfile is SeekingFlatmateProfile) {
+    return (_currentUserParsedProfile as SeekingFlatmateProfile).city;
   }
 
   return null;
+}
+Future<void> _loadExploreProfiles() async {
+  if (!widget.isExploreMode) {
+    return;
+  }
+
+  if (!mounted) {
+    return;
+  }
+
+  setState(() {
+    // Show loading UI
+    _isLoading = true;
+
+    // Remove old Room/Flatmate results
+    _profiles.clear();
+
+    // Reset card position
+    _currentIndex = 0;
+
+    // Reset pagination
+    _lastDocument = null;
+    _hasMoreProfiles = true;
+    _isLoadingMore = false;
+
+    // Reset undo state because old profile belongs
+    // to the previous Explore result set.
+    _lastPassedProfile = null;
+    _canUndoPass = false;
+  });
+
+  if (_exploreType == "flat_listing") {
+    await _fetchFlatListingProfiles(
+      applyFilters: true,
+    );
+  } else {
+    await _fetchSeekingFlatmateProfiles(
+      applyFilters: true,
+    );
+  }
 }
   Future<void> _fetchUserProfile({bool applyFilters = false}) async {
     if (_currentUser == null) return;
@@ -2828,32 +2891,30 @@ if (_profiles.length <= 10 &&
     _hasMoreProfiles) {
 
   if (widget.isExploreMode) {
+  // ============================================================
+  // EXPLORE MODE PAGINATION
+  // ============================================================
 
-    if (widget.profileType ==
-        "flat_listing") {
-
-      _loadMoreFlatListings();
-
-    } else {
-
-      _loadMoreSeekingFlatmates();
-
-    }
-
+  if (_exploreType == "flat_listing") {
+    // Currently exploring Rooms
+    _loadMoreFlatListings();
   } else {
-
-    if (_currentUserParsedProfile
-        is SeekingFlatmateProfile) {
-
-      _loadMoreFlatListings();
-
-    } else {
-
-      _loadMoreSeekingFlatmates();
-
-    }
-
+    // Currently exploring Flatmates
+    _loadMoreSeekingFlatmates();
   }
+} else {
+  // ============================================================
+  // NORMAL MATCHING MODE PAGINATION
+  // ============================================================
+
+  if (_currentUserParsedProfile is SeekingFlatmateProfile) {
+    // Seeking Flatmate profile searches for Rooms
+    _loadMoreFlatListings();
+  } else {
+    // Flat Listing profile searches for Flatmates
+    _loadMoreSeekingFlatmates();
+  }
+}
 }
     if (_profiles.isEmpty) {
       // Show a message or fetch more profiles when the list is empty
@@ -3939,6 +4000,256 @@ Widget _buildActionButton({
   );
 }
 
+Widget _buildExploreTypeSelector() {
+  if (!widget.isExploreMode) {
+    return const SizedBox.shrink();
+  }
+
+  return Padding(
+    padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
+    child: Container(
+      padding: const EdgeInsets.all(5),
+      decoration: BoxDecoration(
+        color: const Color(0xFFF3F4F6),
+        borderRadius: BorderRadius.circular(18),
+      ),
+      child: Row(
+        children: [
+          // ============================================================
+          // ROOMS
+          // ============================================================
+
+          Expanded(
+            child: GestureDetector(
+              behavior: HitTestBehavior.opaque,
+              onTap: () {
+                if (_exploreType == "flat_listing") {
+                  return;
+                }
+
+                setState(() {
+                  _exploreType = "flat_listing";
+                });
+
+                _loadExploreProfiles();
+              },
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 250),
+                height: 48,
+                decoration: BoxDecoration(
+                  color: _exploreType == "flat_listing"
+                      ? Colors.white
+                      : Colors.transparent,
+                  borderRadius: BorderRadius.circular(14),
+                  boxShadow: _exploreType == "flat_listing"
+                      ? [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.08),
+                            blurRadius: 12,
+                            offset: const Offset(0, 4),
+                          ),
+                        ]
+                      : null,
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(
+                      Icons.home_rounded,
+                      size: 20,
+                      color: _exploreType == "flat_listing"
+                          ? const Color(0xFF7C3AED)
+                          : const Color(0xFF64748B),
+                    ),
+                    const SizedBox(width: 7),
+                    Text(
+                      "Rooms",
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w700,
+                        color: _exploreType == "flat_listing"
+                            ? const Color(0xFF111827)
+                            : const Color(0xFF64748B),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+
+          const SizedBox(width: 5),
+
+          // ============================================================
+          // FLATMATES
+          // ============================================================
+
+          Expanded(
+            child: GestureDetector(
+              behavior: HitTestBehavior.opaque,
+              onTap: () {
+                if (_exploreType == "seeking_flatmate") {
+                  return;
+                }
+
+                setState(() {
+                  _exploreType = "seeking_flatmate";
+                });
+
+                _loadExploreProfiles();
+              },
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 250),
+                height: 48,
+                decoration: BoxDecoration(
+                  color: _exploreType == "seeking_flatmate"
+                      ? Colors.white
+                      : Colors.transparent,
+                  borderRadius: BorderRadius.circular(14),
+                  boxShadow: _exploreType == "seeking_flatmate"
+                      ? [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.08),
+                            blurRadius: 12,
+                            offset: const Offset(0, 4),
+                          ),
+                        ]
+                      : null,
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(
+                      Icons.people_alt_rounded,
+                      size: 20,
+                      color: _exploreType == "seeking_flatmate"
+                          ? const Color(0xFF7C3AED)
+                          : const Color(0xFF64748B),
+                    ),
+                    const SizedBox(width: 7),
+                    Text(
+                      "Flatmates",
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w700,
+                        color: _exploreType == "seeking_flatmate"
+                            ? const Color(0xFF111827)
+                            : const Color(0xFF64748B),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    ),
+  );
+}
+Future<void> _openExploreLocationPicker() async {
+  if (!widget.isExploreMode) {
+    return;
+  }
+
+  FocusManager.instance.primaryFocus?.unfocus();
+
+  await showModalBottomSheet<void>(
+    context: context,
+    isScrollControlled: true,
+    useSafeArea: true,
+    backgroundColor: Colors.transparent,
+    builder: (sheetContext) {
+      return Padding(
+        padding: EdgeInsets.only(
+          bottom: MediaQuery.viewInsetsOf(sheetContext).bottom,
+        ),
+        child: Container(
+          width: double.infinity,
+          constraints: BoxConstraints(
+            maxHeight:
+                MediaQuery.sizeOf(sheetContext).height * 0.82,
+          ),
+          decoration: const BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.vertical(
+              top: Radius.circular(28),
+            ),
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const SizedBox(height: 10),
+
+              Container(
+                width: 42,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: const Color(0xFFD1D5DB),
+                  borderRadius: BorderRadius.circular(100),
+                ),
+              ),
+
+              const SizedBox(height: 18),
+
+              const Padding(
+                padding: EdgeInsets.symmetric(horizontal: 20),
+                child: Row(
+                  children: [
+                    Icon(
+                      Icons.location_on_rounded,
+                      color: Color(0xFF7C3AED),
+                    ),
+                    SizedBox(width: 10),
+                    Text(
+                      "Choose explore location",
+                      style: TextStyle(
+                        fontSize: 19,
+                        fontWeight: FontWeight.w800,
+                        color: Color(0xFF111827),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+
+              const SizedBox(height: 16),
+
+              Flexible(
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.fromLTRB(
+                    16,
+                    0,
+                    16,
+                    24,
+                  ),
+                  child: LocationSelectorWidget(
+                    googleApiKey: 'YOUR_EXISTING_GOOGLE_API_KEY',
+                    initialCity: _exploreCity,
+                    initialAddress: _exploreLocationName,
+                    onLocationSelected: (LocationResult result) {
+                      setState(() {
+                        _exploreCity = result.city;
+                        _exploreLocationName = result.address;
+                        _explorePlaceId = result.placeId;
+                        _exploreLatitude = result.latitude;
+                        _exploreLongitude = result.longitude;
+                      });
+
+                      Navigator.of(sheetContext).pop();
+
+                      _loadExploreProfiles();
+                    },
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    },
+  );
+}
   @override
   Widget build(BuildContext context) {
     final double screenWidth = MediaQuery.of(context).size.width;
@@ -3962,58 +4273,158 @@ Widget _buildActionButton({
 
   titleSpacing: 8,
 
-  title: Row(
-    children: [
+  title: widget.isExploreMode
 
-      Container(
-        width: 42,
-        height: 42,
-        decoration: BoxDecoration(
-          color: Colors.white.withOpacity(.15),
-          borderRadius: BorderRadius.circular(14),
-          border: Border.all(
-            color: Colors.white.withOpacity(.15),
+    // ============================================================
+    // EXPLORE MODE APPBAR TITLE
+    // ============================================================
+
+    ? InkWell(
+        borderRadius: BorderRadius.circular(14),
+        onTap: _openExploreLocationPicker,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(
+            horizontal: 4,
+            vertical: 4,
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // ==================================================
+              // LOCATION ICON
+              // ==================================================
+
+              Container(
+                width: 42,
+                height: 42,
+                decoration: BoxDecoration(
+                  color: Colors.white.withOpacity(.15),
+                  borderRadius: BorderRadius.circular(14),
+                  border: Border.all(
+                    color: Colors.white.withOpacity(.15),
+                  ),
+                ),
+                child: const Icon(
+                  Icons.location_on_rounded,
+                  color: Colors.white,
+                  size: 22,
+                ),
+              ),
+
+              const SizedBox(width: 12),
+
+              // ==================================================
+              // CITY + SUBTITLE
+              // ==================================================
+
+              Flexible(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      _exploreCity != null &&
+                              _exploreCity!.trim().isNotEmpty
+                          ? _exploreCity!
+                          : "Select a city",
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 19,
+                        fontWeight: FontWeight.w800,
+                        letterSpacing: .2,
+                      ),
+                    ),
+
+                    const SizedBox(height: 2),
+
+                    Text(
+                      _exploreCity != null &&
+                              _exploreCity!.trim().isNotEmpty
+                          ? "Tap to change location"
+                          : "Choose your explore location",
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                        color: Colors.white70,
+                        fontSize: 11,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+
+              const SizedBox(width: 4),
+
+              // ==================================================
+              // DROPDOWN ICON
+              // ==================================================
+
+              const Icon(
+                Icons.keyboard_arrow_down_rounded,
+                color: Colors.white70,
+                size: 21,
+              ),
+            ],
           ),
         ),
-        child: const Icon(
-          Icons.favorite_rounded,
-          color: Colors.white,
-          size: 22,
-        ),
-      ),
+      )
 
-      const SizedBox(width: 12),
+    // ============================================================
+    // NORMAL MATCHING MODE APPBAR TITLE
+    // ============================================================
 
-      const Column(
-        crossAxisAlignment:
-            CrossAxisAlignment.start,
-        mainAxisSize: MainAxisSize.min,
+    : Row(
         children: [
-
-          Text(
-            "Discover",
-            style: TextStyle(
+          Container(
+            width: 42,
+            height: 42,
+            decoration: BoxDecoration(
+              color: Colors.white.withOpacity(.15),
+              borderRadius: BorderRadius.circular(14),
+              border: Border.all(
+                color: Colors.white.withOpacity(.15),
+              ),
+            ),
+            child: const Icon(
+              Icons.favorite_rounded,
               color: Colors.white,
-              fontSize: 20,
-              fontWeight: FontWeight.w800,
-              letterSpacing: .2,
+              size: 22,
             ),
           ),
 
-          SizedBox(height: 2),
+          const SizedBox(width: 12),
 
-          Text(
-            "Find your perfect flatmate",
-            style: TextStyle(
-              color: Colors.white70,
-              fontSize: 11,
-              fontWeight: FontWeight.w500,
-            ),
+          const Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                "Discover",
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 20,
+                  fontWeight: FontWeight.w800,
+                  letterSpacing: .2,
+                ),
+              ),
+
+              SizedBox(height: 2),
+
+              Text(
+                "Find your perfect flatmate",
+                style: TextStyle(
+                  color: Colors.white70,
+                  fontSize: 11,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ],
           ),
         ],
       ),
-    ],
-  ),
 
   iconTheme: const IconThemeData(
     color: Colors.white,
@@ -4084,57 +4495,126 @@ Widget _buildActionButton({
           onFiltersChanged: _onFiltersChanged,
         ),
       ),
-      body: _isLoading
-          ? const Center(child: CircularProgressIndicator(color: Color(0xFF6A1B9A))) // Changed to a consistent color
-          : isLargeScreen
-          ? Row(
+     body: _isLoading
+    ? const Center(
+        child: CircularProgressIndicator(
+          color: Color(0xFF6A1B9A),
+        ),
+      )
+    : Column(
         children: [
-          // Filter Panel on the left for large screens
-          SizedBox(
-            width: math.min(350.0, screenWidth * 0.3), // Occupy 30% or max 350px
-            child: FilterScreen(
-              initialFilters: _currentFilters.copyWith(),
-              isSeekingFlatmate: _userProfileType == 'seeking_flatmate',
-              onFiltersChanged: _onFiltersChanged,
-            ),
-          ),
-          // Main Matching Content
+          // ============================================================
+          // EXPLORE MODE TYPE SELECTOR
+          // Shows only when MatchingScreen is opened in Explore Mode
+          // ============================================================
+
+          if (widget.isExploreMode)
+            _buildExploreTypeSelector(),
+
+          // ============================================================
+          // EXISTING MATCHING CONTENT
+          // ============================================================
+
           Expanded(
-            child: Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  // Banner Area
-                  Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text('Plan: ${_currentPlanName ?? 'N/A'}', style: const TextStyle(fontSize: 16)),
-                        Text('Contacts Left: $_remainingContacts', style: const TextStyle(fontSize: 16)),
-                      ],
-                    ),
-                  ),
-                  Expanded(
-                    child: Padding(
-                      padding: const EdgeInsets.all(16.0),
-                      child:
-                      // NEW: Conditionally render the view
-                      _currentViewType == _ViewType.card
-                          ? _buildCardView() // This is the existing view, assuming there's a method for it
-                          : _buildListView(),
-                    ),
-                  ),
-                ],
-              ),
-            ),
+            child: isLargeScreen
+
+                // ======================================================
+                // LARGE SCREEN / WEB
+                // ======================================================
+
+                ? Row(
+                    children: [
+                      // FILTER PANEL
+
+                      SizedBox(
+                        width: math.min(
+                          350.0,
+                          screenWidth * 0.3,
+                        ),
+                        child: FilterScreen(
+                          initialFilters:
+                              _currentFilters.copyWith(),
+
+                          // In Explore Mode use currently selected type.
+                          isSeekingFlatmate:
+                              widget.isExploreMode
+                                  ? _exploreType ==
+                                      'seeking_flatmate'
+                                  : _userProfileType ==
+                                      'seeking_flatmate',
+
+                          onFiltersChanged:
+                              _onFiltersChanged,
+                        ),
+                      ),
+
+                      // MAIN MATCHING CONTENT
+
+                      Expanded(
+                        child: Center(
+                          child: Column(
+                            mainAxisAlignment:
+                                MainAxisAlignment.center,
+                            children: [
+                              // ========================================
+                              // PLAN / CONTACT INFORMATION
+                              // ========================================
+
+                              Padding(
+                                padding:
+                                    const EdgeInsets.all(8.0),
+                                child: Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment
+                                          .spaceBetween,
+                                  children: [
+                                    Text(
+                                      'Plan: ${_currentPlanName ?? 'N/A'}',
+                                      style: const TextStyle(
+                                        fontSize: 16,
+                                      ),
+                                    ),
+                                    Text(
+                                      'Contacts Left: $_remainingContacts',
+                                      style: const TextStyle(
+                                        fontSize: 16,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+
+                              // ========================================
+                              // CARD / LIST VIEW
+                              // ========================================
+
+                              Expanded(
+                                child: Padding(
+                                  padding:
+                                      const EdgeInsets.all(16.0),
+                                  child: _currentViewType ==
+                                          _ViewType.card
+                                      ? _buildCardView()
+                                      : _buildListView(),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ],
+                  )
+
+                // ======================================================
+                // SMALL SCREEN / MOBILE
+                // ======================================================
+
+                : _currentViewType == _ViewType.card
+                    ? _buildCardView()
+                    : _buildListView(),
           ),
         ],
-      )
-      // NEW: Conditionally render for small screens as well
-          : _currentViewType == _ViewType.card
-          ? _buildCardView()
-          : _buildListView(),
+      ),
     );
   }
 }

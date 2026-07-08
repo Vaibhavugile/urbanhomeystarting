@@ -215,7 +215,7 @@ class _HeroBannerState extends State<HeroBanner> {
                       SizedBox(width: 7),
 
                       Text(
-                        "50K+ Verified Members",
+                        "Verified Members",
                         style: TextStyle(
                           color: Colors.white,
                           fontSize: 12,
