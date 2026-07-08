@@ -30,11 +30,11 @@ class _CompleteUserProfileScreenState extends State<CompleteUserProfileScreen> {
   String? _bio;
 
   final List<String> _occupationOptions = [
-    'Student', 'Working Professional', 'Both', 'No preference'
+    'Student', 'Working Professional', ' Prefer not to say'
   ];
 
   final List<String> _religionOptions = [
-    'Hindu', 'Muslim', 'Christian','Sikh','Buddhism','Prefer not to say'
+    'Hindu', 'Muslim', 'Christian','Sikh','Buddhism','Other','Prefer not to say'
   ];
   final List<String> _smokingHabitOptions = [
   'Never',
@@ -60,15 +60,15 @@ final List<String> _foodPreferenceOptions = [
 ];
 
 final List<String> _cleanlinessLevelOptions = [
-  'Very clean',
-  'Moderately clean',
-  'Not so clean',
+  'Very neat',
+  'Moderately neat',
+  'Relaxed',
 ];
 
 final List<String> _socialPreferenceOptions = [
-  'Value personal space highly',
-  'Enjoy a balance',
-  'Prefer more socialization',
+  'Private',
+  'Balanced',
+  'Social',
   'Flexible',
 ];
 
@@ -79,10 +79,10 @@ final List<String> _petOwnershipOptions = [
 ];
 
 final List<String> _petToleranceOptions = [
-  'Comfortable with pets',
-  'Tolerant of pets',
-  'Prefer no pets',
-  'Allergic to pets',
+  'Love Pets',
+  'Okay With Pets',
+  'No Pets',
+  'Allergic',
 ];
 
 final List<String> _guestsFrequencyOptions = [
@@ -631,10 +631,7 @@ Widget build(BuildContext context) {
                                 CrossAxisAlignment.start,
                             children: [
 
-                              _buildSectionHeader(
-                                "Lifestyle Preferences",
-                                Icons.favorite_rounded,
-                              ),
+                              
 
                               const SizedBox(height: 20),
 
@@ -668,10 +665,10 @@ Widget build(BuildContext context) {
 
                               const SizedBox(height: 30),
 
-                              _buildSectionHeader(
-                                "Habits & Lifestyle",
-                                Icons.self_improvement_rounded,
-                              ),
+                              // _buildSectionHeader(
+                              //   "Habits & Lifestyle",
+                              //   Icons.self_improvement_rounded,
+                              // ),
 
                               const SizedBox(height: 20),
 
@@ -736,7 +733,7 @@ Widget build(BuildContext context) {
                               const SizedBox(height: 18),
 
                               _buildDropdownField(
-                                labelText: 'Social Preferences',
+                                labelText: 'Social Style',
                                 value: _socialPreferences,
                                 items: _socialPreferenceOptions,
                                 onChanged: (val) {
@@ -766,7 +763,7 @@ Widget build(BuildContext context) {
                               const SizedBox(height: 18),
 
                               _buildDropdownField(
-                                labelText: 'Pet Tolerance',
+                                labelText: 'Pet Friendly ?',
                                 value: _petTolerance,
                                 items: _petToleranceOptions,
                                 onChanged: (val) {
@@ -795,22 +792,22 @@ Widget build(BuildContext context) {
 
                               const SizedBox(height: 30),
 
-                              _buildSectionHeader(
-                                "About You",
-                                Icons.person_rounded,
-                              ),
+                              // _buildSectionHeader(
+                              //   "About You",
+                              //   Icons.person_rounded,
+                              // ),
 
-                              const SizedBox(height: 20),
+                              // const SizedBox(height: 20),
 
-                              _buildTextFormField(
-                                label: 'Short Bio',
-                                icon: Icons.description,
-                                initialValue: _bio,
-                                maxLines: 5,
-                                onSaved: (value) {
-                                  _bio = value;
-                                },
-                              ),
+                              // _buildTextFormField(
+                              //   label: 'Short Bio',
+                              //   icon: Icons.description,
+                              //   initialValue: _bio,
+                              //   maxLines: 5,
+                              //   onSaved: (value) {
+                              //     _bio = value;
+                              //   },
+                              // ),
 
                               const SizedBox(height: 35),
 

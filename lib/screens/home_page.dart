@@ -593,7 +593,83 @@ void _openExploreMode() {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
+
+const SizedBox(height: 24),
+HeroBanner(
+  onFindRoom: () {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => FlatWithFlatmateProfileScreen(
+          initialPhoneNumber: null,
+        ),
+      ),
+    );
+  },
+  onFindFlatmate: () {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => FlatmateProfileScreen(
+          initialPhoneNumber: null,
+        ),
+      ),
+    );
+  },
+),
+
+const SizedBox(height: 24),
+const Text(
+  "List Your Requirement",
+  style: TextStyle(
+    fontSize: 22,
+    fontWeight: FontWeight.w800,
+    color: Color(0xFF111827),
+  ),
+),
+
+
+SizedBox(height: 16),
+QuickActionsSection(
+  onNeedRoom: () {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => FlatWithFlatmateProfileScreen(
+          initialPhoneNumber: null,
+        ),
+      ),
+    );
+  },
+
+  onNeedFlatmate: () {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => FlatmateProfileScreen(
+          initialPhoneNumber: null,
+        ),
+      ),
+    );
+  },
+
+  onListProperty: () {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => FlatmateProfileScreen(
+          initialPhoneNumber: null,
+        ),
+      ),
+    );
+  },
+
+  onExplore: () {
+      // Future Explore Screen
+  },
+),
 const SizedBox(height: 20),
+
 Container(
   padding: const EdgeInsets.all(20),
   decoration: BoxDecoration(
@@ -763,82 +839,6 @@ LocationSelectorWidget(
     ],
   ),
 ),
-const SizedBox(height: 24),
-HeroBanner(
-  onFindRoom: () {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (_) => FlatWithFlatmateProfileScreen(
-          initialPhoneNumber: null,
-        ),
-      ),
-    );
-  },
-  onFindFlatmate: () {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (_) => FlatmateProfileScreen(
-          initialPhoneNumber: null,
-        ),
-      ),
-    );
-  },
-),
-
-const SizedBox(height: 24),
-const Text(
-  "List Your Requirement",
-  style: TextStyle(
-    fontSize: 22,
-    fontWeight: FontWeight.w800,
-    color: Color(0xFF111827),
-  ),
-),
-
-SizedBox(height: 16),
-QuickActionsSection(
-  onNeedRoom: () {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (_) => FlatWithFlatmateProfileScreen(
-          initialPhoneNumber: null,
-        ),
-      ),
-    );
-  },
-
-  onNeedFlatmate: () {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (_) => FlatmateProfileScreen(
-          initialPhoneNumber: null,
-        ),
-      ),
-    );
-  },
-
-  onListProperty: () {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (_) => FlatmateProfileScreen(
-          initialPhoneNumber: null,
-        ),
-      ),
-    );
-  },
-
-  onExplore: () {
-      // Future Explore Screen
-  },
-),
-// const SizedBox(height: 28),
-
-
 // const PopularCitiesSection(),
 
 

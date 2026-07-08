@@ -834,39 +834,39 @@ Widget _buildVerificationCard() {
 
         const SizedBox(height: 16),
 
-        SizedBox(
-          width: double.infinity,
-          child: ElevatedButton(
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (_) =>
-                      const VerificationScreen(),
-                ),
-              );
-            },
-            style: ElevatedButton.styleFrom(
-  backgroundColor: kPrimaryColor,
-  foregroundColor: Colors.white,
-  shape: RoundedRectangleBorder(
-    borderRadius: BorderRadius.circular(16),
-  ),
-),
+//         SizedBox(
+//           width: double.infinity,
+//           child: ElevatedButton(
+//             onPressed: () {
+//               Navigator.push(
+//                 context,
+//                 MaterialPageRoute(
+//                   builder: (_) =>
+//                       const VerificationScreen(),
+//                 ),
+//               );
+//             },
+//             style: ElevatedButton.styleFrom(
+//   backgroundColor: kPrimaryColor,
+//   foregroundColor: Colors.white,
+//   shape: RoundedRectangleBorder(
+//     borderRadius: BorderRadius.circular(16),
+//   ),
+// ),
 
-child: Text(
-  _verificationStatus == 'Pending Review'
-      ? 'View Submission'
-      : _verificationStatus == 'Verified'
-          ? 'Verified'
-          : 'Start Verification',
-  style: const TextStyle(
-    fontWeight: FontWeight.w700,
-    fontSize: 15,
-  ),
-),
-          ),
-        ),
+// child: Text(
+//   _verificationStatus == 'Pending Review'
+//       ? 'View Submission'
+//       : _verificationStatus == 'Verified'
+//           ? 'Verified'
+//           : 'Start Verification',
+//   style: const TextStyle(
+//     fontWeight: FontWeight.w700,
+//     fontSize: 15,
+//   ),
+// ),
+//           ),
+//         ),
       ],
     ),
   );

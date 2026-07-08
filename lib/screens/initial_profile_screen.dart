@@ -689,7 +689,7 @@ Widget build(BuildContext context) {
                               _buildTextFormField(
                                 controller:
                                     _cityController,
-                                label: 'Location',
+                                label: 'HomeTown',
                                 icon: Icons
                                     .location_on,
                                 validator:

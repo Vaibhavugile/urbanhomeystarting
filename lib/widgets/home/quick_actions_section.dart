@@ -20,23 +20,9 @@ return Column(
 children: [
 Row(
 children: [
-Expanded(
+  Expanded(
 child: _actionCard(
-title: "Looking for a Flat",
-subtitle: "Find a flat & flatmates",
-icon: Icons.apartment_rounded,
-gradient: const [
-Color(0xFFEDE9FE),
-Color(0xFFF5F3FF),
-],
-badge: "",
-onTap: onNeedRoom,
-),
-),
-const SizedBox(width: 14),
-Expanded(
-child: _actionCard(
-title: "Looking for a Flatmate",
+title: "List Your flat",
 subtitle: "Already have a flat",
 icon: Icons.groups_rounded,
 gradient: const [
@@ -47,6 +33,22 @@ badge: "",
 onTap: onNeedFlatmate,
 ),
 ),
+        const SizedBox(height: 14),
+
+Expanded(
+child: _actionCard(
+title: "Looking for a Flat",
+subtitle: "Find a flatmate",
+icon: Icons.apartment_rounded,
+gradient: const [
+Color(0xFFEDE9FE),
+Color(0xFFF5F3FF),
+],
+badge: "",
+onTap: onNeedRoom,
+),
+),
+
 ],
 ),
 

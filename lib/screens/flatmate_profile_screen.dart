@@ -867,7 +867,7 @@ bool _isUploadingImages = false;
   // Define your sections - UPDATED
 final List<Map<String, dynamic>> _sections = [
   {
-    'title': 'Flat Details',
+    'title': 'Property Details',
     'icon': Icons.home_work_rounded,
     'startPage': 0,
     'endPage': 13,
@@ -1155,7 +1155,7 @@ Widget _buildFlatImagesQuestion() {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         const Text(
-          "Add Flat Photos",
+          "Add Property Photos",
           style: TextStyle(
             fontSize: 30,
             fontWeight: FontWeight.w800,
@@ -1691,7 +1691,7 @@ Widget _buildTextQuestion({
                                 .start,
                         children: [
                           const Text(
-                            "Selected Date",
+                            "Availability Date",
                             style:
                                 TextStyle(
                               fontSize:
@@ -1708,7 +1708,7 @@ Widget _buildTextQuestion({
                           Text(
                             selectedDate ==
                                     null
-                                ? "Tap to choose a date"
+                                ? "Tap to select a date"
                                 : DateFormat(
                                     'dd MMM yyyy')
                                 .format(
@@ -2284,7 +2284,7 @@ Widget _buildAreaSelectionQuestion({
       // --- Section 3: Flat Details (Pages 21-33) ---
       // Page 21: Flat Type
       SingleChoiceQuestionWidget(
-        title: "What type of flat are you listing?",
+        title: "What type of property are you listing?",
         subtitle: "Studio, 1BHK, 2BHK, etc.",
         options: ['Studio Apartment', '1BHK', '2BHK', '3BHK', '4BHK+', 'Other'],
         onSelected: (value) {
@@ -2295,7 +2295,7 @@ Widget _buildAreaSelectionQuestion({
         initialValue: _flatListingProfile.flatType,
       ),
       SingleChoiceQuestionWidget(
-        title: "What type of flat are you listing?",
+        title: "What type of occupancy are you listing?",
         subtitle: "single, double, triple, etc.",
         options: ['Single Occupancy', 'Double Occupancy', 'Triple Occupancy', 'Other'],
         onSelected: (value) {
@@ -2308,7 +2308,7 @@ Widget _buildAreaSelectionQuestion({
 
       // Page 22: Furnished Status
       SingleChoiceQuestionWidget(
-        title: "Is the flat furnished, semi-furnished, or unfurnished?",
+        title: "Is the property furnished, semi-furnished, or unfurnished?",
         subtitle: "Specify what's included in the flat.",
         options: ['Furnished', 'Semi-furnished', 'Unfurnished'],
         onSelected: (value) {
@@ -2319,7 +2319,7 @@ Widget _buildAreaSelectionQuestion({
         initialValue: _flatListingProfile.furnishedStatus,
       ),
       SingleChoiceQuestionWidget(
-  title: "How many people are currently staying in the flat?",
+  title: "How many people are currently staying in the property?",
   subtitle: "Exclude the new tenant you're looking for.",
   options: [
     'Just Me',
@@ -2336,13 +2336,19 @@ Widget _buildAreaSelectionQuestion({
   initialValue: _flatListingProfile.currentOccupants,
 ),
 SingleChoiceQuestionWidget(
-  title: "What is the minimum lease duration?",
+  title: "How long is the current rental agreement valid for ?",
   subtitle: "Select how long a tenant is expected to stay.",
   options: [
     '1 Month',
     '2 Months',
     '3 Months',
+    '4 Months',
+    '5 Months',
     '6 Months',
+    '7 Months',
+    '8 Months',
+    '9 Months',
+    '10 Months',
     '11 Months',
     '1 Year',
     'More than 1 Year',
@@ -2399,8 +2405,8 @@ _buildFlatImagesQuestion(),
 
       // Page 24: Availability Date
       _buildDateQuestion(
-        title: "When is the flat available from?",
-        subtitle: "Approximate date works best.",
+        title: "When will the property be available ?",
+        subtitle: "Select the expected availablity date",
         onDateSelected: (date) {
           setState(() {
             _flatListingProfile.availabilityDate = date;
@@ -2411,7 +2417,7 @@ _buildFlatImagesQuestion(),
 
       // Page 25: Rent Price
       _buildTextQuestion(
-        title: "What is the monthly rent for the flat/room?",
+        title: "What is the monthly rent per person",
         subtitle: "Enter the rent amount in ₹.",
         hintText: "e.g., 12000",
         keyboardType: TextInputType.number,
@@ -2425,7 +2431,7 @@ _buildFlatImagesQuestion(),
 
       // Page 26: Deposit Amount
       _buildTextQuestion(
-        title: "What is the security deposit amount?",
+        title: "What is the security deposit  per person?",
         subtitle: "Enter the deposit amount in ₹.",
         hintText: "e.g., 24000",
         keyboardType: TextInputType.number,
@@ -2439,9 +2445,9 @@ _buildFlatImagesQuestion(),
 
       // Page 27: Bathroom Type
       SingleChoiceQuestionWidget(
-        title: "What kind of bathroom is available?",
+        title: "What kind of Washroom  is available?",
         subtitle: "Attached to the room or shared?",
-        options: ['Attached Bathroom', 'Shared Bathroom'],
+        options: ['Attached Washroom', 'Shared Washroom'],
         onSelected: (value) {
           setState(() {
             _flatListingProfile.bathroomType = value;
