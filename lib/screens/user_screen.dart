@@ -25,6 +25,7 @@ class UserScreen extends StatefulWidget {
 class _UserScreenState extends State<UserScreen> {
   UserProfile? _userProfile;
   bool _isLoading = true;
+  bool _isGuest = false;
   bool _showAdditionalData = false;
   double _completionPercentage = 0.0;
 String _verificationStatus = 'Not Verified';
@@ -43,55 +44,95 @@ void dispose() {
   _deleteController.dispose();
   super.dispose();
 }
-  Future<void> _fetchUserProfile() async {
-    final user = FirebaseAuth.instance.currentUser;
-    if (user == null) {
+ Future<void> _fetchUserProfile() async {
+  final user = FirebaseAuth.instance.currentUser;
+
+  // No Firebase user
+  if (user == null) {
+    if (!mounted) return;
+
+    setState(() {
+      _isGuest = true;
+      _userProfile = null;
+      _isLoading = false;
+    });
+
+    return;
+  }
+
+  // Guest / Anonymous Firebase user
+  if (user.isAnonymous) {
+    if (!mounted) return;
+
+    setState(() {
+      _isGuest = true;
+      _userProfile = null;
+      _isLoading = false;
+    });
+
+    return;
+  }
+
+  try {
+    final docSnapshot = await FirebaseFirestore.instance
+        .collection('users')
+        .doc(user.uid)
+        .get();
+
+    if (!mounted) return;
+
+    // Logged-in user, but profile document does not exist
+    if (!docSnapshot.exists || docSnapshot.data() == null) {
       setState(() {
+        _isGuest = false;
+        _userProfile = null;
         _isLoading = false;
       });
+
       return;
     }
 
-    try {
-      final docSnapshot = await FirebaseFirestore.instance.collection('users').doc(user.uid).get();
-      if (docSnapshot.exists) {
-       setState(() {
-  _userProfile = UserProfile.fromMap(
-    docSnapshot.data() as Map<String, dynamic>,
-    docSnapshot.id,
-  );
+    final data = docSnapshot.data()!;
 
-  _isVerified =
-      docSnapshot.data()?['isVerified'] ?? false;
+    _userProfile = UserProfile.fromMap(
+      data,
+      docSnapshot.id,
+    );
 
-  final status =
-      docSnapshot.data()?['verificationStatus'];
+    _isVerified = data['isVerified'] == true;
 
-  if (_isVerified) {
-    _verificationStatus = 'Verified';
-  } else if (status == 'pending') {
-    _verificationStatus = 'Pending Review';
-  } else if (status == 'rejected') {
-    _verificationStatus = 'Rejected';
-  } else {
-    _verificationStatus = 'Not Verified';
-  }
+    final status = data['verificationStatus'];
 
-  _calculateCompletionPercentage();
-  _isLoading = false;
-});
-      } else {
-        setState(() {
-          _isLoading = false;
-        });
-      }
-    } catch (e) {
-      print("Error fetching user profile: $e");
-      setState(() {
-        _isLoading = false;
-      });
+    if (_isVerified) {
+      _verificationStatus = 'Verified';
+    } else if (status == 'pending') {
+      _verificationStatus = 'Pending Review';
+    } else if (status == 'rejected') {
+      _verificationStatus = 'Rejected';
+    } else {
+      _verificationStatus = 'Not Verified';
     }
+
+    _calculateCompletionPercentage();
+
+    if (!mounted) return;
+
+    setState(() {
+      _isGuest = false;
+      _isLoading = false;
+    });
+  } catch (e, stackTrace) {
+    debugPrint('Error fetching user profile: $e');
+    debugPrintStack(stackTrace: stackTrace);
+
+    if (!mounted) return;
+
+    setState(() {
+      _userProfile = null;
+      _isLoading = false;
+    });
   }
+}
 
   void _calculateCompletionPercentage() {
     if (_userProfile == null) return;
@@ -299,21 +340,15 @@ Widget build(BuildContext context) {
   return Scaffold(
     backgroundColor: const Color(0xFFF8FAFC),
     body: _isLoading
-        ? const Center(
-            child: CircularProgressIndicator(
-              color: Color(0xFF7C3AED),
-            ),
-          )
+    ? const Center(
+        child: CircularProgressIndicator(
+          color: Color(0xFF7C3AED),
+        ),
+      )
+    : _isGuest
+        ? _buildGuestProfilePage()
         : _userProfile == null
-            ? const Center(
-                child: Text(
-                  'Profile not found',
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              )
+            ? _buildMissingProfilePage()
             : CustomScrollView(
                 physics: const BouncingScrollPhysics(),
                 slivers: [
@@ -728,6 +763,230 @@ Widget _buildActionButton({
                   size: 14,
                   color: Color(0xFF6B7280),
                 ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    ),
+  );
+}
+Widget _buildGuestProfilePage() {
+  return SafeArea(
+    child: Center(
+      child: SingleChildScrollView(
+        padding: const EdgeInsets.all(24),
+        child: Container(
+          width: double.infinity,
+          constraints: const BoxConstraints(
+            maxWidth: 500,
+          ),
+          padding: const EdgeInsets.all(28),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(28),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(.06),
+                blurRadius: 24,
+                offset: const Offset(0, 10),
+              ),
+            ],
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                height: 90,
+                width: 90,
+                decoration: BoxDecoration(
+                  color: const Color(0xFFF5F3FF),
+                  borderRadius: BorderRadius.circular(28),
+                ),
+                child: const Icon(
+                  Icons.person_outline_rounded,
+                  size: 48,
+                  color: Color(0xFF7C3AED),
+                ),
+              ),
+
+              const SizedBox(height: 24),
+
+              const Text(
+                'Guest Profile',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 26,
+                  fontWeight: FontWeight.w800,
+                  color: Color(0xFF111827),
+                ),
+              ),
+
+              const SizedBox(height: 10),
+
+              const Text(
+                'Sign in or create an account to create your profile, manage listings, access matches, and use all UrbanHomey features.',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 15,
+                  height: 1.5,
+                  color: Color(0xFF64748B),
+                ),
+              ),
+
+              const SizedBox(height: 28),
+
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: () async {
+                    await FirebaseAuth.instance.signOut();
+
+                    if (!mounted) return;
+
+                    Navigator.pushAndRemoveUntil(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => const LoginScreen(),
+                      ),
+                      (route) => false,
+                    );
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF7C3AED),
+                    foregroundColor: Colors.white,
+                    minimumSize: const Size(
+                      double.infinity,
+                      56,
+                    ),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(18),
+                    ),
+                  ),
+                  child: const Text(
+                    'Sign In or Create Account',
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ),
+              ),
+
+              const SizedBox(height: 12),
+
+              TextButton(
+                onPressed: () {
+                  Navigator.pop(context);
+                },
+                child: const Text(
+                  'Continue as Guest',
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    ),
+  );
+}
+Widget _buildMissingProfilePage() {
+  return SafeArea(
+    child: Center(
+      child: SingleChildScrollView(
+        padding: const EdgeInsets.all(24),
+        child: Container(
+          width: double.infinity,
+          constraints: const BoxConstraints(
+            maxWidth: 500,
+          ),
+          padding: const EdgeInsets.all(28),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(28),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(.06),
+                blurRadius: 24,
+                offset: const Offset(0, 10),
+              ),
+            ],
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                height: 90,
+                width: 90,
+                decoration: BoxDecoration(
+                  color: const Color(0xFFF5F3FF),
+                  borderRadius: BorderRadius.circular(28),
+                ),
+                child: const Icon(
+                  Icons.account_circle_outlined,
+                  size: 50,
+                  color: Color(0xFF7C3AED),
+                ),
+              ),
+
+              const SizedBox(height: 24),
+
+              const Text(
+                'Complete Your Profile',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 26,
+                  fontWeight: FontWeight.w800,
+                  color: Color(0xFF111827),
+                ),
+              ),
+
+              const SizedBox(height: 10),
+
+              const Text(
+                'Your account is active, but your profile information has not been completed yet.',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 15,
+                  height: 1.5,
+                  color: Color(0xFF64748B),
+                ),
+              ),
+
+              const SizedBox(height: 28),
+
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: _navigateToUpdateProfile,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF7C3AED),
+                    foregroundColor: Colors.white,
+                    minimumSize: const Size(
+                      double.infinity,
+                      56,
+                    ),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(18),
+                    ),
+                  ),
+                  child: const Text(
+                    'Complete Profile',
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ),
+              ),
+
+              const SizedBox(height: 12),
+
+              TextButton(
+                onPressed: () {
+                  Navigator.pop(context);
+                },
+                child: const Text('Back to Home'),
               ),
             ],
           ),
