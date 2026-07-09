@@ -61,7 +61,403 @@ double? _exploreLongitude;
     super.initState();
     _fetchUserData();
   }
+  Future<bool> _grantWelcomeContactsIfNeeded(
+  DocumentReference<Map<String, dynamic>> userDocRef,
+) async {
+  try {
+    final bool rewardGranted =
+        await FirebaseFirestore.instance.runTransaction<bool>(
+      (transaction) async {
+        final snapshot = await transaction.get(userDocRef);
 
+        if (!snapshot.exists) {
+          return false;
+        }
+
+        final data = snapshot.data()!;
+
+        final bool alreadyGranted =
+            data['welcomeContactsGranted'] == true;
+
+        if (alreadyGranted) {
+          return false;
+        }
+
+        final int existingContacts =
+            (data['remainingContacts'] as num?)?.toInt() ?? 0;
+
+        transaction.update(userDocRef, {
+          'remainingContacts': existingContacts + 2,
+          'welcomeContactsGranted': true,
+          'welcomeContactsGrantedAt': FieldValue.serverTimestamp(),
+        });
+
+        return true;
+      },
+    );
+
+    return rewardGranted;
+  } catch (e) {
+    print(
+      '[HomePage][_grantWelcomeContactsIfNeeded] Error: $e',
+    );
+
+    return false;
+  }
+}
+Future<void> _showWelcomeRewardDialog() async {
+  if (!mounted) return;
+
+  await showGeneralDialog(
+    context: context,
+    barrierDismissible: false,
+    barrierLabel: 'Welcome Reward',
+    barrierColor: Colors.black.withOpacity(.65),
+    transitionDuration: const Duration(milliseconds: 450),
+
+    transitionBuilder: (
+      context,
+      animation,
+      secondaryAnimation,
+      child,
+    ) {
+      final curvedAnimation = CurvedAnimation(
+        parent: animation,
+        curve: Curves.easeOutBack,
+      );
+
+      return FadeTransition(
+        opacity: animation,
+        child: ScaleTransition(
+          scale: Tween<double>(
+            begin: .75,
+            end: 1,
+          ).animate(curvedAnimation),
+          child: child,
+        ),
+      );
+    },
+
+    pageBuilder: (
+      context,
+      animation,
+      secondaryAnimation,
+    ) {
+      return Center(
+        child: Material(
+          color: Colors.transparent,
+          child: Container(
+            width: MediaQuery.of(context).size.width * .88,
+            constraints: const BoxConstraints(
+              maxWidth: 400,
+            ),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(32),
+              boxShadow: [
+                BoxShadow(
+                  color: const Color(0xFF7C3AED).withOpacity(.35),
+                  blurRadius: 40,
+                  spreadRadius: 3,
+                  offset: const Offset(0, 18),
+                ),
+              ],
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+
+                // =================================================
+                // PREMIUM HEADER
+                // =================================================
+
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.fromLTRB(
+                    24,
+                    30,
+                    24,
+                    28,
+                  ),
+                  decoration: const BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                      colors: [
+                        Color(0xFF7C3AED),
+                        Color(0xFF9333EA),
+                        Color(0xFFEC4899),
+                      ],
+                    ),
+                    borderRadius: BorderRadius.only(
+                      topLeft: Radius.circular(32),
+                      topRight: Radius.circular(32),
+                    ),
+                  ),
+                  child: Column(
+                    children: [
+
+                      Container(
+                        height: 86,
+                        width: 86,
+                        decoration: BoxDecoration(
+                          color: Colors.white.withOpacity(.18),
+                          shape: BoxShape.circle,
+                          border: Border.all(
+                            color: Colors.white.withOpacity(.30),
+                            width: 2,
+                          ),
+                        ),
+                        child: const Icon(
+                          Icons.card_giftcard_rounded,
+                          size: 44,
+                          color: Colors.white,
+                        ),
+                      ),
+
+                      const SizedBox(height: 18),
+
+                      const Text(
+                        "HURRAY! 🎉",
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 13,
+                          fontWeight: FontWeight.w800,
+                          letterSpacing: 2,
+                        ),
+                      ),
+
+                      const SizedBox(height: 8),
+
+                      const Text(
+                        "You've Got a\nWelcome Gift!",
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 28,
+                          height: 1.15,
+                          fontWeight: FontWeight.w900,
+                          letterSpacing: -.5,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+
+
+                // =================================================
+                // POPUP BODY
+                // =================================================
+
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(
+                    24,
+                    22,
+                    24,
+                    24,
+                  ),
+                  child: Column(
+                    children: [
+
+                      const Text(
+                        "Welcome to UrbanHomey",
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          color: Color(0xFF111827),
+                          fontSize: 19,
+                          fontWeight: FontWeight.w800,
+                        ),
+                      ),
+
+                      const SizedBox(height: 8),
+
+                      const Text(
+                        "Start connecting with your perfect flatmates. Your first chat unlocks are on us!",
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          color: Color(0xFF64748B),
+                          fontSize: 14,
+                          height: 1.5,
+                        ),
+                      ),
+
+                      const SizedBox(height: 20),
+
+
+                      // =================================================
+                      // REWARD CARD
+                      // =================================================
+
+                      Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 17,
+                        ),
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            colors: [
+                              const Color(0xFF7C3AED).withOpacity(.08),
+                              const Color(0xFFEC4899).withOpacity(.08),
+                            ],
+                          ),
+                          borderRadius: BorderRadius.circular(20),
+                          border: Border.all(
+                            color: const Color(0xFF7C3AED)
+                                .withOpacity(.15),
+                          ),
+                        ),
+                        child: Row(
+                          children: [
+
+                            Container(
+                              height: 52,
+                              width: 52,
+                              decoration: const BoxDecoration(
+                                gradient: LinearGradient(
+                                  colors: [
+                                    Color(0xFF7C3AED),
+                                    Color(0xFFEC4899),
+                                  ],
+                                ),
+                                shape: BoxShape.circle,
+                              ),
+                              child: const Icon(
+                                Icons.chat_bubble_rounded,
+                                color: Colors.white,
+                                size: 25,
+                              ),
+                            ),
+
+                            const SizedBox(width: 14),
+
+                            const Expanded(
+                              child: Column(
+                                crossAxisAlignment:
+                                    CrossAxisAlignment.start,
+                                children: [
+
+                                  Text(
+                                    "2 FREE CHAT UNLOCKS",
+                                    style: TextStyle(
+                                      color: Color(0xFF111827),
+                                      fontSize: 15,
+                                      fontWeight: FontWeight.w900,
+                                    ),
+                                  ),
+
+                                  SizedBox(height: 4),
+
+                                  Text(
+                                    "Start 2 conversations for free",
+                                    style: TextStyle(
+                                      color: Color(0xFF64748B),
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+
+                            Icon(
+                              Icons.verified_rounded,
+                              color: Color(0xFF7C3AED),
+                              size: 24,
+                            ),
+                          ],
+                        ),
+                      ),
+
+
+                      const SizedBox(height: 22),
+
+
+                      // =================================================
+                      // BUTTON
+                      // =================================================
+
+                      SizedBox(
+                        width: double.infinity,
+                        height: 56,
+                        child: DecoratedBox(
+                          decoration: BoxDecoration(
+                            gradient: const LinearGradient(
+                              colors: [
+                                Color(0xFF7C3AED),
+                                Color(0xFF9333EA),
+                                Color(0xFFEC4899),
+                              ],
+                            ),
+                            borderRadius: BorderRadius.circular(18),
+                            boxShadow: [
+                              BoxShadow(
+                                color: const Color(0xFF7C3AED)
+                                    .withOpacity(.25),
+                                blurRadius: 15,
+                                offset: const Offset(0, 8),
+                              ),
+                            ],
+                          ),
+                          child: ElevatedButton(
+                            onPressed: () {
+                              Navigator.of(context).pop();
+                            },
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.transparent,
+                              shadowColor: Colors.transparent,
+                              foregroundColor: Colors.white,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(18),
+                              ),
+                            ),
+                            child: const Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+
+                                Text(
+                                  "Start Exploring",
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w800,
+                                  ),
+                                ),
+
+                                SizedBox(width: 8),
+
+                                Icon(
+                                  Icons.arrow_forward_rounded,
+                                  size: 20,
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+
+                      const SizedBox(height: 11),
+
+                      const Text(
+                        "Your 2 free chat unlocks are ready to use",
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          color: Color(0xFF94A3B8),
+                          fontSize: 11,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+    },
+  );
+}
   Future<void> _fetchUserData() async {
     setState(() {
       _isLoadingProfileType = true;
@@ -78,22 +474,55 @@ double? _exploreLongitude;
     if (user != null) {
       try {
         final userDocRef = FirebaseFirestore.instance.collection('users').doc(user.uid);
+final bool welcomeRewardGranted =
+    await _grantWelcomeContactsIfNeeded(userDocRef);
+final userDocSnapshot = await userDocRef.get();
 
-        final userDocSnapshot = await userDocRef.get();
-        if (userDocSnapshot.exists) {
-          final userData = userDocSnapshot.data();
-          if (userData != null) {
-            setState(() {
-              _userName = userData['name'] as String? ?? 'User'; // Fetch user's name
-              _currentPlanName = userData['currentPlan'] as String?;
-              _currentPlanContacts = userData['currentPlanContacts'] as int?;
-              _remainingContacts = userData['remainingContacts'] as int?;
-            });
-            print('[HomePage][_fetchUserData] Fetched Plan: $_currentPlanName, Remaining Contacts: $_remainingContacts');
-          }
-        }
+if (userDocSnapshot.exists) {
+  final userData = userDocSnapshot.data();
 
-        final flatListingsSnapshot = await userDocRef.collection('flatListings').get();
+  if (userData != null && mounted) {
+    setState(() {
+      _userName =
+          userData['name'] as String? ?? 'User';
+
+      _currentPlanName =
+          userData['currentPlan'] as String?;
+
+      _currentPlanContacts =
+          (userData['currentPlanContacts'] as num?)?.toInt();
+
+      _remainingContacts =
+          (userData['remainingContacts'] as num?)?.toInt();
+    });
+
+    print(
+      '[HomePage][_fetchUserData] Fetched Plan: '
+      '$_currentPlanName, Remaining Contacts: $_remainingContacts',
+    );
+  }
+}
+
+
+// ============================================================
+// SHOW POPUP ONLY WHEN THE 2 FREE UNLOCKS WERE JUST GRANTED
+// ============================================================
+
+if (welcomeRewardGranted && mounted) {
+  WidgetsBinding.instance.addPostFrameCallback((_) {
+    if (mounted) {
+      _showWelcomeRewardDialog();
+    }
+  });
+}
+
+
+// ============================================================
+// FETCH USER PROFILES
+// ============================================================
+
+final flatListingsSnapshot =
+    await userDocRef.collection('flatListings').get();
         final List<FlatListingProfile> flatListings = flatListingsSnapshot.docs
             .map((doc) => FlatListingProfile.fromMap(doc.data(), doc.id))
             .toList();
