@@ -2284,7 +2284,7 @@ Widget _buildAreaSelectionQuestion({
       // --- Section 3: Flat Details (Pages 21-33) ---
       // Page 21: Flat Type
       SingleChoiceQuestionWidget(
-        title: "What type of property are you listing?",
+        title: "Property Type",
         subtitle: "Studio, 1BHK, 2BHK, etc.",
         options: ['Studio Apartment', '1BHK', '2BHK', '3BHK', '4BHK+', 'Other'],
         onSelected: (value) {
@@ -2295,8 +2295,8 @@ Widget _buildAreaSelectionQuestion({
         initialValue: _flatListingProfile.flatType,
       ),
       SingleChoiceQuestionWidget(
-        title: "What type of occupancy are you listing?",
-        subtitle: "single, double, triple, etc.",
+        title: "Occupancy Type",
+        subtitle: "",
         options: ['Single Occupancy', 'Double Occupancy', 'Triple Occupancy', 'Other'],
         onSelected: (value) {
           setState(() {
@@ -2308,8 +2308,8 @@ Widget _buildAreaSelectionQuestion({
 
       // Page 22: Furnished Status
       SingleChoiceQuestionWidget(
-        title: "Is the property furnished, semi-furnished, or unfurnished?",
-        subtitle: "Specify what's included in the flat.",
+        title: "Furnishing Status",
+        subtitle: "",
         options: ['Furnished', 'Semi-furnished', 'Unfurnished'],
         onSelected: (value) {
           setState(() {
@@ -2319,8 +2319,8 @@ Widget _buildAreaSelectionQuestion({
         initialValue: _flatListingProfile.furnishedStatus,
       ),
       SingleChoiceQuestionWidget(
-  title: "How many people are currently staying in the property?",
-  subtitle: "Exclude the new tenant you're looking for.",
+  title: "Current Occupants",
+  subtitle: "",
   options: [
     'Just Me',
     '2 People',
@@ -2336,8 +2336,8 @@ Widget _buildAreaSelectionQuestion({
   initialValue: _flatListingProfile.currentOccupants,
 ),
 SingleChoiceQuestionWidget(
-  title: "How long is the current rental agreement valid for ?",
-  subtitle: "Select how long a tenant is expected to stay.",
+  title: "Lease Duration",
+  subtitle: "",
   options: [
     '1 Month',
     '2 Months',
@@ -2391,22 +2391,22 @@ _buildFlatImagesQuestion(),
 
 
       // Page 23: Available For
-      SingleChoiceQuestionWidget(
-        title: "Who is the flat available for?",
-        subtitle: "Select the preferred gender/group.",
-        options: ['Boys', 'Girls', 'Couples', 'Anyone'],
-        onSelected: (value) {
-          setState(() {
-            _flatListingProfile.availableFor = value;
-          });
-        },
-        initialValue: _flatListingProfile.availableFor,
-      ),
+      // SingleChoiceQuestionWidget(
+      //   title: "Who is the flat available for?",
+      //   subtitle: "Select the preferred gender/group.",
+      //   options: ['Boys', 'Girls', 'Couples', 'Anyone'],
+      //   onSelected: (value) {
+      //     setState(() {
+      //       _flatListingProfile.availableFor = value;
+      //     });
+      //   },
+      //   initialValue: _flatListingProfile.availableFor,
+      // ),
 
       // Page 24: Availability Date
       _buildDateQuestion(
-        title: "When will the property be available ?",
-        subtitle: "Select the expected availablity date",
+        title: "Availabe From",
+        subtitle: "",
         onDateSelected: (date) {
           setState(() {
             _flatListingProfile.availabilityDate = date;
@@ -2417,8 +2417,8 @@ _buildFlatImagesQuestion(),
 
       // Page 25: Rent Price
       _buildTextQuestion(
-        title: "What is the monthly rent per person",
-        subtitle: "Enter the rent amount in ₹.",
+        title: "Monthly Rent",
+        subtitle: "",
         hintText: "e.g., 12000",
         keyboardType: TextInputType.number,
         inputFormatters: [FilteringTextInputFormatter.digitsOnly],
@@ -2431,8 +2431,8 @@ _buildFlatImagesQuestion(),
 
       // Page 26: Deposit Amount
       _buildTextQuestion(
-        title: "What is the security deposit  per person?",
-        subtitle: "Enter the deposit amount in ₹.",
+        title: "Security Deposit",
+        subtitle: "",
         hintText: "e.g., 24000",
         keyboardType: TextInputType.number,
         inputFormatters: [FilteringTextInputFormatter.digitsOnly],
@@ -2445,8 +2445,8 @@ _buildFlatImagesQuestion(),
 
       // Page 27: Bathroom Type
       SingleChoiceQuestionWidget(
-        title: "What kind of Washroom  is available?",
-        subtitle: "Attached to the room or shared?",
+        title: "Washroom Type",
+        subtitle: "",
         options: ['Attached Washroom', 'Shared Washroom'],
         onSelected: (value) {
           setState(() {
@@ -2484,8 +2484,8 @@ _buildFlatImagesQuestion(),
 
       // Page 30: Amenities (Multi-choice)
       MultiChoiceQuestionWidget(
-        title: "What amenities are available in the flat?",
-        subtitle: "Select all that apply.",
+        title: "Flat Facilities",
+        subtitle: "",
         options: [
           'Wi-Fi',
           'AC',
@@ -2495,10 +2495,7 @@ _buildFlatImagesQuestion(),
           'Microwave',
           'Maid Service',
           'Cook',
-          'Gym',
-          'Swimming Pool',
-          'Power Backup',
-          'Security'
+          
         ],
         onSelected: (selected) {
           setState(() {
@@ -2512,13 +2509,13 @@ _buildFlatImagesQuestion(),
     
 
       // Page 33: Flat Description
-      _buildTextQuestion(
-        title: "Describe your flat.",
-        subtitle: "Highlight key features, vibe, and what makes it a great place.",
-        hintText: "e.g., Spacious 2BHK with great sunlight, friendly neighborhood...",
-        controller: _flatDescriptionController,
-        maxLines: 5,
-      ),
+      // _buildTextQuestion(
+      //   title: "Describe your flat.",
+      //   subtitle: "Highlight key features, vibe, and what makes it a great place.",
+      //   hintText: "e.g., Spacious 2BHK with great sunlight, friendly neighborhood...",
+      //   controller: _flatDescriptionController,
+      //   maxLines: 5,
+      // ),
 
       // --- Section 4: Flatmate Preferences (Pages 34-39) ---
       // Page 34: Preferred Flatmate Gender

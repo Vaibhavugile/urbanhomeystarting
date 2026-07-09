@@ -218,7 +218,7 @@ Future<void> _showWelcomeRewardDialog() async {
                       const SizedBox(height: 18),
 
                       const Text(
-                        "HURRAY! 🎉",
+                        "Hurray! 🎉",
                         textAlign: TextAlign.center,
                         style: TextStyle(
                           color: Colors.white,

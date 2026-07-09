@@ -2055,8 +2055,8 @@ LocationSelectorWidget(
 ),
       // Page 6: Move-in Date
       _buildDateQuestion(
-        title: "When are you looking to move in?",
-        subtitle: "Approximate date works best.",
+        title: "Move-in Date",
+        subtitle: "",
         onDateSelected: (date) {
           setState(() {
             _seekingFlatmateProfile.moveInDate = date;
@@ -2067,8 +2067,8 @@ LocationSelectorWidget(
 
       // Page 7: Budget Min
       _buildTextQuestion(
-        title: "What is your minimum budget per month?",
-        subtitle: "Enter the amount in ₹ for rent (per person, if sharing).",
+        title: "Minimum Budget",
+        subtitle: "",
         hintText: "e.g., 8000",
         keyboardType: TextInputType.number,
         inputFormatters: [FilteringTextInputFormatter.digitsOnly],
@@ -2081,7 +2081,7 @@ LocationSelectorWidget(
 
       // Page 8: Budget Max
       _buildTextQuestion(
-        title: "What is your maximum budget per month?",
+        title: "Maximum Budet",
         subtitle: "Enter the amount in ₹ for rent (per person, if sharing).",
         hintText: "e.g., 15000",
         keyboardType: TextInputType.number,
@@ -2342,8 +2342,8 @@ LocationSelectorWidget(
       // --- Section 3: Flat Requirements (Pages 25-27) ---
       // Page 25: Preferred Flat Type
       SingleChoiceQuestionWidget(
-        title: "What type of flat are you looking for?",
-        subtitle: "Studio, 1BHK, 2BHK, etc.",
+        title: "Preferred Property Type",
+        subtitle: "",
         options: ['Studio Apartment', '1BHK', '2BHK', '3BHK', '4BHK+', 'Any'],
         onSelected: (value) {
           setState(() {
@@ -2353,9 +2353,9 @@ LocationSelectorWidget(
         initialValue: _seekingFlatmateProfile.preferredFlatType,
       ),
       SingleChoiceQuestionWidget(
-        title: "What type of flat are you looking?",
-        subtitle: "single, double, triple, etc.",
-        options: ['Single Occupancy', 'Double Occupancy', 'Triple Occupancy', 'Other'],
+        title: "Occupancy Type",
+        subtitle: "",
+        options: ['Single Occupancy', 'Double Occupancy', 'Triple Occupancy', 'Any'],
         onSelected: (value) {
           setState(() {
             _seekingFlatmateProfile.preferredRoomType = value;
@@ -2366,9 +2366,9 @@ LocationSelectorWidget(
 
       // Page 26: Preferred Furnished Status
       SingleChoiceQuestionWidget(
-        title: "What's your preferred furnished status for the flat?",
-        subtitle: "Furnished, semi-furnished, or unfurnished?",
-        options: ['Furnished', 'Semi-furnished', 'Unfurnished', 'Any'],
+        title: "Furnishing Status",
+        subtitle: "",
+        options: ['Furnished', 'Semi-furnished', 'Unfurnished'],
         onSelected: (value) {
           setState(() {
             _seekingFlatmateProfile.preferredFurnishedStatus = value;
@@ -2379,8 +2379,8 @@ LocationSelectorWidget(
 
       // Page 27: Amenities Desired (Multi-choice)
       MultiChoiceQuestionWidget(
-        title: "What amenities are you looking for in a flat?",
-        subtitle: "Select all that apply.",
+        title: "Required Facilities",
+        subtitle: "",
         options: [
           'Wi-Fi',
           'AC',
@@ -2390,10 +2390,7 @@ LocationSelectorWidget(
           'Microwave',
           'Maid Service',
           'Cook',
-          'Gym',
-          'Swimming Pool',
-          'Power Backup',
-          'Security'
+          
         ],
         onSelected: (selected) {
           setState(() {

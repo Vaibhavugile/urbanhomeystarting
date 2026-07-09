@@ -782,12 +782,12 @@ Widget _buildMobileLoginUi(BuildContext context) {
 
   style: const TextStyle(
     color: kDarkText,
-    fontSize: 16,
+    fontSize: 14,
     fontWeight: FontWeight.w600,
   ),
 
   decoration: InputDecoration(
-    hintText: 'Enter 10 Digit Whatsapp Number',
+    hintText: 'Enter Whatsapp Number',
     counterText: '',
 
     hintStyle: const TextStyle(
