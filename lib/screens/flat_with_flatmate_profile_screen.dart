@@ -177,6 +177,7 @@ class SingleChoiceQuestionWidget extends StatefulWidget {
   final Function(String) onSelected;
   final bool isCard;
   final String? initialValue;
+  final bool compactMode;
 
   const SingleChoiceQuestionWidget({
     super.key,
@@ -186,6 +187,7 @@ class SingleChoiceQuestionWidget extends StatefulWidget {
     required this.onSelected,
     this.isCard = false,
     this.initialValue,
+     this.compactMode = false,
   });
 
   @override
@@ -450,6 +452,13 @@ class _SingleChoiceQuestionWidgetState
       },
     );
   }
+  Widget _buildCompactOptions() {
+  return Column(
+    children: widget.options.map((option) {
+      return _buildOption(option);
+    }).toList(),
+  );
+}
 
   @override
   Widget build(BuildContext context) {
@@ -478,9 +487,14 @@ class _SingleChoiceQuestionWidgetState
 
                 const SizedBox(height: 16),
 
-                Expanded(
-                  child: _buildOptions(),
-                ),
+                const SizedBox(height: 16),
+
+if (widget.compactMode)
+  _buildCompactOptions()
+else
+  Expanded(
+    child: _buildOptions(),
+  ),
               ],
             ),
           ),
@@ -498,7 +512,7 @@ class MultiChoiceQuestionWidget
   final Function(List<String>)
       onSelected;
   final List<String> initialValues;
-
+final bool compactMode;
   const MultiChoiceQuestionWidget({
     super.key,
     required this.title,
@@ -506,6 +520,7 @@ class MultiChoiceQuestionWidget
     required this.options,
     required this.onSelected,
     this.initialValues = const [],
+       this.compactMode = false,
   });
 
   @override
@@ -837,6 +852,18 @@ class _MultiChoiceQuestionWidgetState
       },
     );
   }
+  Widget _buildCompactOptions() {
+  return Align(
+    alignment: Alignment.topLeft,
+    child: Wrap(
+      spacing: 10,
+      runSpacing: 10,
+      children: widget.options.map((option) {
+        return _buildOption(option);
+      }).toList(),
+    ),
+  );
+}
 
   @override
   Widget build(BuildContext context) {
@@ -865,9 +892,14 @@ class _MultiChoiceQuestionWidgetState
 
                 const SizedBox(height: 16),
 
-                Expanded(
-                  child: _buildOptions(),
-                ),
+                const SizedBox(height: 16),
+
+if (widget.compactMode)
+  _buildCompactOptions()
+else
+  Expanded(
+    child: _buildOptions(),
+  ),
               ],
             ),
           ),
@@ -926,7 +958,7 @@ final List<Map<String, dynamic>> _sections = [
   {
     'title': 'Flatmate Preferences',
     'startPage': 8,
-    'endPage': 13,
+    'endPage': 8,
   },
 ];
 
@@ -2235,7 +2267,229 @@ Widget _buildDateQuestion({
 }
 
   // --- Page Definitions ---
+Widget _buildFlatmatePreferencesPage() {
+  final double screenWidth =
+      MediaQuery.sizeOf(context).width;
 
+  final double horizontalPadding =
+      screenWidth >= 700 ? 32 : 0;
+
+  return SafeArea(
+    top: false,
+    bottom: false,
+    child: Center(
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(
+          maxWidth: 760,
+        ),
+        child: SingleChildScrollView(
+          physics: const BouncingScrollPhysics(
+            parent: AlwaysScrollableScrollPhysics(),
+          ),
+          keyboardDismissBehavior:
+              ScrollViewKeyboardDismissBehavior.onDrag,
+          padding: EdgeInsets.fromLTRB(
+            horizontalPadding,
+            4,
+            horizontalPadding,
+            32,
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // ============================================================
+              // 1. PREFERRED FLATMATE GENDER
+              // ============================================================
+
+              SingleChoiceQuestionWidget(
+                title:
+                    "What's your preferred flatmate gender?",
+                subtitle:
+                    "This helps in finding a compatible match.",
+                options: const [
+                  'Male',
+                  'Female',
+                  'No preference',
+                  'Other',
+                ],
+                compactMode: true,
+                onSelected: (value) {
+                  setState(() {
+                    _seekingFlatmateProfile
+                        .preferredFlatmateGender = value;
+                  });
+                },
+                initialValue:
+                    _seekingFlatmateProfile
+                        .preferredFlatmateGender,
+              ),
+
+              const SizedBox(height: 24),
+
+              // ============================================================
+              // 2. PREFERRED FLATMATE AGE GROUP
+              // ============================================================
+
+              SingleChoiceQuestionWidget(
+                title:
+                    "What's your preferred flatmate age group?",
+                subtitle:
+                    "This helps in finding a compatible match.",
+                options: const [
+                  '18-24',
+                  '25-30',
+                  '30-40',
+                  '40+',
+                  'No preference',
+                ],
+                compactMode: true,
+                onSelected: (value) {
+                  setState(() {
+                    _seekingFlatmateProfile
+                        .preferredFlatmateAge = value;
+                  });
+                },
+                initialValue:
+                    _seekingFlatmateProfile
+                        .preferredFlatmateAge,
+              ),
+
+              const SizedBox(height: 24),
+
+              // ============================================================
+              // 3. PREFERRED FLATMATE OCCUPATION
+              // ============================================================
+
+              SingleChoiceQuestionWidget(
+                title:
+                    "What's your preferred flatmate occupation type?",
+                subtitle:
+                    "Student, working professional, or no preference?",
+                options: const [
+                  'Student',
+                  'Working Professional',
+                  'No preference',
+                ],
+                compactMode: true,
+                onSelected: (value) {
+                  setState(() {
+                    _seekingFlatmateProfile
+                        .preferredOccupation = value;
+                  });
+                },
+                initialValue:
+                    _seekingFlatmateProfile
+                        .preferredOccupation,
+              ),
+
+              const SizedBox(height: 24),
+
+              // ============================================================
+              // 4. PREFERRED HABITS
+              // ============================================================
+
+              MultiChoiceQuestionWidget(
+                title:
+                    "What habits do you prefer in a flatmate?",
+                subtitle:
+                    "Select all that apply.",
+                options: const [
+                  'Non-smoker',
+                  'Non-drinker',
+                  'Vegetarian',
+                  'Neat',
+                  
+                  'Social',
+                  'Respectful',
+                  
+                  'Pet-friendly',
+                ],
+                compactMode: true,
+                onSelected: (selected) {
+                  setState(() {
+                    _seekingFlatmateProfile.preferredHabits =
+                        List<String>.from(selected);
+                  });
+                },
+                initialValues:
+                    _seekingFlatmateProfile.preferredHabits,
+              ),
+
+              const SizedBox(height: 24),
+
+              // ============================================================
+              // 5. IDEAL QUALITIES
+              // ============================================================
+
+              MultiChoiceQuestionWidget(
+                title:
+                    "What qualities do you desire in a flatmate?",
+                subtitle:
+                    "Select qualities you look for.",
+                options: const [
+                  'Respectful',
+                  'Neat',
+                  'Communicative',
+                  'Friendly',
+                  'Responsible',
+                  'Quiet',
+                  'Social',
+                  'Independent',
+                  
+                ],
+                compactMode: true,
+                onSelected: (selected) {
+                  setState(() {
+                    _seekingFlatmateProfile.idealQualities =
+                        List<String>.from(selected);
+                  });
+                },
+                initialValues:
+                    _seekingFlatmateProfile.idealQualities,
+              ),
+
+              const SizedBox(height: 24),
+
+              // ============================================================
+              // 6. DEAL BREAKERS
+              // ============================================================
+
+              MultiChoiceQuestionWidget(
+                title:
+                    "Any deal breakers for a flatmate?",
+                subtitle:
+                    "Things you absolutely cannot tolerate.",
+                options: const [
+                  'Excessive Noise',
+                  'Untidiness',
+                  'Frequent Parties',
+                  'Smoking Indoors',
+                  'Unpaid Bills',
+                  'Lack of Communication',
+                  'Pets (if not allowed)',
+                  'Late Night Guests',
+                  'Drugs',
+                  'Disrespectful behavior',
+                ],
+                compactMode: true,
+                onSelected: (selected) {
+                  setState(() {
+                    _seekingFlatmateProfile.dealBreakers =
+                        List<String>.from(selected);
+                  });
+                },
+                initialValues:
+                    _seekingFlatmateProfile.dealBreakers,
+              ),
+
+              const SizedBox(height: 8),
+            ],
+          ),
+        ),
+      ),
+    ),
+  );
+}
   List<Widget> _buildPages() {
     return [
       // --- Section 1: Your Basic Info (Pages 0-10) ---
@@ -2714,114 +2968,7 @@ LocationSelectorWidget(
 
       // --- Section 4: Flatmate Preferences (Pages 28-33) ---
       // Page 28: Preferred Flatmate Gender
-      SingleChoiceQuestionWidget(
-        title: "What's your preferred flatmate gender?",
-        subtitle: "This helps in finding a compatible match.",
-        options: ['Male', 'Female', 'No preference', 'Other'],
-        onSelected: (value) {
-          setState(() {
-            _seekingFlatmateProfile.preferredFlatmateGender = value;
-          });
-        },
-        initialValue: _seekingFlatmateProfile.preferredFlatmateGender,
-      ),
-
-      // Page 29: Preferred Flatmate Age
-      SingleChoiceQuestionWidget(
-        title: "What's your preferred flatmate age group?",
-        subtitle: "This helps in finding a compatible match.",
-        options: ['18-24', '25-30', '30-40', '40+', 'No preference'],
-        onSelected: (value) {
-          setState(() {
-            _seekingFlatmateProfile.preferredFlatmateAge = value;
-          });
-        },
-        initialValue: _seekingFlatmateProfile.preferredFlatmateAge,
-      ),
-
-      // Page 30: Preferred Occupation
-      SingleChoiceQuestionWidget(
-        title: "What's your preferred flatmate occupation type?",
-        subtitle: "Student, working professional, or no preference?",
-        options: ['Student', 'Working Professional', 'Both', 'No preference'],
-        onSelected: (value) {
-          setState(() {
-            _seekingFlatmateProfile.preferredOccupation = value;
-          });
-        },
-        initialValue: _seekingFlatmateProfile.preferredOccupation,
-      ),
-
-      // Page 31: Preferred Habits (Multi-choice)
-      MultiChoiceQuestionWidget(
-        title: "What habits do you prefer in a flatmate?",
-        subtitle: "Select all that apply.",
-        options: [
-          'Non-smoker',
-          'Non-drinker',
-          'Vegetarian',
-          'Tidy',
-          'Quiet',
-          'Social',
-          'Respectful',
-          'Financially responsible',
-          'Pet-friendly'
-        ],
-        onSelected: (selected) {
-          setState(() {
-            _seekingFlatmateProfile.preferredHabits = selected;
-          });
-        },
-        initialValues: _seekingFlatmateProfile.preferredHabits,
-      ),
-
-      // Page 32: Ideal Qualities (Multi-choice)
-      MultiChoiceQuestionWidget(
-        title: "What qualities do you desire in a flatmate?",
-        subtitle: "Select qualities you look for.",
-        options: [
-          'Respectful',
-          'Tidy',
-          'Communicative',
-          'Friendly',
-          'Responsible',
-          'Quiet',
-          'Social',
-          'Independent',
-          'Shares chores',
-          'Financially stable'
-        ],
-        onSelected: (selected) {
-          setState(() {
-            _seekingFlatmateProfile.idealQualities = selected;
-          });
-        },
-        initialValues: _seekingFlatmateProfile.idealQualities,
-      ),
-
-      // Page 33: Deal Breakers (Multi-choice)
-      MultiChoiceQuestionWidget(
-        title: "Any deal breakers for a flatmate?",
-        subtitle: "Things you absolutely cannot tolerate.",
-        options: [
-          'Excessive Noise',
-          'Untidiness',
-          'Frequent Parties',
-          'Smoking Indoors',
-          'Unpaid Bills',
-          'Lack of Communication',
-          'Pets (if not allowed)',
-          'Late Night Guests',
-          'Drugs',
-          'Disrespectful behavior'
-        ],
-        onSelected: (selected) {
-          setState(() {
-            _seekingFlatmateProfile.dealBreakers = selected;
-          });
-        },
-        initialValues: _seekingFlatmateProfile.dealBreakers,
-      ),
+     _buildFlatmatePreferencesPage(),
     ];
   }
 
