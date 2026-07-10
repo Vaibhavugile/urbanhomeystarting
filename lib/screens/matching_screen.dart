@@ -1801,7 +1801,71 @@ void _showCreateProfileRequiredDialog() {
       },
     );
   }
+Future<void> _openFilterScreen() async {
+  FocusScope.of(context).unfocus();
 
+  await Navigator.of(context).push(
+    PageRouteBuilder(
+      transitionDuration: const Duration(
+        milliseconds: 320,
+      ),
+      reverseTransitionDuration: const Duration(
+        milliseconds: 260,
+      ),
+
+      pageBuilder: (
+        context,
+        animation,
+        secondaryAnimation,
+      ) {
+        return FilterScreen(
+          initialFilters: _currentFilters,
+
+          isSeekingFlatmate:
+              _selectedBrowseType ==
+              'seeking_flatmate',
+
+          onFiltersChanged: (
+            newFilters,
+          ) {
+            _onFiltersChanged(
+              newFilters,
+            );
+          },
+        );
+      },
+
+      transitionsBuilder: (
+        context,
+        animation,
+        secondaryAnimation,
+        child,
+      ) {
+        final curvedAnimation =
+            CurvedAnimation(
+          parent: animation,
+          curve: Curves.easeOutCubic,
+          reverseCurve:
+              Curves.easeInCubic,
+        );
+
+        return SlideTransition(
+          position: Tween<Offset>(
+            begin: const Offset(
+              1,
+              0,
+            ),
+            end: Offset.zero,
+          ).animate(
+            curvedAnimation,
+          ),
+
+          child: child,
+        );
+      },
+    ),
+  );
+}
 
   void _onFiltersChanged(FilterOptions newFilters) {
     setState(() {
@@ -1834,9 +1898,7 @@ debugPrint(
   );
 
 }
-    if (_scaffoldKey.currentState?.isDrawerOpen ?? false) {
-      Navigator.of(context).pop(); // Close the drawer after applying filters
-    }
+ 
   }
 
 // matching_screen.dart
@@ -4839,20 +4901,17 @@ Widget build(BuildContext context) {
         // FILTER
 
         if (!isLargeScreen)
-          Padding(
-            padding: const EdgeInsets.only(
-              right: 14,
-            ),
-            child: _buildActionButton(
-              icon: Icons.tune_rounded,
-              tooltip: "Filters",
-              color: kAccentColor,
-              onTap: () {
-                _scaffoldKey.currentState
-                    ?.openDrawer();
-              },
-            ),
-          ),
+  Padding(
+    padding: const EdgeInsets.only(
+      right: 14,
+    ),
+    child: _buildActionButton(
+      icon: Icons.tune_rounded,
+      tooltip: "Filters",
+      color: kAccentColor,
+      onTap: _openFilterScreen,
+    ),
+  ),
       ],
     ),
 
@@ -4860,21 +4919,7 @@ Widget build(BuildContext context) {
     // FILTER DRAWER
     // ============================================================
 
-    drawer: isLargeScreen
-        ? null
-        : Drawer(
-            child: FilterScreen(
-              initialFilters:
-                  _currentFilters.copyWith(),
-
-              isSeekingFlatmate:
-                  _selectedBrowseType ==
-                      'seeking_flatmate',
-
-              onFiltersChanged:
-                  _onFiltersChanged,
-            ),
-          ),
+  
 
     // ============================================================
     // BODY
