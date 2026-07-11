@@ -3253,109 +3253,409 @@ LocationSelectorWidget(
 }
   // --- Firebase Integration Method ---
   Future<void> _submitProfileToFirebase() async {
+  // Prevent double taps / duplicate submissions.
+  if (_isSubmitting) return;
+
+  if (mounted) {
     setState(() {
-      _isSubmitting = true; // Show loading
+      _isSubmitting = true;
+    });
+  }
+
+  final user = FirebaseAuth.instance.currentUser;
+
+  // ============================================================
+  // USER NOT LOGGED IN
+  // ============================================================
+
+  if (user == null) {
+    if (!mounted) return;
+
+    setState(() {
+      _isSubmitting = false;
     });
 
-    final user = FirebaseAuth.instance.currentUser;
-    if (user == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please log in to submit your profile.')),
+    ScaffoldMessenger.of(context)
+      ..hideCurrentSnackBar()
+      ..showSnackBar(
+        SnackBar(
+          behavior: SnackBarBehavior.floating,
+          elevation: 0,
+          backgroundColor: Colors.transparent,
+          margin: const EdgeInsets.all(16),
+          padding: EdgeInsets.zero,
+          duration: const Duration(seconds: 4),
+          content: Container(
+            padding: const EdgeInsets.symmetric(
+              horizontal: 16,
+              vertical: 15,
+            ),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(18),
+              border: Border.all(
+                color: const Color(0xFFFECACA),
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(.10),
+                  blurRadius: 22,
+                  offset: const Offset(0, 10),
+                ),
+              ],
+            ),
+            child: const Row(
+              children: [
+                _PremiumSnackBarIcon(
+                  icon: Icons.login_rounded,
+                  gradientColors: [
+                    Color(0xFFEF4444),
+                    Color(0xFFF97316),
+                  ],
+                ),
+                SizedBox(width: 12),
+                Expanded(
+                  child: Text(
+                    'Please log in to submit your profile.',
+                    style: TextStyle(
+                      color: Color(0xFF111827),
+                      fontSize: 14,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
       );
-      setState(() {
-        _isSubmitting = false; // Hide loading
-      });
-      return;
+
+    return;
+  }
+
+  try {
+    // ============================================================
+    // 1. FETCH MAIN USER DOCUMENT
+    // ============================================================
+
+    final DocumentSnapshot userDoc =
+        await FirebaseFirestore.instance
+            .collection('users')
+            .doc(user.uid)
+            .get();
+
+    if (!userDoc.exists || userDoc.data() == null) {
+      throw Exception(
+        'Main user profile not found. Please create your main profile first.',
+      );
     }
 
-    try {
-      // 1. Fetch the main user document to get the top-level user profile data
-      final DocumentSnapshot userDoc = await FirebaseFirestore.instance
-          .collection('users')
-          .doc(user.uid)
-          .get();
+    final Map<String, dynamic> mainUserData =
+        userDoc.data() as Map<String, dynamic>;
 
-      if (!userDoc.exists) {
-        throw 'Main user profile not found. Please create your main profile first.';
-      }
+    // ============================================================
+    // SAFE HABITS MAP
+    // ============================================================
 
-      final Map<String, dynamic> mainUserData = userDoc.data() as Map<String, dynamic>;
+    final dynamic rawHabits = mainUserData['habits'];
 
-      // 2. Manually create the userProfile object from the fetched top-level data
-      final userProfile = UserProfile(
-        uid: user.uid,
-        name: mainUserData['name'] ?? '',
-        age: mainUserData['age'],
-        gender: mainUserData['gender'] ?? '',
-        profilePhotoUrl: mainUserData['profilePhotoUrl'],
-        city: mainUserData['city'] ?? '',
-        phoneNumber: mainUserData['phoneNumber'],
-        occupation: mainUserData['occupation'],
-        religion: mainUserData['religion'],
-        bio: mainUserData['bio'],
-        imageUrls: (mainUserData['imageUrls'] as List<dynamic>?)?.map((e) => e.toString()).toList(),
-        // Handle habits which is a nested map
-        smokingHabit: mainUserData['habits']?['smoking'] ?? '',
-        drinkingHabit: mainUserData['habits']?['drinking'] ?? '',
-        foodPreference: mainUserData['habits']?['food'] ?? '',
-        cleanlinessLevel: mainUserData['habits']?['cleanliness'] ?? '',
-        socialPreferences: mainUserData['habits']?['socialPreferences'] ?? '',
-        petOwnership: mainUserData['habits']?['petOwnership'] ?? '',
-        petTolerance: mainUserData['habits']?['petTolerance'] ?? '',
-        guestsFrequency: mainUserData['habits']?['guestsFrequency'] ?? '',
+    final Map<String, dynamic> habits =
+        rawHabits is Map
+            ? Map<String, dynamic>.from(rawHabits)
+            : <String, dynamic>{};
+
+    // ============================================================
+    // 2. CREATE CURRENT USER PROFILE SNAPSHOT
+    // ============================================================
+
+    final UserProfile userProfile = UserProfile(
+      uid: user.uid,
+      name: mainUserData['name'] ?? '',
+      age: mainUserData['age'],
+      gender: mainUserData['gender'] ?? '',
+      profilePhotoUrl: mainUserData['profilePhotoUrl'],
+      city: mainUserData['city'] ?? '',
+      phoneNumber: mainUserData['phoneNumber'],
+      occupation: mainUserData['occupation'],
+      religion: mainUserData['religion'],
+      bio: mainUserData['bio'],
+
+      imageUrls:
+          (mainUserData['imageUrls'] as List<dynamic>?)
+              ?.map((e) => e.toString())
+              .toList(),
+
+      smokingHabit: habits['smoking'] ?? '',
+      drinkingHabit: habits['drinking'] ?? '',
+      foodPreference: habits['food'] ?? '',
+      cleanlinessLevel: habits['cleanliness'] ?? '',
+      socialPreferences:
+          habits['socialPreferences'] ?? '',
+      petOwnership: habits['petOwnership'] ?? '',
+      petTolerance: habits['petTolerance'] ?? '',
+      guestsFrequency: habits['guestsFrequency'] ?? '',
+    );
+
+    // ============================================================
+    // 3. UPDATE SEEKING PROFILE WITH CURRENT USER DATA
+    // ============================================================
+
+    _seekingFlatmateProfile.userProfile = userProfile;
+    _seekingFlatmateProfile.uid = user.uid;
+
+    // ============================================================
+    // 4. CONVERT TO FIRESTORE MAP
+    // ============================================================
+
+    final Map<String, dynamic> profileData =
+        _seekingFlatmateProfile.toMap();
+
+    final CollectionReference
+        seekingFlatmateProfilesCollection =
+        FirebaseFirestore.instance
+            .collection('users')
+            .doc(user.uid)
+            .collection('seekingFlatmateProfiles');
+
+    // ============================================================
+    // 5. CREATE OR UPDATE PROFILE
+    // ============================================================
+
+    final bool isCreating =
+        _seekingFlatmateProfile.documentId.isEmpty;
+
+    if (isCreating) {
+      profileData['createdAt'] =
+          FieldValue.serverTimestamp();
+
+      profileData['lastUpdated'] =
+          FieldValue.serverTimestamp();
+
+      final DocumentReference newDocRef =
+          await seekingFlatmateProfilesCollection
+              .add(profileData);
+
+      _seekingFlatmateProfile.documentId =
+          newDocRef.id;
+    } else {
+      profileData['lastUpdated'] =
+          FieldValue.serverTimestamp();
+
+      // Never overwrite original creation time.
+      profileData.remove('createdAt');
+
+      await seekingFlatmateProfilesCollection
+          .doc(_seekingFlatmateProfile.documentId)
+          .update(profileData);
+    }
+
+    if (!mounted) return;
+
+    // ============================================================
+    // 6. PREMIUM SUCCESS SNACKBAR
+    // ============================================================
+
+    ScaffoldMessenger.of(context)
+      ..hideCurrentSnackBar()
+      ..showSnackBar(
+        SnackBar(
+          behavior: SnackBarBehavior.floating,
+          elevation: 0,
+          backgroundColor: Colors.transparent,
+          margin: const EdgeInsets.all(16),
+          padding: EdgeInsets.zero,
+          duration: const Duration(seconds: 3),
+          content: Container(
+            padding: const EdgeInsets.symmetric(
+              horizontal: 16,
+              vertical: 15,
+            ),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(18),
+              border: Border.all(
+                color: const Color(0xFFE9D5FF),
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: const Color(0xFF7C3AED)
+                      .withOpacity(.15),
+                  blurRadius: 24,
+                  offset: const Offset(0, 10),
+                ),
+              ],
+            ),
+            child: Row(
+              children: [
+                const _PremiumSnackBarIcon(
+                  icon: Icons.check_rounded,
+                  gradientColors: [
+                    Color(0xFF7C3AED),
+                    Color(0xFFEC4899),
+                  ],
+                ),
+
+                const SizedBox(width: 12),
+
+                Expanded(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment:
+                        CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        isCreating
+                            ? 'Profile Created'
+                            : 'Profile Updated',
+                        style: const TextStyle(
+                          color: Color(0xFF111827),
+                          fontSize: 15,
+                          fontWeight: FontWeight.w800,
+                        ),
+                      ),
+
+                      const SizedBox(height: 2),
+
+                      Text(
+                        isCreating
+                            ? 'Your flatmate profile is now ready to discover compatible matches.'
+                            : 'Your flatmate profile changes have been saved successfully.',
+                        style: const TextStyle(
+                          color: Color(0xFF64748B),
+                          fontSize: 13,
+                          height: 1.35,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
       );
 
-      // 3. Update the _seekingFlatmateProfile object with the fetched userProfile
-      // and the new data from the controllers
-      _seekingFlatmateProfile.userProfile = userProfile;
+    // Give the floating SnackBar enough time to appear before
+    // replacing this route.
+    await Future.delayed(
+      const Duration(milliseconds: 900),
+    );
 
-         _seekingFlatmateProfile.uid = user.uid;
-      // 4. Convert the complete SeekingFlatmateProfile object to a map
-      final Map<String, dynamic> profileData = _seekingFlatmateProfile.toMap();
+    if (!mounted) return;
 
-      final CollectionReference seekingFlatmateProfilesCollection =
-      FirebaseFirestore.instance.collection('users').doc(user.uid).collection('seekingFlatmateProfiles');
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(
+        builder: (_) => const HomePage(),
+      ),
+    );
+  } catch (e, stackTrace) {
+    debugPrint(
+      'Error submitting seeking flatmate profile: $e',
+    );
 
-      if (_seekingFlatmateProfile.documentId.isEmpty) {
-        // This is a new profile, add it to the subcollection
-        profileData['createdAt'] = FieldValue.serverTimestamp();
-        profileData['lastUpdated'] = FieldValue.serverTimestamp();
+    debugPrintStack(
+      stackTrace: stackTrace,
+    );
 
-        DocumentReference newDocRef = await seekingFlatmateProfilesCollection.add(profileData);
-        _seekingFlatmateProfile.documentId = newDocRef.id;
+    if (!mounted) return;
 
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('New Seeking Flatmate Profile Created Successfully!')),
-        );
-      } else {
-        // This is an existing profile, update it
-        profileData['lastUpdated'] = FieldValue.serverTimestamp();
-        profileData.remove('createdAt');
+    // ============================================================
+    // PREMIUM ERROR SNACKBAR
+    // ============================================================
 
-        await seekingFlatmateProfilesCollection.doc(_seekingFlatmateProfile.documentId).update(profileData);
+    ScaffoldMessenger.of(context)
+      ..hideCurrentSnackBar()
+      ..showSnackBar(
+        SnackBar(
+          behavior: SnackBarBehavior.floating,
+          elevation: 0,
+          backgroundColor: Colors.transparent,
+          margin: const EdgeInsets.all(16),
+          padding: EdgeInsets.zero,
+          duration: const Duration(seconds: 5),
+          content: Container(
+            padding: const EdgeInsets.symmetric(
+              horizontal: 16,
+              vertical: 15,
+            ),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(18),
+              border: Border.all(
+                color: const Color(0xFFFECACA),
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: const Color(0xFFEF4444)
+                      .withOpacity(.12),
+                  blurRadius: 24,
+                  offset: const Offset(0, 10),
+                ),
+              ],
+            ),
+            child: Row(
+              crossAxisAlignment:
+                  CrossAxisAlignment.start,
+              children: [
+                const _PremiumSnackBarIcon(
+                  icon: Icons.close_rounded,
+                  gradientColors: [
+                    Color(0xFFEF4444),
+                    Color(0xFFF97316),
+                  ],
+                ),
 
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Seeking Flatmate Profile Updated Successfully!')),
-        );
-      }
+                const SizedBox(width: 12),
 
-      if (mounted) {
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (context) => const HomePage()),
-        );
-      }
-    } catch (e) {
-      print('Error submitting seeking flatmate profile to Firebase: $e');
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Failed to submit profile: $e')),
+                Expanded(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment:
+                        CrossAxisAlignment.start,
+                    children: [
+                      const Text(
+                        'Unable to Save Profile',
+                        style: TextStyle(
+                          color: Color(0xFF111827),
+                          fontSize: 15,
+                          fontWeight: FontWeight.w800,
+                        ),
+                      ),
+
+                      const SizedBox(height: 2),
+
+                      Text(
+                        e.toString().replaceFirst(
+                          'Exception: ',
+                          '',
+                        ),
+                        maxLines: 3,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(
+                          color: Color(0xFF64748B),
+                          fontSize: 13,
+                          height: 1.35,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
       );
-    } finally {
+  } finally {
+    if (mounted) {
       setState(() {
-        _isSubmitting = false; // Hide loading
+        _isSubmitting = false;
       });
     }
   }
+}
 
   void _submitProfile() {
     print('Submitting Seeking Flatmate Profile:');
@@ -4149,4 +4449,41 @@ Widget build(BuildContext context) {
     ),
   );
 }
+}
+class _PremiumSnackBarIcon extends StatelessWidget {
+  final IconData icon;
+  final List<Color> gradientColors;
+
+  const _PremiumSnackBarIcon({
+    required this.icon,
+    required this.gradientColors,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: 42,
+      height: 42,
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: gradientColors,
+        ),
+        borderRadius: BorderRadius.circular(13),
+        boxShadow: [
+          BoxShadow(
+            color: gradientColors.first.withOpacity(.22),
+            blurRadius: 12,
+            offset: const Offset(0, 5),
+          ),
+        ],
+      ),
+      child: Icon(
+        icon,
+        color: Colors.white,
+        size: 21,
+      ),
+    );
+  }
 }

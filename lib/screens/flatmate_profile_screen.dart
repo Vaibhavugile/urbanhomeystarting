@@ -3658,154 +3658,484 @@ void _previousPage() {
   );
 }
 
+Future<void> _submitProfileToFirebase() async {
+  // Prevent duplicate submissions.
+  if (_isSubmitting) return;
 
-  // --- Firebase Integration Method ---
-  // In your _FlatmateProfileScreenState class
-  Future<void> _submitProfileToFirebase() async {
+  if (mounted) {
     setState(() {
       _isSubmitting = true;
     });
+  }
 
-    final user = FirebaseAuth.instance.currentUser;
-    if (user == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please log in to submit your profile.')),
+  final user = FirebaseAuth.instance.currentUser;
+
+  // ============================================================
+  // USER NOT LOGGED IN
+  // ============================================================
+
+  if (user == null) {
+    if (!mounted) return;
+
+    setState(() {
+      _isSubmitting = false;
+    });
+
+    ScaffoldMessenger.of(context)
+      ..hideCurrentSnackBar()
+      ..showSnackBar(
+        SnackBar(
+          behavior: SnackBarBehavior.floating,
+          elevation: 0,
+          backgroundColor: Colors.transparent,
+          margin: const EdgeInsets.all(16),
+          padding: EdgeInsets.zero,
+          duration: const Duration(seconds: 4),
+          content: Container(
+            padding: const EdgeInsets.symmetric(
+              horizontal: 16,
+              vertical: 15,
+            ),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(18),
+              border: Border.all(
+                color: const Color(0xFFFECACA),
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(.10),
+                  blurRadius: 22,
+                  offset: const Offset(0, 10),
+                ),
+              ],
+            ),
+            child: const Row(
+              children: [
+                _PremiumSnackBarIcon(
+                  icon: Icons.login_rounded,
+                  gradientColors: [
+                    Color(0xFFEF4444),
+                    Color(0xFFF97316),
+                  ],
+                ),
+                SizedBox(width: 12),
+                Expanded(
+                  child: Text(
+                    'Please log in to submit your profile.',
+                    style: TextStyle(
+                      color: Color(0xFF111827),
+                      fontSize: 14,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
       );
-      setState(() {
-        _isSubmitting = false;
-      });
-      return;
+
+    return;
+  }
+
+  try {
+    // ============================================================
+    // 1. FETCH MAIN USER PROFILE
+    // ============================================================
+
+    final DocumentSnapshot userDoc =
+        await FirebaseFirestore.instance
+            .collection('users')
+            .doc(user.uid)
+            .get();
+
+    if (!userDoc.exists || userDoc.data() == null) {
+      throw Exception(
+        'Main user profile not found. Please create your main profile first.',
+      );
     }
 
-    try {
-      // 1. Fetch the main user document to get the top-level user profile data
-      final DocumentSnapshot userDoc = await FirebaseFirestore.instance
-          .collection('users')
-          .doc(user.uid)
-          .get();
+    final Map<String, dynamic> mainUserData =
+        userDoc.data() as Map<String, dynamic>;
 
-      if (!userDoc.exists) {
-        throw 'Main user profile not found. Please create your main profile first.';
-      }
+    final dynamic habitsData = mainUserData['habits'];
 
-      final Map<String, dynamic> mainUserData = userDoc.data() as Map<String, dynamic>;
+    final Map<String, dynamic> habits =
+        habitsData is Map
+            ? Map<String, dynamic>.from(habitsData)
+            : <String, dynamic>{};
 
-      // 2. Manually create the userProfile object from the fetched top-level data
-      // This correctly mirrors the structure you have in your database
-      final userProfile = UserProfile(
-        uid: user.uid,
-        name: mainUserData['name'] ?? '',
-        age: mainUserData['age'],
-        gender: mainUserData['gender'] ?? '',
-        profilePhotoUrl: mainUserData['profilePhotoUrl'],
-        city: mainUserData['city'] ?? '',
-        phoneNumber: mainUserData['phoneNumber'],
-        occupation: mainUserData['occupation'],
-        religion: mainUserData['religion'],
-        bio: mainUserData['bio'],
-        imageUrls: (mainUserData['imageUrls'] as List<dynamic>?)?.map((e) => e.toString()).toList(),
-        // Handle habits which is a nested map
-        smokingHabit: mainUserData['habits']?['smoking'] ?? '',
-        drinkingHabit: mainUserData['habits']?['drinking'] ?? '',
-        foodPreference: mainUserData['habits']?['food'] ?? '',
-        cleanlinessLevel: mainUserData['habits']?['cleanliness'] ?? '',
-        socialPreferences: mainUserData['habits']?['socialPreferences'] ?? '',
-        petOwnership: mainUserData['habits']?['petOwnership'] ?? '',
-        petTolerance: mainUserData['habits']?['petTolerance'] ?? '',
-        guestsFrequency: mainUserData['habits']?['guestsFrequency'] ?? '',
-      );
-setState(() {
-  _isUploadingImages = true;
-});
+    // ============================================================
+    // 2. CREATE USER PROFILE SNAPSHOT
+    // ============================================================
 
-List<String> uploadedImageUrls = [];
+    final UserProfile userProfile = UserProfile(
+      uid: user.uid,
+      name: mainUserData['name'] ?? '',
+      age: mainUserData['age'],
+      gender: mainUserData['gender'] ?? '',
+      profilePhotoUrl: mainUserData['profilePhotoUrl'],
+      city: mainUserData['city'] ?? '',
+      phoneNumber: mainUserData['phoneNumber'],
+      occupation: mainUserData['occupation'],
+      religion: mainUserData['religion'],
+      bio: mainUserData['bio'],
+      imageUrls:
+          (mainUserData['imageUrls'] as List<dynamic>?)
+              ?.map((e) => e.toString())
+              .toList(),
+      smokingHabit: habits['smoking'] ?? '',
+      drinkingHabit: habits['drinking'] ?? '',
+      foodPreference: habits['food'] ?? '',
+      cleanlinessLevel: habits['cleanliness'] ?? '',
+      socialPreferences:
+          habits['socialPreferences'] ?? '',
+      petOwnership: habits['petOwnership'] ?? '',
+      petTolerance: habits['petTolerance'] ?? '',
+      guestsFrequency: habits['guestsFrequency'] ?? '',
+    );
 
-if (_selectedFlatImages.isNotEmpty) {
-  uploadedImageUrls =
-      await _uploadFlatImages();
-}
+    // ============================================================
+    // 3. UPLOAD FLAT IMAGES
+    // ============================================================
 
-setState(() {
-  _isUploadingImages = false;
-});
-      // 3. Create the FlatListingProfile object, combining the fetched userProfile
-      // with the flat listing-specific data from the controllers
-      final FlatListingProfile flatListingProfile = FlatListingProfile(
-        uid: user.uid,
-        userProfile: userProfile,
-        rentPrice: int.tryParse(_rentPriceController.text),
-        depositAmount: int.tryParse(_depositAmountController.text),
-       city: _flatListingProfile.city,
-       locationName: _flatListingProfile.locationName,
-       placeId: _flatListingProfile.placeId,
-       latitude: _flatListingProfile.latitude,
-      longitude: _flatListingProfile.longitude,
-        flatDescription: _flatDescriptionController.text,
-        flatType: _flatListingProfile.flatType,
-        roomType: _flatListingProfile.roomType,
-        imageUrls: uploadedImageUrls,
-        currentOccupants:
-    _flatListingProfile.currentOccupants,
+    List<String> uploadedImageUrls = [];
 
-leaseDuration:
-    _flatListingProfile.leaseDuration,
-        bathroomType: _flatListingProfile.bathroomType,
-        furnishedStatus: _flatListingProfile.furnishedStatus,
-        availableFor: _flatListingProfile.availableFor,
-        preferredGender: _flatListingProfile.preferredGender,
-        preferredAgeGroup: _flatListingProfile.preferredAgeGroup,
-        preferredOccupation: _flatListingProfile.preferredOccupation,
-        amenities: _flatListingProfile.amenities,
-        flatmateIdealQualities: _flatListingProfile.flatmateIdealQualities,
-        flatmateDealBreakers: _flatListingProfile.flatmateDealBreakers,
-      );
-
-      // 4. Convert the complete FlatListingProfile object to a map using your toMap() method
-      final Map<String, dynamic> profileData = flatListingProfile.toMap();
-
-      final CollectionReference flatListingsCollection =
-      FirebaseFirestore.instance.collection('users').doc(user.uid).collection('flatListings');
-
-      // 5. Save the data to the subcollection
-      if (flatListingProfile.documentId.isEmpty) {
-        // New document
-        profileData['createdAt'] = FieldValue.serverTimestamp();
-        profileData['lastUpdated'] = FieldValue.serverTimestamp();
-        DocumentReference newDocRef = await flatListingsCollection.add(profileData);
-        flatListingProfile.documentId = newDocRef.id;
-
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('New Flat Listing Profile Created Successfully!')),
-        );
-      } else {
-        // Existing document
-        profileData['lastUpdated'] = FieldValue.serverTimestamp();
-        profileData.remove('createdAt');
-        await flatListingsCollection.doc(flatListingProfile.documentId).update(profileData);
-
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Flat Listing Profile Updated Successfully!')),
-        );
-      }
-
+    if (_selectedFlatImages.isNotEmpty) {
       if (mounted) {
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (context) => const HomePage()),
-        );
+        setState(() {
+          _isUploadingImages = true;
+        });
       }
 
-    } catch (e) {
-      print('Error submitting flat listing profile to Firebase: $e');
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Failed to submit profile: $e')),
+      try {
+        uploadedImageUrls =
+            await _uploadFlatImages();
+      } finally {
+        if (mounted) {
+          setState(() {
+            _isUploadingImages = false;
+          });
+        }
+      }
+    }
+
+    // ============================================================
+    // 4. CREATE FLAT LISTING PROFILE
+    // ============================================================
+
+    final FlatListingProfile flatListingProfile =
+        FlatListingProfile(
+      uid: user.uid,
+      userProfile: userProfile,
+
+      rentPrice:
+          int.tryParse(_rentPriceController.text.trim()),
+
+      depositAmount:
+          int.tryParse(
+            _depositAmountController.text.trim(),
+          ),
+
+      city: _flatListingProfile.city,
+      locationName: _flatListingProfile.locationName,
+      placeId: _flatListingProfile.placeId,
+      latitude: _flatListingProfile.latitude,
+      longitude: _flatListingProfile.longitude,
+
+      flatDescription:
+          _flatDescriptionController.text.trim(),
+
+      flatType: _flatListingProfile.flatType,
+      roomType: _flatListingProfile.roomType,
+
+      imageUrls: uploadedImageUrls,
+
+      currentOccupants:
+          _flatListingProfile.currentOccupants,
+
+      leaseDuration:
+          _flatListingProfile.leaseDuration,
+
+      bathroomType:
+          _flatListingProfile.bathroomType,
+
+      furnishedStatus:
+          _flatListingProfile.furnishedStatus,
+
+      availableFor:
+          _flatListingProfile.availableFor,
+
+      preferredGender:
+          _flatListingProfile.preferredGender,
+
+      preferredAgeGroup:
+          _flatListingProfile.preferredAgeGroup,
+
+      preferredOccupation:
+          _flatListingProfile.preferredOccupation,
+
+      amenities:
+          _flatListingProfile.amenities,
+
+      flatmateIdealQualities:
+          _flatListingProfile.flatmateIdealQualities,
+
+      flatmateDealBreakers:
+          _flatListingProfile.flatmateDealBreakers,
+    );
+
+    // ============================================================
+    // 5. CONVERT PROFILE TO FIRESTORE MAP
+    // ============================================================
+
+    final Map<String, dynamic> profileData =
+        flatListingProfile.toMap();
+
+    final CollectionReference flatListingsCollection =
+        FirebaseFirestore.instance
+            .collection('users')
+            .doc(user.uid)
+            .collection('flatListings');
+
+    // ============================================================
+    // 6. CREATE OR UPDATE PROFILE
+    // ============================================================
+
+    final bool isCreating =
+        flatListingProfile.documentId.isEmpty;
+
+    if (isCreating) {
+      profileData['createdAt'] =
+          FieldValue.serverTimestamp();
+
+      profileData['lastUpdated'] =
+          FieldValue.serverTimestamp();
+
+      final DocumentReference newDocRef =
+          await flatListingsCollection.add(profileData);
+
+      flatListingProfile.documentId =
+          newDocRef.id;
+    } else {
+      profileData['lastUpdated'] =
+          FieldValue.serverTimestamp();
+
+      profileData.remove('createdAt');
+
+      await flatListingsCollection
+          .doc(flatListingProfile.documentId)
+          .update(profileData);
+    }
+
+    if (!mounted) return;
+
+    // ============================================================
+    // 7. PREMIUM SUCCESS SNACKBAR
+    // ============================================================
+
+    ScaffoldMessenger.of(context)
+      ..hideCurrentSnackBar()
+      ..showSnackBar(
+        SnackBar(
+          behavior: SnackBarBehavior.floating,
+          elevation: 0,
+          backgroundColor: Colors.transparent,
+          margin: const EdgeInsets.all(16),
+          padding: EdgeInsets.zero,
+          duration: const Duration(seconds: 3),
+          content: Container(
+            padding: const EdgeInsets.symmetric(
+              horizontal: 16,
+              vertical: 15,
+            ),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(18),
+              border: Border.all(
+                color: const Color(0xFFE9D5FF),
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: const Color(0xFF7C3AED)
+                      .withOpacity(.15),
+                  blurRadius: 24,
+                  offset: const Offset(0, 10),
+                ),
+              ],
+            ),
+            child: Row(
+              children: [
+                const _PremiumSnackBarIcon(
+                  icon: Icons.check_rounded,
+                  gradientColors: [
+                    Color(0xFF7C3AED),
+                    Color(0xFFEC4899),
+                  ],
+                ),
+
+                const SizedBox(width: 12),
+
+                Expanded(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment:
+                        CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        isCreating
+                            ? 'Listing Created'
+                            : 'Listing Updated',
+                        style: const TextStyle(
+                          color: Color(0xFF111827),
+                          fontSize: 15,
+                          fontWeight: FontWeight.w800,
+                        ),
+                      ),
+
+                      const SizedBox(height: 2),
+
+                      Text(
+                        isCreating
+                            ? 'Your flat listing has been created successfully.'
+                            : 'Your flat listing changes have been saved successfully.',
+                        style: const TextStyle(
+                          color: Color(0xFF64748B),
+                          fontSize: 13,
+                          height: 1.35,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
       );
-    } finally {
+
+    // Allow floating SnackBar to be visible before navigation.
+    await Future.delayed(
+      const Duration(milliseconds: 900),
+    );
+
+    if (!mounted) return;
+
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(
+        builder: (_) => const HomePage(),
+      ),
+    );
+  } catch (e, stackTrace) {
+    debugPrint(
+      'Error submitting flat listing profile: $e',
+    );
+
+    debugPrintStack(
+      stackTrace: stackTrace,
+    );
+
+    if (!mounted) return;
+
+    // ============================================================
+    // PREMIUM ERROR SNACKBAR
+    // ============================================================
+
+    ScaffoldMessenger.of(context)
+      ..hideCurrentSnackBar()
+      ..showSnackBar(
+        SnackBar(
+          behavior: SnackBarBehavior.floating,
+          elevation: 0,
+          backgroundColor: Colors.transparent,
+          margin: const EdgeInsets.all(16),
+          padding: EdgeInsets.zero,
+          duration: const Duration(seconds: 5),
+          content: Container(
+            padding: const EdgeInsets.symmetric(
+              horizontal: 16,
+              vertical: 15,
+            ),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(18),
+              border: Border.all(
+                color: const Color(0xFFFECACA),
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: const Color(0xFFEF4444)
+                      .withOpacity(.12),
+                  blurRadius: 24,
+                  offset: const Offset(0, 10),
+                ),
+              ],
+            ),
+            child: Row(
+              crossAxisAlignment:
+                  CrossAxisAlignment.start,
+              children: [
+                const _PremiumSnackBarIcon(
+                  icon: Icons.close_rounded,
+                  gradientColors: [
+                    Color(0xFFEF4444),
+                    Color(0xFFF97316),
+                  ],
+                ),
+
+                const SizedBox(width: 12),
+
+                Expanded(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment:
+                        CrossAxisAlignment.start,
+                    children: [
+                      const Text(
+                        'Unable to Save Listing',
+                        style: TextStyle(
+                          color: Color(0xFF111827),
+                          fontSize: 15,
+                          fontWeight: FontWeight.w800,
+                        ),
+                      ),
+
+                      const SizedBox(height: 2),
+
+                      Text(
+                        e.toString().replaceFirst(
+                          'Exception: ',
+                          '',
+                        ),
+                        maxLines: 3,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(
+                          color: Color(0xFF64748B),
+                          fontSize: 13,
+                          height: 1.35,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+  } finally {
+    if (mounted) {
       setState(() {
         _isSubmitting = false;
+        _isUploadingImages = false;
       });
     }
   }
+}
 
 
   void _submitProfile() {
@@ -4670,4 +5000,41 @@ Widget build(BuildContext context) {
     ),
   );
 }
+}
+class _PremiumSnackBarIcon extends StatelessWidget {
+  final IconData icon;
+  final List<Color> gradientColors;
+
+  const _PremiumSnackBarIcon({
+    required this.icon,
+    required this.gradientColors,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: 42,
+      height: 42,
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: gradientColors,
+        ),
+        borderRadius: BorderRadius.circular(13),
+        boxShadow: [
+          BoxShadow(
+            color: gradientColors.first.withOpacity(.22),
+            blurRadius: 12,
+            offset: const Offset(0, 5),
+          ),
+        ],
+      ),
+      child: Icon(
+        icon,
+        color: Colors.white,
+        size: 21,
+      ),
+    );
+  }
 }
