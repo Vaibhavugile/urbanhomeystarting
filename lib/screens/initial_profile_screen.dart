@@ -43,10 +43,12 @@ const LinearGradient kPrimaryGradient = LinearGradient(
 // ============================================================
 // INITIAL PROFILE SCREEN
 // ============================================================
-
 class InitialProfileScreen extends StatefulWidget {
+  final bool isEditMode;
+
   const InitialProfileScreen({
     super.key,
+    this.isEditMode = false,
   });
 
   @override
@@ -59,7 +61,9 @@ class _InitialProfileScreenState
   // ============================================================
   // FORM
   // ============================================================
+String? _existingProfileImageUrl;
 
+bool _isLoadingProfile = false;
   final GlobalKey<FormState> _formKey =
       GlobalKey<FormState>();
 
@@ -94,7 +98,14 @@ class _InitialProfileScreenState
   // ============================================================
   // DISPOSE
   // ============================================================
+@override
+void initState() {
+  super.initState();
 
+  if (widget.isEditMode) {
+    _loadExistingProfile();
+  }
+}
   @override
   void dispose() {
     _firstNameController.dispose();
@@ -104,6 +115,114 @@ class _InitialProfileScreenState
 
     super.dispose();
   }
+  Future<void> _loadExistingProfile() async {
+  final User? user =
+      FirebaseAuth.instance.currentUser;
+
+  if (user == null) {
+    return;
+  }
+
+  setState(() {
+    _isLoadingProfile = true;
+  });
+
+  try {
+    final DocumentSnapshot<
+            Map<String, dynamic>>
+        document =
+        await FirebaseFirestore.instance
+            .collection('users')
+            .doc(user.uid)
+            .get();
+
+    if (!document.exists) {
+      return;
+    }
+
+    final Map<String, dynamic>? data =
+        document.data();
+
+    if (data == null) {
+      return;
+    }
+
+    // ==========================================================
+    // SPLIT EXISTING FULL NAME
+    // ==========================================================
+
+    final String fullName =
+        data['name']?.toString().trim() ?? '';
+
+    final List<String> nameParts =
+        fullName
+            .split(RegExp(r'\s+'))
+            .where((part) => part.isNotEmpty)
+            .toList();
+
+    _firstNameController.text =
+        nameParts.isNotEmpty
+            ? nameParts.first
+            : '';
+
+    _lastNameController.text =
+        nameParts.length > 1
+            ? nameParts.sublist(1).join(' ')
+            : '';
+
+    // ==========================================================
+    // LOAD OTHER DATA
+    // ==========================================================
+
+    _ageController.text =
+        data['age']?.toString() ?? '';
+
+    _cityController.text =
+        data['city']?.toString() ?? '';
+
+    final String gender =
+        data['gender']?.toString().trim() ?? '';
+
+    if ([
+      'Male',
+      'Female',
+      'Other',
+    ].contains(gender)) {
+      _selectedGender = gender;
+    }
+
+    _existingProfileImageUrl =
+        data['profilePhotoUrl']
+            ?.toString()
+            .trim();
+
+    if (_existingProfileImageUrl?.isEmpty ??
+        true) {
+      _existingProfileImageUrl = null;
+    }
+  } catch (e) {
+    debugPrint(
+      'Error loading existing profile: $e',
+    );
+
+    if (!mounted) return;
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        behavior: SnackBarBehavior.floating,
+        content: Text(
+          'Unable to load profile: $e',
+        ),
+      ),
+    );
+  } finally {
+    if (mounted) {
+      setState(() {
+        _isLoadingProfile = false;
+      });
+    }
+  }
+}
 
   // ============================================================
   // IMAGE COMPRESSION
@@ -289,21 +408,33 @@ class _InitialProfileScreenState
     });
 
     try {
-      String? profileImageUrl;
+      // ============================================================
+// KEEP EXISTING IMAGE BY DEFAULT
+// ============================================================
 
-      if (_profileImageFile != null) {
-        profileImageUrl =
-            await _uploadImage(
-          _profileImageFile!,
-          user.uid,
-        );
+String? profileImageUrl =
+    _existingProfileImageUrl;
 
-        if (profileImageUrl == null) {
-          throw Exception(
-            'Profile photo upload failed.',
-          );
-        }
-      }
+// ============================================================
+// UPLOAD ONLY IF USER SELECTED A NEW IMAGE
+// ============================================================
+
+if (_profileImageFile != null) {
+  profileImageUrl = await _uploadImage(
+    _profileImageFile!,
+    user.uid,
+  );
+
+  if (profileImageUrl == null) {
+    throw Exception(
+      'Profile photo upload failed.',
+    );
+  }
+
+  // Keep local state synchronized with new uploaded image.
+  _existingProfileImageUrl =
+      profileImageUrl;
+}
 
       final String fullName = [
         _firstNameController.text.trim(),
@@ -334,29 +465,66 @@ class _InitialProfileScreenState
         ),
       );
 
-      if (!mounted) return;
+     if (!mounted) return;
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          behavior: SnackBarBehavior.floating,
-          content: Row(
-            children: [
-              Icon(
-                Icons.check_circle_rounded,
-                color: Colors.white,
-              ),
-              SizedBox(width: 10),
-              Expanded(
-                child: Text(
-                  'Profile saved successfully!',
-                ),
-              ),
-            ],
+// ============================================================
+// EDIT MODE
+// ============================================================
+
+if (widget.isEditMode) {
+  ScaffoldMessenger.of(context).showSnackBar(
+    const SnackBar(
+      behavior: SnackBarBehavior.floating,
+      content: Row(
+        children: [
+          Icon(
+            Icons.check_circle_rounded,
+            color: Colors.white,
+          ),
+          SizedBox(width: 10),
+          Expanded(
+            child: Text(
+              'Profile updated successfully!',
+            ),
+          ),
+        ],
+      ),
+    ),
+  );
+
+  // Return to UserScreen.
+  // UserScreen will refresh because its navigation method
+  // awaits Navigator.push().
+  Navigator.pop(context);
+
+  return;
+}
+
+// ============================================================
+// CREATE MODE
+// ============================================================
+
+ScaffoldMessenger.of(context).showSnackBar(
+  const SnackBar(
+    behavior: SnackBarBehavior.floating,
+    content: Row(
+      children: [
+        Icon(
+          Icons.check_circle_rounded,
+          color: Colors.white,
+        ),
+        SizedBox(width: 10),
+        Expanded(
+          child: Text(
+            'Profile saved successfully!',
           ),
         ),
-      );
+      ],
+    ),
+  ),
+);
 
-      _showProfileCompletionDialog();
+await _showProfileCompletionDialog();
     } catch (e) {
       debugPrint(
         'Error saving initial profile: $e',
@@ -806,8 +974,8 @@ class _InitialProfileScreenState
           ),
 
           SafeArea(
-            child: _isLoading
-                ? const Center(
+            child: (_isLoading || _isLoadingProfile)
+    ? const Center(
                     child:
                         CircularProgressIndicator(
                       color: kPrimaryColor,
@@ -863,38 +1031,38 @@ class _InitialProfileScreenState
                           crossAxisAlignment:
                               CrossAxisAlignment.center,
                           children: [
-                            const Expanded(
-                              child: Column(
-                                crossAxisAlignment:
-                                    CrossAxisAlignment
-                                        .start,
-                                children: [
-                                  Text(
-                                    'Create Profile',
-                                    style: TextStyle(
-                                      color:
-                                          Colors.white,
-                                      fontSize: 30,
-                                      fontWeight:
-                                          FontWeight.w800,
-                                      letterSpacing: -.5,
-                                    ),
-                                  ),
-                                  SizedBox(height: 5),
-                                  Text(
-                                    'Tell us a little about yourself',
-                                    style: TextStyle(
-                                      color:
-                                          Colors.white70,
-                                      fontSize: 14,
-                                      fontWeight:
-                                          FontWeight.w500,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
+                            Expanded(
+  child: Column(
+    crossAxisAlignment:
+        CrossAxisAlignment.start,
+    children: [
+      Text(
+        widget.isEditMode
+            ? 'Update Profile'
+            : 'Create Profile',
+        style: const TextStyle(
+          color: Colors.white,
+          fontSize: 30,
+          fontWeight: FontWeight.w800,
+          letterSpacing: -.5,
+        ),
+      ),
 
+      const SizedBox(height: 5),
+
+      Text(
+        widget.isEditMode
+            ? 'Update your basic profile information'
+            : 'Tell us a little about yourself',
+        style: const TextStyle(
+          color: Colors.white70,
+          fontSize: 14,
+          fontWeight: FontWeight.w500,
+        ),
+      ),
+    ],
+  ),
+),
                             Container(
                               padding:
                                   const EdgeInsets
@@ -913,29 +1081,31 @@ class _InitialProfileScreenState
                                       .withOpacity(.15),
                                 ),
                               ),
-                              child: const Row(
-                                mainAxisSize:
-                                    MainAxisSize.min,
-                                children: [
-                                  Icon(
-                                    Icons
-                                        .looks_one_rounded,
-                                    color: Colors.white,
-                                    size: 16,
-                                  ),
-                                  SizedBox(width: 5),
-                                  Text(
-                                    'Step 1 of 3',
-                                    style: TextStyle(
-                                      color:
-                                          Colors.white,
-                                      fontSize: 12,
-                                      fontWeight:
-                                          FontWeight.w700,
-                                    ),
-                                  ),
-                                ],
-                              ),
+                               child: Row(
+  mainAxisSize: MainAxisSize.min,
+  children: [
+    Icon(
+      widget.isEditMode
+          ? Icons.edit_rounded
+          : Icons.looks_one_rounded,
+      color: Colors.white,
+      size: 16,
+    ),
+
+    const SizedBox(width: 5),
+
+    Text(
+      widget.isEditMode
+          ? 'Basic Profile'
+          : 'Step 1 of 3',
+      style: const TextStyle(
+        color: Colors.white,
+        fontSize: 12,
+        fontWeight: FontWeight.w700,
+      ),
+    ),
+  ],
+),
                             ),
                           ],
                         ),
@@ -1165,26 +1335,66 @@ class _InitialProfileScreenState
                   padding:
                       const EdgeInsets.all(3),
                   child: ClipOval(
-                    child:
-                        _profileImageFile != null
-                            ? Image.file(
-                                _profileImageFile!,
-                                fit: BoxFit.cover,
-                                width:
-                                    double.infinity,
-                                height:
-                                    double.infinity,
-                              )
-                            : Container(
-                                color:
-                                    kBackgroundColor,
-                                child: const Icon(
-                                  Icons
-                                      .person_rounded,
-                                  size: 70,
-                                  color: kLightText,
-                                ),
-                              ),
+                    child: _profileImageFile != null
+
+    // NEW IMAGE SELECTED FROM GALLERY
+    ? Image.file(
+        _profileImageFile!,
+        fit: BoxFit.cover,
+        width: double.infinity,
+        height: double.infinity,
+      )
+
+    // EXISTING FIREBASE PROFILE IMAGE
+    : _existingProfileImageUrl != null
+        ? Image.network(
+            _existingProfileImageUrl!,
+            fit: BoxFit.cover,
+            width: double.infinity,
+            height: double.infinity,
+
+            loadingBuilder: (
+              context,
+              child,
+              loadingProgress,
+            ) {
+              if (loadingProgress == null) {
+                return child;
+              }
+
+              return const Center(
+                child: CircularProgressIndicator(
+                  color: kPrimaryColor,
+                  strokeWidth: 2.5,
+                ),
+              );
+            },
+
+            errorBuilder: (
+              context,
+              error,
+              stackTrace,
+            ) {
+              return Container(
+                color: kBackgroundColor,
+                child: const Icon(
+                  Icons.person_rounded,
+                  size: 70,
+                  color: kLightText,
+                ),
+              );
+            },
+          )
+
+        // NO PROFILE IMAGE
+        : Container(
+            color: kBackgroundColor,
+            child: const Icon(
+              Icons.person_rounded,
+              size: 70,
+              color: kLightText,
+            ),
+          ),
                   ),
                 ),
               ),
@@ -1229,14 +1439,16 @@ class _InitialProfileScreenState
 
         const SizedBox(height: 16),
 
-        const Text(
-          'Upload Profile Photo',
-          style: TextStyle(
-            color: kDarkText,
-            fontSize: 18,
-            fontWeight: FontWeight.w800,
-          ),
-        ),
+        Text(
+  widget.isEditMode
+      ? 'Update Profile Photo'
+      : 'Upload Profile Photo',
+  style: const TextStyle(
+    color: kDarkText,
+    fontSize: 18,
+    fontWeight: FontWeight.w800,
+  ),
+),
 
         const SizedBox(height: 5),
 
@@ -1517,25 +1729,31 @@ class _InitialProfileScreenState
                 BorderRadius.circular(18),
           ),
         ),
-        child: const Row(
-          mainAxisAlignment:
-              MainAxisAlignment.center,
-          children: [
-            Text(
-              'Continue',
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: 18,
-                fontWeight: FontWeight.w800,
-              ),
-            ),
-            SizedBox(width: 8),
-            Icon(
-              Icons.arrow_forward_rounded,
-              color: Colors.white,
-            ),
-          ],
-        ),
+        child: Row(
+  mainAxisAlignment:
+      MainAxisAlignment.center,
+  children: [
+    Text(
+      widget.isEditMode
+          ? 'Save Changes'
+          : 'Continue',
+      style: const TextStyle(
+        color: Colors.white,
+        fontSize: 18,
+        fontWeight: FontWeight.w800,
+      ),
+    ),
+
+    const SizedBox(width: 8),
+
+    Icon(
+      widget.isEditMode
+          ? Icons.check_rounded
+          : Icons.arrow_forward_rounded,
+      color: Colors.white,
+    ),
+  ],
+),
       ),
     );
   }

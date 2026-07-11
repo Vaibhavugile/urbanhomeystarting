@@ -22,6 +22,14 @@ import 'package:mytennat/screens/login_screen.dart'  hide kBackgroundColor,
          kDarkText,
          kOnlineColor,
          kMediumText;
+import 'package:mytennat/screens/initial_profile_screen.dart'hide kBackgroundColor,
+         kPrimaryColor,
+         kAccentColor,
+         kPrimaryGradient,
+         kErrorColor,
+         kDarkText,
+         kOnlineColor,
+         kMediumText;
 class UserScreen extends StatefulWidget {
   const UserScreen({Key? key}) : super(key: key);
 
@@ -176,6 +184,24 @@ void dispose() {
       _completionPercentage = (completedFields / totalFields) * 100;
     });
   }
+  Future<void> _navigateToInitialProfile() async {
+  await Navigator.push(
+    context,
+    MaterialPageRoute(
+      builder: (_) => const InitialProfileScreen(
+        isEditMode: true,
+      ),
+    ),
+  );
+
+  if (!mounted) return;
+
+  setState(() {
+    _isLoading = true;
+  });
+
+  await _fetchUserProfile();
+}
 
   Future<void> _navigateToUpdateProfile() async {
   await Navigator.push(
@@ -692,110 +718,102 @@ Widget build(BuildContext context) {
                           ),
                         ),
                         child: SafeArea(
-                          child: Column(
-                            mainAxisAlignment:
-                                MainAxisAlignment.center,
-                            children: [
-                              const SizedBox(height: 30),
+  child: Material(
+    color: Colors.transparent,
+    child: InkWell(
+      onTap: _navigateToInitialProfile,
 
-                              Container(
-                                padding: const EdgeInsets.all(4),
-                                decoration: BoxDecoration(
-                                  color: Colors.white,
-                                  borderRadius:
-                                      BorderRadius.circular(100),
-                                ),
-                                child: _userProfile!
-                                            .profilePhotoUrl !=
-                                        null &&
-                                    _userProfile!
-                                        .profilePhotoUrl!
-                                        .isNotEmpty
-                                    ? CircleAvatar(
-                                        radius: 50,
-                                        backgroundImage:
-                                            NetworkImage(
-                                          _userProfile!
-                                              .profilePhotoUrl!,
-                                        ),
-                                      )
-                                    : const CircleAvatar(
-                                        radius: 50,
-                                        backgroundColor:
-                                            Colors.white,
-                                        child: Icon(
-                                          Icons.person,
-                                          size: 50,
-                                          color: Color(
-                                            0xFF7C3AED,
-                                          ),
-                                        ),
-                                      ),
-                              ),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          const SizedBox(height: 30),
 
-                              const SizedBox(height: 14),
-
-                              Text(
-                                _userProfile!.name ??
-                                    "User",
-                                style: const TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 28,
-                                  fontWeight:
-                                      FontWeight.w800,
-                                ),
-                              ),
-
-                              const SizedBox(height: 4),
-
-                              Text(
-                                "${_userProfile!.city ?? 'Unknown City'} • ${_userProfile!.occupation ?? 'Member'}",
-                                style: const TextStyle(
-                                  color: Colors.white70,
-                                  fontSize: 14,
-                                ),
-                              ),
-
-                              const SizedBox(height: 14),
-
-                              Container(
-                                padding:
-                                    const EdgeInsets.symmetric(
-                                  horizontal: 12,
-                                  vertical: 6,
-                                ),
-                                decoration: BoxDecoration(
-                                  color: Colors.white
-                                      .withOpacity(.18),
-                                  borderRadius:
-                                      BorderRadius.circular(
-                                          30),
-                                ),
-                                child: Row(
-                                  mainAxisSize:
-                                      MainAxisSize.min,
-                                  children: [
-                                    const Icon(
-                                      Icons.verified,
-                                      color: Colors.white,
-                                      size: 16,
-                                    ),
-                                    const SizedBox(width: 6),
-                                    Text(
-                                      "${_completionPercentage.toStringAsFixed(0)}% Complete",
-                                      style:
-                                          const TextStyle(
-                                        color: Colors.white,
-                                        fontWeight:
-                                            FontWeight.w600,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ],
-                          ),
+          Container(
+            padding: const EdgeInsets.all(4),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(100),
+            ),
+            child:
+                _userProfile!.profilePhotoUrl != null &&
+                        _userProfile!
+                            .profilePhotoUrl!
+                            .isNotEmpty
+                    ? CircleAvatar(
+                        radius: 50,
+                        backgroundImage: NetworkImage(
+                          _userProfile!.profilePhotoUrl!,
                         ),
+                      )
+                    : const CircleAvatar(
+                        radius: 50,
+                        backgroundColor: Colors.white,
+                        child: Icon(
+                          Icons.person,
+                          size: 50,
+                          color: Color(0xFF7C3AED),
+                        ),
+                      ),
+          ),
+
+          const SizedBox(height: 14),
+
+          Text(
+            _userProfile!.name ?? "User",
+            style: const TextStyle(
+              color: Colors.white,
+              fontSize: 28,
+              fontWeight: FontWeight.w800,
+            ),
+          ),
+
+          const SizedBox(height: 4),
+
+          Text(
+            "${_userProfile!.city ?? 'Unknown City'} • ${_userProfile!.occupation ?? 'Member'}",
+            style: const TextStyle(
+              color: Colors.white70,
+              fontSize: 14,
+            ),
+          ),
+
+          const SizedBox(height: 14),
+
+          Container(
+            padding: const EdgeInsets.symmetric(
+              horizontal: 12,
+              vertical: 6,
+            ),
+            decoration: BoxDecoration(
+              color: Colors.white.withOpacity(.18),
+              borderRadius: BorderRadius.circular(30),
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Icon(
+                  Icons.verified,
+                  color: Colors.white,
+                  size: 16,
+                ),
+
+                const SizedBox(width: 6),
+
+                Text(
+                  "${_completionPercentage.toStringAsFixed(0)}% Complete",
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    ),
+  ),
+),
                       ),
                     ),
                   ),
