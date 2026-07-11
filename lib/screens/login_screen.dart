@@ -782,7 +782,7 @@ Widget _buildMobileLoginUi(BuildContext context) {
 
   style: const TextStyle(
     color: kDarkText,
-    fontSize: 14,
+    fontSize: 16,
     fontWeight: FontWeight.w600,
   ),
 

@@ -79,20 +79,93 @@ class _MyListingsScreenState
           const Color(0xFFF8FAFC),
 
       appBar: AppBar(
-        elevation: 0,
-        backgroundColor:
-            Colors.transparent,
-        centerTitle: true,
-        title: const Text(
-          "My Listings",
-          style: TextStyle(
-            fontWeight:
-                FontWeight.w800,
-            color:
-                Color(0xFF111827),
+  elevation: 0,
+  centerTitle: true,
+  backgroundColor: Colors.transparent,
+  foregroundColor: Colors.white,
+  surfaceTintColor: Colors.transparent,
+
+  flexibleSpace: Container(
+    decoration: const BoxDecoration(
+      gradient: LinearGradient(
+        begin: Alignment.topLeft,
+        end: Alignment.bottomRight,
+        colors: [
+          Color(0xFF7C3AED),
+          Color(0xFF9333EA),
+          Color(0xFFEC4899),
+        ],
+      ),
+    ),
+  ),
+
+  leading: Navigator.canPop(context)
+      ? Padding(
+          padding: const EdgeInsets.all(8),
+          child: Container(
+            decoration: BoxDecoration(
+              color: Colors.white.withOpacity(.15),
+              borderRadius: BorderRadius.circular(13),
+              border: Border.all(
+                color: Colors.white.withOpacity(.15),
+              ),
+            ),
+            child: IconButton(
+              padding: EdgeInsets.zero,
+              onPressed: () {
+                Navigator.pop(context);
+              },
+              icon: const Icon(
+                Icons.arrow_back_ios_new_rounded,
+                color: Colors.white,
+                size: 19,
+              ),
+            ),
+          ),
+        )
+      : null,
+
+  title: const Text(
+    "My Listings",
+    style: TextStyle(
+      color: Colors.white,
+      fontSize: 20,
+      fontWeight: FontWeight.w800,
+      letterSpacing: -.2,
+    ),
+  ),
+
+  actions: [
+    Padding(
+      padding: const EdgeInsets.only(
+        right: 10,
+      ),
+      child: Container(
+        margin: const EdgeInsets.symmetric(
+          vertical: 8,
+        ),
+        decoration: BoxDecoration(
+          color: Colors.white.withOpacity(.15),
+          borderRadius: BorderRadius.circular(13),
+          border: Border.all(
+            color: Colors.white.withOpacity(.15),
+          ),
+        ),
+        child: IconButton(
+          tooltip: 'Refresh',
+          onPressed: _isLoading
+              ? null
+              : _fetchListings,
+          icon: const Icon(
+            Icons.refresh_rounded,
+            color: Colors.white,
+            size: 21,
           ),
         ),
       ),
+    ),
+  ],
+),
 
       body: _isLoading
           ? const Center(

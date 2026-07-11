@@ -229,7 +229,175 @@ Widget _buildSection({
     ),
   );
 }
+Widget _buildVerificationBadge(
+  dynamic profile,
+) {
+  final bool isVerified =
+      profile.userProfile.isVerified == true;
 
+  final String verificationStatus =
+      profile.userProfile.verificationStatus
+          ?.toString()
+          .trim()
+          .toLowerCase() ??
+      '';
+
+  Color badgeColor;
+  List<Color> badgeGradient;
+  IconData badgeIcon;
+  String badgeText;
+
+  if (isVerified) {
+    badgeColor = const Color(0xFF00C853);
+
+    badgeGradient = const [
+      Color(0xFF00C853),
+      Color(0xFF64DD17),
+    ];
+
+    badgeIcon = Icons.verified_rounded;
+    badgeText = "Verified";
+  } else if (verificationStatus == "pending") {
+    badgeColor = const Color(0xFFFF9800);
+
+    badgeGradient = const [
+      Color(0xFFFF9800),
+      Color(0xFFFFC107),
+    ];
+
+    badgeIcon = Icons.hourglass_top_rounded;
+    badgeText = "Verification Pending";
+  } else if (verificationStatus == "rejected") {
+    badgeColor = const Color(0xFFFF5252);
+
+    badgeGradient = const [
+      Color(0xFFFF5252),
+      Color(0xFFFF1744),
+    ];
+
+    badgeIcon = Icons.gpp_bad_rounded;
+    badgeText = "Verification Failed";
+  } else {
+    badgeColor = const Color(0xFF607D8B);
+
+    badgeGradient = const [
+      Color(0xFF607D8B),
+      Color(0xFF90A4AE),
+    ];
+
+    badgeIcon = Icons.shield_outlined;
+    badgeText = "Not Verified";
+  }
+
+  return Container(
+    padding: const EdgeInsets.symmetric(
+      horizontal: 14,
+      vertical: 8,
+    ),
+    decoration: BoxDecoration(
+      gradient: LinearGradient(
+        colors: badgeGradient,
+        begin: Alignment.topLeft,
+        end: Alignment.bottomRight,
+      ),
+      borderRadius: BorderRadius.circular(999),
+      border: Border.all(
+        color: Colors.white.withOpacity(.28),
+        width: 1.2,
+      ),
+      boxShadow: [
+        BoxShadow(
+          color: badgeColor.withOpacity(.45),
+          blurRadius: 18,
+          spreadRadius: 1,
+          offset: const Offset(0, 8),
+        ),
+      ],
+    ),
+    child: Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Container(
+          width: 24,
+          height: 24,
+          decoration: BoxDecoration(
+            color: Colors.white.withOpacity(.18),
+            shape: BoxShape.circle,
+          ),
+          child: Icon(
+            badgeIcon,
+            color: Colors.white,
+            size: 14,
+          ),
+        ),
+
+        const SizedBox(width: 8),
+
+        Flexible(
+          child: Text(
+            badgeText,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: const TextStyle(
+              color: Colors.white,
+              fontSize: 11.5,
+              fontWeight: FontWeight.w800,
+              letterSpacing: .2,
+              height: 1,
+            ),
+          ),
+        ),
+
+        if (isVerified) ...[
+          const SizedBox(width: 6),
+
+          Container(
+            width: 20,
+            height: 20,
+            decoration: const BoxDecoration(
+              shape: BoxShape.circle,
+              gradient: LinearGradient(
+                colors: [
+                  Color(0xFFFFF176),
+                  Color(0xFFFFC107),
+                ],
+              ),
+            ),
+            child: const Icon(
+              Icons.workspace_premium_rounded,
+              color: Colors.white,
+              size: 12,
+            ),
+          ),
+        ],
+
+        if (verificationStatus == "pending") ...[
+          const SizedBox(width: 6),
+
+          Container(
+            padding: const EdgeInsets.symmetric(
+              horizontal: 6,
+              vertical: 2,
+            ),
+            decoration: BoxDecoration(
+              color: Colors.white.withOpacity(.18),
+              borderRadius: BorderRadius.circular(20),
+            ),
+            child: const Text(
+              "LIVE",
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 8,
+                fontWeight: FontWeight.w900,
+                letterSpacing: 1,
+              ),
+            ),
+          ),
+        ],
+      ],
+    ),
+  );
+}
 // Helper widget to display a single profile field (label: value format) with an optional icon - (kept for non-grid sections)
 Widget _buildProfileField(
   String label,
@@ -910,37 +1078,7 @@ Widget _buildPremiumHeroSection(
 
                 const SizedBox(width: 12),
 
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 14,
-                    vertical: 8,
-                  ),
-                  decoration: BoxDecoration(
-                    color: Colors.green,
-                    borderRadius: BorderRadius.circular(30),
-                  ),
-                  child: const Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-
-                      Icon(
-                        Icons.verified,
-                        color: Colors.white,
-                        size: 18,
-                      ),
-
-                      SizedBox(width: 6),
-
-                      Text(
-                        "Verified",
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
+                _buildVerificationBadge(profile),
               ],
             ),
           ),
@@ -1228,37 +1366,7 @@ Widget _buildSeekingHeroSection(
                   ),
                 ),
 
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 14,
-                    vertical: 8,
-                  ),
-                  decoration: BoxDecoration(
-                    color: Colors.green,
-                    borderRadius: BorderRadius.circular(30),
-                  ),
-                  child: const Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-
-                      Icon(
-                        Icons.verified,
-                        color: Colors.white,
-                        size: 18,
-                      ),
-
-                      SizedBox(width: 6),
-
-                      Text(
-                        "Verified",
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
+                _buildVerificationBadge(profile),
               ],
             ),
           ),

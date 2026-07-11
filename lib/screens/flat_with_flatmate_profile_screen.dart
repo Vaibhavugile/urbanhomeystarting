@@ -2303,9 +2303,9 @@ Widget _buildFlatmatePreferencesPage() {
 
               SingleChoiceQuestionWidget(
                 title:
-                    "What's your preferred flatmate gender?",
+                    "Preferred Flatmate Gender",
                 subtitle:
-                    "This helps in finding a compatible match.",
+                    "",
                 options: const [
                   'Male',
                   'Female',
@@ -2332,9 +2332,9 @@ Widget _buildFlatmatePreferencesPage() {
 
               SingleChoiceQuestionWidget(
                 title:
-                    "What's your preferred flatmate age group?",
+                    "Preferred Age Group",
                 subtitle:
-                    "This helps in finding a compatible match.",
+                    "",
                 options: const [
                   '18-24',
                   '25-30',
@@ -2362,9 +2362,9 @@ Widget _buildFlatmatePreferencesPage() {
 
               SingleChoiceQuestionWidget(
                 title:
-                    "What's your preferred flatmate occupation type?",
+                    "Preferred Occupation",
                 subtitle:
-                    "Student, working professional, or no preference?",
+                    "",
                 options: const [
                   'Student',
                   'Working Professional',
@@ -2390,7 +2390,7 @@ Widget _buildFlatmatePreferencesPage() {
 
               MultiChoiceQuestionWidget(
                 title:
-                    "What habits do you prefer in a flatmate?",
+                    "Preferred Habits",
                 subtitle:
                     "Select all that apply.",
                 options: const [
@@ -2423,9 +2423,9 @@ Widget _buildFlatmatePreferencesPage() {
 
               MultiChoiceQuestionWidget(
                 title:
-                    "What qualities do you desire in a flatmate?",
+                    "Preferred Qualities",
                 subtitle:
-                    "Select qualities you look for.",
+                    "",
                 options: const [
                   'Respectful',
                   'Neat',
@@ -2454,33 +2454,33 @@ Widget _buildFlatmatePreferencesPage() {
               // 6. DEAL BREAKERS
               // ============================================================
 
-              MultiChoiceQuestionWidget(
-                title:
-                    "Any deal breakers for a flatmate?",
-                subtitle:
-                    "Things you absolutely cannot tolerate.",
-                options: const [
-                  'Excessive Noise',
-                  'Untidiness',
-                  'Frequent Parties',
-                  'Smoking Indoors',
-                  'Unpaid Bills',
-                  'Lack of Communication',
-                  'Pets (if not allowed)',
-                  'Late Night Guests',
-                  'Drugs',
-                  'Disrespectful behavior',
-                ],
-                compactMode: true,
-                onSelected: (selected) {
-                  setState(() {
-                    _seekingFlatmateProfile.dealBreakers =
-                        List<String>.from(selected);
-                  });
-                },
-                initialValues:
-                    _seekingFlatmateProfile.dealBreakers,
-              ),
+              // MultiChoiceQuestionWidget(
+              //   title:
+              //       "Any deal breakers for a flatmate?",
+              //   subtitle:
+              //       "Things you absolutely cannot tolerate.",
+              //   options: const [
+              //     'Excessive Noise',
+              //     'Untidiness',
+              //     'Frequent Parties',
+              //     'Smoking Indoors',
+              //     'Unpaid Bills',
+              //     'Lack of Communication',
+              //     'Pets (if not allowed)',
+              //     'Late Night Guests',
+              //     'Drugs',
+              //     'Disrespectful behavior',
+              //   ],
+              //   compactMode: true,
+              //   onSelected: (selected) {
+              //     setState(() {
+              //       _seekingFlatmateProfile.dealBreakers =
+              //           List<String>.from(selected);
+              //     });
+              //   },
+              //   initialValues:
+              //       _seekingFlatmateProfile.dealBreakers,
+              // ),
 
               const SizedBox(height: 8),
             ],
@@ -2647,8 +2647,8 @@ LocationSelectorWidget(
 
       // Page 8: Budget Max
       _buildTextQuestion(
-        title: "Maximum Budet",
-        subtitle: "Enter the amount in ₹ for rent (per person, if sharing).",
+        title: "Maximum Budget",
+        subtitle: "",
         hintText: "e.g., 15000",
         keyboardType: TextInputType.number,
         inputFormatters: [FilteringTextInputFormatter.digitsOnly],
@@ -3309,7 +3309,7 @@ LocationSelectorWidget(
       // and the new data from the controllers
       _seekingFlatmateProfile.userProfile = userProfile;
 
-_seekingFlatmateProfile.uid = user.uid;
+         _seekingFlatmateProfile.uid = user.uid;
       // 4. Convert the complete SeekingFlatmateProfile object to a map
       final Map<String, dynamic> profileData = _seekingFlatmateProfile.toMap();
 

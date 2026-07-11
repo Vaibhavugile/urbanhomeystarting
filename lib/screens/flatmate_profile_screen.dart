@@ -2903,7 +2903,7 @@ Widget _buildFlatmatePreferencesPage() {
 
               SingleChoiceQuestionWidget(
                 title:
-                    "What's your preferred flatmate gender?",
+                    "Preferred Flatmate Gender",
                 subtitle:
                     "This helps in finding a compatible match.",
                 options: const [
@@ -2931,9 +2931,9 @@ Widget _buildFlatmatePreferencesPage() {
 
               SingleChoiceQuestionWidget(
                 title:
-                    "What's your preferred flatmate age group?",
+                    "Preferred Age Group",
                 subtitle:
-                    "This helps in finding a compatible match.",
+                    "",
                 options: const [
                   '18-24',
                   '25-30',
@@ -2960,9 +2960,9 @@ Widget _buildFlatmatePreferencesPage() {
 
               SingleChoiceQuestionWidget(
                 title:
-                    "What's your preferred flatmate occupation type?",
+                    "Preferred Occupation",
                 subtitle:
-                    "Student, working professional, or no preference?",
+                    "",
                 options: const [
                   'Student',
                   'Working Professional',
@@ -2987,7 +2987,7 @@ Widget _buildFlatmatePreferencesPage() {
 
               MultiChoiceQuestionWidget(
                 title:
-                    "What habits do you prefer in a flatmate?",
+                    "Prederred Habits",
                 subtitle:
                     "Select all that apply.",
                 options: const [
@@ -3018,9 +3018,9 @@ Widget _buildFlatmatePreferencesPage() {
 
               MultiChoiceQuestionWidget(
                 title:
-                    "What qualities do you desire in a flatmate?",
+                    "Preferred Qualities",
                 subtitle:
-                    "Select qualities you look for.",
+                    "",
                 options: const [
                   'Respectful',
                   'Neat',
@@ -3050,35 +3050,35 @@ Widget _buildFlatmatePreferencesPage() {
               // 6. DEAL BREAKERS
               // ============================================================
 
-              MultiChoiceQuestionWidget(
-                title:
-                    "Any deal breakers for a flatmate?",
-                subtitle:
-                    "Things you absolutely cannot tolerate.",
-                options: const [
-                  'Excessive Noise',
-                  'Untidiness',
-                  'Frequent Parties',
-                  'Smoking Indoors',
-                  'Unpaid Bills',
-                  'Lack of Communication',
-                  'Pets (if not allowed)',
-                  'Late Night Guests',
-                  'Drugs',
-                  'Disrespectful behavior',
-                ],
-                compactMode: true,
-                onSelected: (selected) {
-                  setState(() {
-                    _flatListingProfile
-                            .flatmateDealBreakers =
-                        List<String>.from(selected);
-                  });
-                },
-                initialValues:
-                    _flatListingProfile
-                        .flatmateDealBreakers,
-              ),
+              // MultiChoiceQuestionWidget(
+              //   title:
+              //       "Any deal breakers for a flatmate?",
+              //   subtitle:
+              //       "Things you absolutely cannot tolerate.",
+              //   options: const [
+              //     'Excessive Noise',
+              //     'Untidiness',
+              //     'Frequent Parties',
+              //     'Smoking Indoors',
+              //     'Unpaid Bills',
+              //     'Lack of Communication',
+              //     'Pets (if not allowed)',
+              //     'Late Night Guests',
+              //     'Drugs',
+              //     'Disrespectful behavior',
+              //   ],
+              //   compactMode: true,
+              //   onSelected: (selected) {
+              //     setState(() {
+              //       _flatListingProfile
+              //               .flatmateDealBreakers =
+              //           List<String>.from(selected);
+              //     });
+              //   },
+              //   initialValues:
+              //       _flatListingProfile
+              //           .flatmateDealBreakers,
+              // ),
 
               // Extra bottom breathing room so the last
               // options are not visually attached to footer.
@@ -3100,7 +3100,7 @@ Widget _buildFlatmatePreferencesPage() {
       // Page 21: Flat Type
       SingleChoiceQuestionWidget(
         title: "Property Type",
-        subtitle: "Studio, 1BHK, 2BHK, etc.",
+        subtitle: "",
         options: ['Studio Apartment', '1BHK', '2BHK', '3BHK', '4BHK+', 'Other'],
         onSelected: (value) {
           setState(() {
@@ -3151,7 +3151,7 @@ Widget _buildFlatmatePreferencesPage() {
   initialValue: _flatListingProfile.currentOccupants,
 ),
 SingleChoiceQuestionWidget(
-  title: "Lease Duration",
+  title: "Pending Lease Duration",
   subtitle: "",
   options: [
     '1 Month',
