@@ -17,10 +17,22 @@ class BillingService {
   bool _isInitialized = false;
 
   bool _isStartingPurchase = false;
+  ProductDetails? getProductDetails(
+  String productId,
+) {
+  try {
+    return products.firstWhere(
+      (product) =>
+          product.id == productId,
+    );
+  } catch (_) {
+    return null;
+  }
+}
 
   List<ProductDetails> products = [];
 
-
+Set<String> _productIds = {};
   // ============================================================
   // CALLBACKS
   // ============================================================
@@ -42,9 +54,7 @@ class BillingService {
   // PRODUCT IDS
   // ============================================================
 
-  static const Set<String> productIds = {
-    'basic_plan',
-  };
+  
 
 
   // ============================================================
@@ -62,242 +72,421 @@ class BillingService {
   // INITIALIZE BILLING
   // ============================================================
 
-  Future<void> initialize() async {
-    print("========== BILLING INITIALIZE ==========");
-
-    // ----------------------------------------------------------
-    // CHECK BILLING AVAILABILITY
-    // ----------------------------------------------------------
-
-    _isAvailable =
-        await _inAppPurchase.isAvailable();
-
-    if (!_isAvailable) {
-      throw Exception(
-        "Google Play Billing is not available.",
-      );
-    }
+  Future<void> initialize({
+  required Set<String> productIds,
+}) async {
+  print("========== BILLING INITIALIZE ==========");
 
 
-    // ----------------------------------------------------------
-    // CANCEL OLD SUBSCRIPTION
-    // ----------------------------------------------------------
+  // ============================================================
+  // VALIDATE PRODUCT IDS
+  // ============================================================
 
-    await _subscription?.cancel();
+  final Set<String> normalizedProductIds =
+      productIds
+          .map(
+            (id) => id.trim(),
+          )
+          .where(
+            (id) => id.isNotEmpty,
+          )
+          .toSet();
 
-    _subscription = null;
 
-
-    // ----------------------------------------------------------
-    // LISTEN TO PURCHASE STREAM
-    // ----------------------------------------------------------
-
-    _subscription =
-        _inAppPurchase.purchaseStream.listen(
-      _onPurchaseUpdated,
-
-      onDone: () async {
-        print("Billing purchase stream closed.");
-
-        await _subscription?.cancel();
-
-        _subscription = null;
-      },
-
-      onError: (Object error) {
-        print(
-          "Billing purchase stream error: $error",
-        );
-
-        _isStartingPurchase = false;
-
-        onPurchaseError?.call(
-          error.toString(),
-        );
-      },
+  if (normalizedProductIds.isEmpty) {
+    throw Exception(
+      "No billing product IDs were provided.",
     );
-
-
-    // ----------------------------------------------------------
-    // LOAD PRODUCTS
-    // ----------------------------------------------------------
-
-    await loadProducts();
-
-    _isInitialized = true;
-
-    print("Billing initialized successfully.");
-    print("========================================");
   }
+
+
+  // ============================================================
+  // SAVE CURRENT PRODUCT IDS
+  // ============================================================
+
+  _productIds =
+      normalizedProductIds;
+
+
+  // ============================================================
+  // RESET INITIALIZATION STATE
+  // ============================================================
+
+  _isInitialized = false;
+
+
+  // ============================================================
+  // CHECK BILLING AVAILABILITY
+  // ============================================================
+
+  _isAvailable =
+      await _inAppPurchase.isAvailable();
+
+
+  if (!_isAvailable) {
+    throw Exception(
+      "Google Play Billing is not available.",
+    );
+  }
+
+
+  // ============================================================
+  // CANCEL OLD PURCHASE STREAM SUBSCRIPTION
+  // ============================================================
+
+  await _subscription?.cancel();
+
+  _subscription = null;
+
+
+  // ============================================================
+  // LISTEN TO PURCHASE STREAM
+  // ============================================================
+
+  _subscription =
+      _inAppPurchase.purchaseStream.listen(
+    _onPurchaseUpdated,
+
+    onDone: () async {
+      print(
+        "Billing purchase stream closed.",
+      );
+
+      await _subscription?.cancel();
+
+      _subscription = null;
+    },
+
+    onError: (Object error) {
+      print(
+        "Billing purchase stream error: $error",
+      );
+
+      _isStartingPurchase = false;
+
+      onPurchaseError?.call(
+        error.toString(),
+      );
+    },
+  );
+
+
+  // ============================================================
+  // LOAD STORE PRODUCTS
+  // ============================================================
+
+  await loadProducts();
+
+
+  // ============================================================
+  // MARK BILLING INITIALIZED
+  // ============================================================
+
+  _isInitialized = true;
+
+
+  print(
+    "Billing initialized successfully.",
+  );
+
+  print(
+    "Loaded product IDs: $_productIds",
+  );
+
+  print(
+    "========================================",
+  );
+}
 
 
   // ============================================================
   // LOAD PRODUCTS
   // ============================================================
 
-  Future<void> loadProducts() async {
-    print("========== BILLING PRODUCTS ==========");
-
-    print("Loading products...");
+Future<void> loadProducts() async {
+  print("========== BILLING PRODUCTS ==========");
 
 
-    final ProductDetailsResponse response =
-        await _inAppPurchase.queryProductDetails(
-      productIds,
+  // ============================================================
+  // VALIDATE PRODUCT IDS
+  // ============================================================
+
+  if (_productIds.isEmpty) {
+    throw Exception(
+      "No product IDs are available to load.",
     );
-
-
-    print(
-      "Products found: "
-      "${response.productDetails.length}",
-    );
-
-    print(
-      "Products not found: "
-      "${response.notFoundIDs}",
-    );
-
-
-    if (response.error != null) {
-      print(
-        "Billing Error: ${response.error}",
-      );
-
-      throw Exception(
-        response.error!.message,
-      );
-    }
-
-
-    products = response.productDetails;
-
-
-    for (final product in products) {
-      print("--------------------------------");
-
-      print("ID: ${product.id}");
-
-      print("Title: ${product.title}");
-
-      print("Price: ${product.price}");
-    }
-
-
-    if (products.isEmpty) {
-      print(
-        "WARNING: No billing products loaded.",
-      );
-    }
-
-
-    print("======================================");
   }
 
+
+  print(
+    "Loading products: $_productIds",
+  );
+
+
+  // ============================================================
+  // QUERY PRODUCTS FROM STORE
+  // ============================================================
+
+  final ProductDetailsResponse response =
+      await _inAppPurchase.queryProductDetails(
+    _productIds,
+  );
+
+
+  // ============================================================
+  // LOG QUERY RESULT
+  // ============================================================
+
+  print(
+    "Products found: "
+    "${response.productDetails.length}",
+  );
+
+
+  print(
+    "Products not found: "
+    "${response.notFoundIDs}",
+  );
+
+
+  // ============================================================
+  // HANDLE BILLING ERROR
+  // ============================================================
+
+  if (response.error != null) {
+    print(
+      "Billing Error: "
+      "${response.error}",
+    );
+
+
+    // Clear old products.
+    //
+    // This prevents stale ProductDetails from remaining
+    // available after a failed reload.
+
+    products = [];
+
+
+    throw Exception(
+      response.error!.message,
+    );
+  }
+
+
+  // ============================================================
+  // SAVE LOADED PRODUCTS
+  // ============================================================
+
+  products =
+      List<ProductDetails>.from(
+    response.productDetails,
+  );
+
+
+  // ============================================================
+  // LOG LOADED PRODUCTS
+  // ============================================================
+
+  for (final ProductDetails product
+      in products) {
+    print("--------------------------------");
+
+
+    print(
+      "ID: ${product.id}",
+    );
+
+
+    print(
+      "Title: ${product.title}",
+    );
+
+
+    print(
+      "Price: ${product.price}",
+    );
+  }
+
+
+  // ============================================================
+  // WARN ABOUT PRODUCTS NOT FOUND
+  // ============================================================
+
+  if (response.notFoundIDs.isNotEmpty) {
+    print(
+      "WARNING: Store products not found: "
+      "${response.notFoundIDs}",
+    );
+  }
+
+
+  // ============================================================
+  // WARN IF NO PRODUCTS LOADED
+  // ============================================================
+
+  if (products.isEmpty) {
+    print(
+      "WARNING: No billing products loaded.",
+    );
+  }
+
+
+  print(
+    "======================================",
+  );
+}
 
   // ============================================================
   // BUY BASIC PLAN
   // ============================================================
 
-  Future<void> buyBasicPlan() async {
-    // ----------------------------------------------------------
-    // PREVENT MULTIPLE RAPID PURCHASE STARTS
-    // ----------------------------------------------------------
+  // ============================================================
+// BUY PLAN
+// ============================================================
 
-    if (_isStartingPurchase) {
-      print(
-        "Purchase request ignored: "
-        "another purchase is already starting.",
-      );
+Future<void> buyPlan(
+  String productId,
+) async {
+  // ============================================================
+  // PREVENT MULTIPLE RAPID PURCHASE STARTS
+  // ============================================================
 
-      return;
-    }
+  if (_isStartingPurchase) {
+    print(
+      "Purchase request ignored: "
+      "another purchase is already starting.",
+    );
 
-
-    if (!_isAvailable) {
-      throw Exception(
-        "Google Play Billing is not available.",
-      );
-    }
-
-
-    if (!_isInitialized) {
-      throw Exception(
-        "Billing has not been initialized.",
-      );
-    }
+    return;
+  }
 
 
-    if (products.isEmpty) {
-      throw Exception(
-        "Products have not been loaded.",
-      );
-    }
+  // ============================================================
+  // VALIDATE PRODUCT ID
+  // ============================================================
+
+  final String normalizedProductId =
+      productId.trim();
+
+  if (normalizedProductId.isEmpty) {
+    throw Exception(
+      "Invalid product ID.",
+    );
+  }
 
 
-    final ProductDetails product;
+  // ============================================================
+  // CHECK BILLING AVAILABILITY
+  // ============================================================
 
-    try {
-      product = products.firstWhere(
-        (item) => item.id == 'basic_plan',
-      );
-    } catch (_) {
-      throw Exception(
-        "Basic plan product was not found.",
-      );
-    }
+  if (!_isAvailable) {
+    throw Exception(
+      "Google Play Billing is not available.",
+    );
+  }
 
 
-    final PurchaseParam purchaseParam =
-        PurchaseParam(
-      productDetails: product,
+  // ============================================================
+  // CHECK BILLING INITIALIZATION
+  // ============================================================
+
+  if (!_isInitialized) {
+    throw Exception(
+      "Billing has not been initialized.",
+    );
+  }
+
+
+  // ============================================================
+  // CHECK LOADED PRODUCTS
+  // ============================================================
+
+  if (products.isEmpty) {
+    throw Exception(
+      "Products have not been loaded.",
+    );
+  }
+
+
+  // ============================================================
+  // FIND SELECTED PRODUCT
+  // ============================================================
+
+  final ProductDetails? product =
+      getProductDetails(
+    normalizedProductId,
+  );
+
+  if (product == null) {
+    throw Exception(
+      "Product $normalizedProductId was not found.",
+    );
+  }
+
+
+  // ============================================================
+  // CREATE PURCHASE PARAM
+  // ============================================================
+
+  final PurchaseParam purchaseParam =
+      PurchaseParam(
+    productDetails: product,
+  );
+
+
+  // ============================================================
+  // LOCK PURCHASE FLOW
+  // ============================================================
+
+  _isStartingPurchase = true;
+
+
+  try {
+    print(
+      "Starting purchase: "
+      "$normalizedProductId",
     );
 
 
-    _isStartingPurchase = true;
+    // ==========================================================
+    // START CONSUMABLE PURCHASE
+    // ==========================================================
+
+    final bool purchaseStarted =
+        await _inAppPurchase.buyConsumable(
+      purchaseParam: purchaseParam,
+    );
 
 
-    try {
-      print("Starting Basic Plan purchase...");
+    print(
+      "Purchase flow started: "
+      "$purchaseStarted",
+    );
 
 
-      final bool purchaseStarted =
-          await _inAppPurchase.buyConsumable(
-        purchaseParam: purchaseParam,
-      );
-
-
-      print(
-        "Purchase flow started: $purchaseStarted",
-      );
-
-
-      if (!purchaseStarted) {
-        _isStartingPurchase = false;
-
-        throw Exception(
-          "Unable to start purchase.",
-        );
-      }
-
-
-      // IMPORTANT:
-      //
-      // Do not reset _isStartingPurchase here.
-      //
-      // buyConsumable() returning does NOT mean that the purchase
-      // finished.
-      //
-      // It is reset when purchaseStream sends:
-      //
-      // purchased
-      // error
-      // cancelled
-    } catch (e) {
+    if (!purchaseStarted) {
       _isStartingPurchase = false;
 
-      rethrow;
+      throw Exception(
+        "Unable to start purchase.",
+      );
     }
+
+
+    // Do not reset _isStartingPurchase here.
+    //
+    // It will be reset when purchaseStream sends:
+    //
+    // purchased
+    // error
+    // cancelled
+  } catch (e) {
+    _isStartingPurchase = false;
+
+    rethrow;
   }
+}
 
 
   // ============================================================
@@ -527,5 +716,8 @@ class BillingService {
     _isInitialized = false;
 
     _isStartingPurchase = false;
+    _productIds = {};
+
+products = [];
   }
 }

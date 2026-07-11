@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../services/billing_service.dart';
+import 'package:mytennat/models/chat_plan.dart';
+import 'package:mytennat/services/chat_plan_service.dart';
+
 class PlansScreen extends StatefulWidget {
   const PlansScreen({super.key});
 
@@ -12,414 +15,819 @@ class PlansScreen extends StatefulWidget {
 class _PlansScreenState extends State<PlansScreen> {
   late PageController _pageController;
   int _currentPage = 0;
-  int? _selectedIndex;
-  bool _isPurchasing = false;
-  String? _selectedPlanName;
-String? _selectedContacts;
+ int? _selectedIndex;
 
-  final List<Map<String, dynamic>> _plans = [
-    {
-      'title': 'Basic',
-      'price': '₹29',
-      'contacts': '5 Contacts',
-      'features': [
-        'Basic features',
-        'Limited support',
-        'Ad-supported',
-      ],
-      'isHighlighted': false,
-    },
-    // {
-    //   'title': 'Standard',
-    //   'price': '₹299',
-    //   'contacts': '20 Contacts',
-    //   'features': [
-    //     'All Basic features',
-    //     'Priority support',
-    //     'Ad-free experience',
-    //   ],
-    //   'isHighlighted': false,
-    // },
-    // {
-    //   'title': 'Pro',
-    //   'price': '₹499',
-    //   'contacts': '40 Contacts',
-    //   'features': [
-    //     'Priority support',
-    //     'Ad-free experience',
-    //     'Exclusive insights'
-    //   ],
-    //   'isHighlighted': true,
-    // },
-  ];
+bool _isPurchasing = false;
 
+
+// ============================================================
+// FIRESTORE CHAT PLANS
+// ============================================================
+
+List<ChatPlan> _plans = [];
+
+bool _isLoadingPlans = true;
+
+String? _plansError;
+
+
+// ============================================================
+// CURRENT SELECTED PLAN
+// ============================================================
+
+ChatPlan? _selectedPlan;
+
+  // ============================================================
+// LOAD CHAT PLANS FROM FIRESTORE
+// ============================================================
+
+Future<void> _loadPlans() async {
+  if (mounted) {
+    setState(() {
+      _isLoadingPlans = true;
+      _plansError = null;
+    });
+  }
+
+  try {
+    // ============================================================
+    // LOAD ACTIVE PLANS FROM FIRESTORE
+    // ============================================================
+
+    final List<ChatPlan> loadedPlans =
+        await ChatPlanService.instance
+            .getActivePlans();
+
+
+    if (loadedPlans.isEmpty) {
+      throw Exception(
+        "No active chat plans are available.",
+      );
+    }
+
+
+    // ============================================================
+    // EXTRACT STORE PRODUCT IDS
+    // ============================================================
+
+    final Set<String> productIds =
+        loadedPlans
+            .map(
+              (plan) =>
+                  plan.productId.trim(),
+            )
+            .where(
+              (productId) =>
+                  productId.isNotEmpty,
+            )
+            .toSet();
+
+
+    if (productIds.isEmpty) {
+      throw Exception(
+        "No valid billing product IDs were found.",
+      );
+    }
+
+
+    debugPrint(
+      '[PlansScreen] '
+      'Firestore plans loaded: '
+      '${loadedPlans.length}',
+    );
+
+
+    debugPrint(
+      '[PlansScreen] '
+      'Initializing billing products: '
+      '$productIds',
+    );
+
+
+    // ============================================================
+    // INITIALIZE BILLING WITH FIRESTORE PRODUCT IDS
+    // ============================================================
+
+    await BillingService.instance.initialize(
+      productIds: productIds,
+    );
+
+
+    if (!mounted) {
+      return;
+    }
+
+
+    // ============================================================
+    // KEEP ONLY PLANS WHOSE STORE PRODUCT EXISTS
+    // ============================================================
+
+    final List<ChatPlan> availablePlans =
+        loadedPlans.where(
+      (plan) {
+        return BillingService.instance
+                .getProductDetails(
+              plan.productId,
+            ) !=
+            null;
+      },
+    ).toList();
+
+
+    // ============================================================
+    // LOG UNAVAILABLE STORE PRODUCTS
+    // ============================================================
+
+    for (final ChatPlan plan
+        in loadedPlans) {
+      final bool storeProductExists =
+          BillingService.instance
+                  .getProductDetails(
+                plan.productId,
+              ) !=
+              null;
+
+      if (!storeProductExists) {
+        debugPrint(
+          '[PlansScreen] '
+          'Store product unavailable: '
+          '${plan.productId}',
+        );
+      }
+    }
+
+
+    if (availablePlans.isEmpty) {
+      throw Exception(
+        "No purchasable chat plans are currently available.",
+      );
+    }
+
+
+    // ============================================================
+    // UPDATE SCREEN STATE
+    // ============================================================
+
+    setState(() {
+      _plans = availablePlans;
+
+      _isLoadingPlans = false;
+
+      _plansError = null;
+
+      _selectedIndex = null;
+
+      _selectedPlan = null;
+
+      if (_currentPage >=
+          _plans.length) {
+        _currentPage = 0;
+      }
+    });
+
+
+    // ============================================================
+    // LOG FINAL AVAILABLE PLANS
+    // ============================================================
+
+    for (final ChatPlan plan
+        in availablePlans) {
+      final product =
+          BillingService.instance
+              .getProductDetails(
+        plan.productId,
+      );
+
+
+      debugPrint(
+        '[PlansScreen] AVAILABLE PLAN | '
+        '${plan.productId} | '
+        '${plan.title} | '
+        '${plan.contacts} contacts | '
+        '${product?.price}',
+      );
+    }
+  } catch (e, stackTrace) {
+    debugPrint(
+      '[PlansScreen] '
+      'Unable to initialize plans: $e',
+    );
+
+    debugPrint(
+      '[PlansScreen] '
+      'Stack trace: $stackTrace',
+    );
+
+
+    if (!mounted) {
+      return;
+    }
+
+
+    setState(() {
+      _plans = [];
+
+      _isLoadingPlans = false;
+
+      _plansError =
+          'Unable to load chat plans. '
+          'Please try again.';
+    });
+  }
+}
+Future<ChatPlan> _resolvePlanForPurchase(
+  String productId,
+) async {
+  final String normalizedProductId =
+      productId.trim();
+
+  if (normalizedProductId.isEmpty) {
+    throw Exception(
+      'Purchase product ID is missing.',
+    );
+  }
+
+
+  // ============================================================
+  // FIRST: CHECK ALREADY LOADED PLANS
+  // ============================================================
+
+  for (final ChatPlan plan in _plans) {
+    if (plan.productId ==
+        normalizedProductId) {
+      return plan;
+    }
+  }
+
+
+  // ============================================================
+  // SECOND: LOAD PLAN DIRECTLY FROM FIRESTORE
+  // ============================================================
+
+  final DocumentSnapshot<Map<String, dynamic>>
+      snapshot = await FirebaseFirestore.instance
+          .collection('chatPlans')
+          .doc(normalizedProductId)
+          .get();
+
+
+  if (!snapshot.exists) {
+    throw Exception(
+      'No chat plan exists for product '
+      '$normalizedProductId.',
+    );
+  }
+
+
+  final Map<String, dynamic>? data =
+      snapshot.data();
+
+  if (data == null) {
+    throw Exception(
+      'Chat plan data is missing.',
+    );
+  }
+
+
+  final ChatPlan plan =
+      ChatPlan.fromMap(
+    data,
+    snapshot.id,
+  );
+
+
+  // ============================================================
+  // VALIDATE RECOVERED PLAN
+  // ============================================================
+
+  if (plan.productId !=
+      normalizedProductId) {
+    throw Exception(
+      'Chat plan product ID does not match '
+      'the purchased product.',
+    );
+  }
+
+
+  if (!plan.isActive) {
+    throw Exception(
+      'The purchased chat plan is no longer active.',
+    );
+  }
+
+
+  if (plan.contacts <= 0) {
+    throw Exception(
+      'The purchased chat plan has an invalid '
+      'contact count.',
+    );
+  }
+
+
+  return plan;
+}
 @override
 void initState() {
   super.initState();
+
+
+  // ============================================================
+  // PAGE CONTROLLER
+  // ============================================================
 
   _pageController = PageController(
     initialPage: 0,
     viewportFraction: 0.85,
   );
 
-Future.microtask(() async {
-  try {
-    // ============================================================
-    // INITIALIZE BILLING
-    // ============================================================
 
-    await BillingService.instance.initialize();
+  // ============================================================
+  // REGISTER PURCHASE SUCCESS CALLBACK
+  //
+  // IMPORTANT:
+  // Register callbacks BEFORE _loadPlans().
+  //
+  // _loadPlans() will:
+  //
+  // 1. Fetch active plans from Firestore.
+  // 2. Extract product IDs.
+  // 3. Initialize BillingService.
+  // 4. Subscribe to purchaseStream.
+  // 5. Load ProductDetails from the store.
+  //
+  // Registering callbacks first ensures that a redelivered
+  // unfinished purchase can be processed safely.
+  // ============================================================
 
-    if (!mounted) return;
-
-
-    // ============================================================
-    // PURCHASE SUCCESS
-    // ============================================================
-
-    BillingService.instance.onPurchaseSuccess = (purchase) async {
-  if (!mounted) return;
-
-  final user = FirebaseAuth.instance.currentUser;
-
-  if (user == null) {
-    if (mounted) {
-      setState(() {
-        _isPurchasing = false;
-      });
+  BillingService.instance.onPurchaseSuccess =
+      (purchase) async {
+    if (!mounted) {
+      return;
     }
 
-    throw Exception("User is not logged in.");
-  }
-
-  final FirebaseFirestore firestore =
-      FirebaseFirestore.instance;
-
-  // ============================================================
-  // GET CONTACT COUNT
-  // ============================================================
-
-  final int? contactsValue = int.tryParse(
-    (_selectedContacts ?? '').replaceAll(
-      RegExp(r'\D'),
-      '',
-    ),
-  );
-
-  if (contactsValue == null || contactsValue <= 0) {
-    if (mounted) {
-      setState(() {
-        _isPurchasing = false;
-      });
-    }
-
-    throw Exception(
-      "Invalid number of contacts for the selected plan.",
-    );
-  }
-
-
-  // ============================================================
-  // GET SELECTED PLAN
-  // ============================================================
-
-  final String planName =
-      _selectedPlanName ?? 'Premium';
-
-
-  try {
-    final DocumentReference<Map<String, dynamic>> userRef =
-        firestore
-            .collection('users')
-            .doc(user.uid);
-
 
     // ==========================================================
-    // VALIDATE PURCHASE ID
+    // GET CURRENT USER
     // ==========================================================
 
-    final String? rawPurchaseId =
-        purchase.purchaseID;
-
-    if (rawPurchaseId == null ||
-        rawPurchaseId.trim().isEmpty) {
-      throw Exception(
-        "Purchase ID is missing. "
-        "Purchase cannot be activated safely.",
-      );
-    }
-
-    final String purchaseId =
-        rawPurchaseId.trim();
+    final user =
+        FirebaseAuth.instance.currentUser;
 
 
-    // ==========================================================
-    // UNIQUE PURCHASE DOCUMENT
-    // ==========================================================
-
-    final DocumentReference<Map<String, dynamic>>
-        purchaseRef = userRef
-            .collection('purchases')
-            .doc(purchaseId);
-
-
-    // ==========================================================
-    // PROCESS PURCHASE EXACTLY ONCE
-    // ==========================================================
-
-    final bool contactsGranted =
-        await firestore.runTransaction<bool>(
-      (transaction) async {
-        // ------------------------------------------------------
-        // CHECK PURCHASE HISTORY FIRST
-        // ------------------------------------------------------
-
-        final purchaseSnapshot =
-            await transaction.get(purchaseRef);
-
-        // Purchase already processed.
-        //
-        // Do not increment contacts again.
-
-        if (purchaseSnapshot.exists) {
-          return false;
-        }
-
-
-        // ------------------------------------------------------
-        // READ CURRENT USER BALANCE
-        // ------------------------------------------------------
-
-        final userSnapshot =
-            await transaction.get(userRef);
-
-        if (!userSnapshot.exists) {
-          throw Exception(
-            "User account was not found.",
-          );
-        }
-
-        final userData =
-            userSnapshot.data();
-
-        final int existingContacts =
-            (userData?['remainingContacts'] as num?)
-                    ?.toInt() ??
-                0;
-
-        final int updatedContacts =
-            existingContacts + contactsValue;
-
-
-        // ------------------------------------------------------
-        // UPDATE USER CONTACT BALANCE
-        // ------------------------------------------------------
-
-        transaction.update(
-          userRef,
-          {
-            'currentPlan':
-                planName,
-
-            'currentPlanContacts':
-                contactsValue,
-
-            'remainingContacts':
-                updatedContacts,
-
-            'planPurchaseDate':
-                FieldValue.serverTimestamp(),
-          },
-        );
-
-
-        // ------------------------------------------------------
-        // SAVE UNIQUE PURCHASE RECORD
-        // ------------------------------------------------------
-
-        transaction.set(
-          purchaseRef,
-          {
-            'planName':
-                planName,
-
-            'contactsPurchased':
-                contactsValue,
-
-            'productId':
-                purchase.productID,
-
-            'purchaseId':
-                purchaseId,
-
-            'purchaseDate':
-                FieldValue.serverTimestamp(),
-
-            'status':
-                'completed',
-          },
-        );
-
-
-        return true;
-      },
-    );
-
-
-    // ==========================================================
-    // HANDLE DUPLICATE PURCHASE CALLBACK
-    // ==========================================================
-
-    if (!contactsGranted) {
-      debugPrint(
-        '[PlansScreen] Purchase $purchaseId '
-        'was already processed. '
-        'Skipping duplicate contact grant.',
-      );
-
+    if (user == null) {
       if (mounted) {
         setState(() {
           _isPurchasing = false;
         });
       }
 
+
+      throw Exception(
+        "User is not logged in.",
+      );
+    }
+
+
+    final FirebaseFirestore firestore =
+        FirebaseFirestore.instance;
+
+
+    try {
+      // ========================================================
+      // RESOLVE FIRESTORE PLAN FROM PURCHASE PRODUCT ID
+      // ========================================================
+
+      final ChatPlan selectedPlan =
+          await _resolvePlanForPurchase(
+        purchase.productID,
+      );
+
+
+      // ========================================================
+      // UPDATE CURRENT SELECTED PLAN
+      // ========================================================
+
+      if (mounted) {
+        setState(() {
+          _selectedPlan =
+              selectedPlan;
+        });
+      }
+
+
+      // ========================================================
+      // GET PLAN VALUES
+      // ========================================================
+
+      final int contactsValue =
+          selectedPlan.contacts;
+
+
+      final String planName =
+          selectedPlan.title;
+
+
+      final String productId =
+          selectedPlan.productId;
+
+
+      final String planId =
+          selectedPlan.id;
+
+
+      // ========================================================
+      // USER DOCUMENT
+      // ========================================================
+
+      final DocumentReference<
+              Map<String, dynamic>>
+          userRef = firestore
+              .collection('users')
+              .doc(user.uid);
+
+
+      // ========================================================
+      // VALIDATE PURCHASE ID
+      // ========================================================
+
+      final String? rawPurchaseId =
+          purchase.purchaseID;
+
+
+      if (rawPurchaseId == null ||
+          rawPurchaseId.trim().isEmpty) {
+        throw Exception(
+          "Purchase ID is missing. "
+          "Purchase cannot be activated safely.",
+        );
+      }
+
+
+      final String purchaseId =
+          rawPurchaseId.trim();
+
+
+      // ========================================================
+      // UNIQUE PURCHASE DOCUMENT
+      // ========================================================
+
+      final DocumentReference<
+              Map<String, dynamic>>
+          purchaseRef = userRef
+              .collection('purchases')
+              .doc(purchaseId);
+
+
+      // ========================================================
+      // PROCESS PURCHASE EXACTLY ONCE
+      // ========================================================
+
+      final bool contactsGranted =
+          await firestore
+              .runTransaction<bool>(
+        (transaction) async {
+          // ----------------------------------------------------
+          // CHECK PURCHASE HISTORY
+          // ----------------------------------------------------
+
+          final purchaseSnapshot =
+              await transaction.get(
+            purchaseRef,
+          );
+
+
+          // Already processed.
+          //
+          // Return normally so BillingService can call
+          // completePurchase() safely.
+
+          if (purchaseSnapshot.exists) {
+            return false;
+          }
+
+
+          // ----------------------------------------------------
+          // READ CURRENT USER BALANCE
+          // ----------------------------------------------------
+
+          final userSnapshot =
+              await transaction.get(
+            userRef,
+          );
+
+
+          if (!userSnapshot.exists) {
+            throw Exception(
+              "User account was not found.",
+            );
+          }
+
+
+          final Map<String, dynamic>?
+              userData =
+              userSnapshot.data();
+
+
+          final int existingContacts =
+              (userData?[
+                          'remainingContacts']
+                      as num?)
+                  ?.toInt() ??
+              0;
+
+
+          final int updatedContacts =
+              existingContacts +
+                  contactsValue;
+
+
+          // ----------------------------------------------------
+          // UPDATE USER CONTACT BALANCE
+          // ----------------------------------------------------
+
+          transaction.update(
+            userRef,
+            {
+              'currentPlan':
+                  planName,
+
+              'currentPlanId':
+                  planId,
+
+              'currentPlanProductId':
+                  productId,
+
+              'currentPlanContacts':
+                  contactsValue,
+
+              'remainingContacts':
+                  updatedContacts,
+
+              'planPurchaseDate':
+                  FieldValue
+                      .serverTimestamp(),
+            },
+          );
+
+
+          // ----------------------------------------------------
+          // SAVE UNIQUE PURCHASE RECORD
+          // ----------------------------------------------------
+
+          transaction.set(
+            purchaseRef,
+            {
+              'planId':
+                  planId,
+
+              'planName':
+                  planName,
+
+              'contactsPurchased':
+                  contactsValue,
+
+              'productId':
+                  productId,
+
+              'purchaseId':
+                  purchaseId,
+
+              'purchaseDate':
+                  FieldValue
+                      .serverTimestamp(),
+
+              'status':
+                  'completed',
+            },
+          );
+
+
+          return true;
+        },
+      );
+
+
+      // ========================================================
+      // HANDLE DUPLICATE PURCHASE CALLBACK
+      // ========================================================
+
+      if (!contactsGranted) {
+        debugPrint(
+          '[PlansScreen] '
+          'Purchase $purchaseId '
+          'was already processed. '
+          'Skipping duplicate contact grant.',
+        );
+
+
+        if (mounted) {
+          setState(() {
+            _isPurchasing = false;
+          });
+        }
+
+
+        // Return normally.
+        //
+        // BillingService will complete the purchase.
+        //
+        // Credits are not granted twice.
+
+        return;
+      }
+
+
+      if (!mounted) {
+        return;
+      }
+
+
+      // ========================================================
+      // RESET PURCHASE LOADING STATE
+      // ========================================================
+
+      setState(() {
+        _isPurchasing = false;
+      });
+
+
+      // ========================================================
+      // CLOSE PURCHASE CONFIRMATION BOTTOM SHEET
+      // ========================================================
+
+      if (Navigator.of(context).canPop()) {
+        Navigator.of(context).pop();
+      }
+
+
+      // ========================================================
+      // WAIT FOR BOTTOM SHEET CLOSE ANIMATION
+      // ========================================================
+
+      await Future.delayed(
+        const Duration(
+          milliseconds: 350,
+        ),
+      );
+
+
+      if (!mounted) {
+        return;
+      }
+
+
+      // ========================================================
+      // SHOW PURCHASE SUCCESS DIALOG
+      // ========================================================
+
+      await _showPurchaseSuccessDialog(
+        planName: planName,
+        contacts: contactsValue,
+      );
+    } catch (e, stackTrace) {
+      debugPrint(
+        '[PlansScreen] '
+        'Purchase activation failed: $e',
+      );
+
+
+      debugPrint(
+        '[PlansScreen] '
+        'Stack trace: $stackTrace',
+      );
+
+
+      if (mounted) {
+        setState(() {
+          _isPurchasing = false;
+        });
+
+
+        ScaffoldMessenger.of(context)
+            .showSnackBar(
+          SnackBar(
+            content: Text(
+              'Unable to activate purchase: $e',
+            ),
+            backgroundColor:
+                Colors.red,
+          ),
+        );
+      }
+
+
       // IMPORTANT:
       //
-      // Return normally.
+      // Rethrow so BillingService DOES NOT call
+      // completePurchase().
       //
-      // BillingService will then completePurchase(),
-      // preventing this already-processed purchase from
-      // remaining unfinished.
+      // This allows the store to redeliver an unfinished
+      // successfully-paid purchase.
 
+      rethrow;
+    }
+  };
+
+
+  // ============================================================
+  // REGISTER PURCHASE ERROR / CANCEL CALLBACK
+  // ============================================================
+
+  BillingService.instance.onPurchaseError =
+      (error) {
+    if (!mounted) {
       return;
     }
 
 
-    if (!mounted) return;
-
-
-    // ==========================================================
-    // RESET PURCHASE LOADING STATE
-    // ==========================================================
-
     setState(() {
       _isPurchasing = false;
     });
 
 
-    // ==========================================================
-    // CLOSE PURCHASE CONFIRMATION BOTTOM SHEET
-    // ==========================================================
-
-    if (Navigator.of(context).canPop()) {
-      Navigator.of(context).pop();
-    }
-
-
-    // ==========================================================
-    // WAIT FOR BOTTOM SHEET ANIMATION
-    // ==========================================================
-
-    await Future.delayed(
-      const Duration(milliseconds: 350),
-    );
-
-    if (!mounted) return;
-
-
-    // ==========================================================
-    // SHOW PREMIUM SUCCESS POPUP
-    // ==========================================================
-
-    await _showPurchaseSuccessDialog(
-      planName: planName,
-      contacts: contactsValue,
-    );
-  } catch (e, stackTrace) {
-    debugPrint(
-      '[PlansScreen] Purchase activation failed: $e',
-    );
-
-    debugPrint(
-      '[PlansScreen] Stack trace: $stackTrace',
-    );
-
-    if (mounted) {
-      setState(() {
-        _isPurchasing = false;
-      });
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            'Unable to activate purchase: $e',
-          ),
-          backgroundColor: Colors.red,
-        ),
-      );
-    }
-
-    // IMPORTANT:
-    //
-    // Rethrow the error.
-    //
-    // Your updated BillingService catches this and does NOT
-    // completePurchase().
-    //
-    // This allows the purchase to be redelivered later instead
-    // of losing a successfully paid purchase that failed during
-    // Firestore activation.
-
-    rethrow;
-  }
-};
-
-    // ============================================================
-    // PURCHASE ERROR / CANCELLED
-    // ============================================================
-
-    BillingService.instance.onPurchaseError = (error) {
-      if (!mounted) return;
-
-      setState(() {
-        _isPurchasing = false;
-      });
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(error),
-          backgroundColor: Colors.red,
-        ),
-      );
-    };
-  } catch (e) {
-    if (!mounted) return;
-
-    setState(() {
-      _isPurchasing = false;
-    });
-
-    ScaffoldMessenger.of(context).showSnackBar(
+    ScaffoldMessenger.of(context)
+        .showSnackBar(
       SnackBar(
         content: Text(
-          'Billing initialization failed: $e',
+          error,
         ),
-        backgroundColor: Colors.red,
+        backgroundColor:
+            Colors.red,
       ),
     );
-  }
-});
+  };
+
+
+  // ============================================================
+  // LOAD FIRESTORE PLANS AND INITIALIZE BILLING
+  // ============================================================
+
+  _loadPlans();
+
+
+  // ============================================================
+  // PAGE CONTROLLER LISTENER
+  // ============================================================
+
   _pageController.addListener(() {
+    if (!mounted ||
+        !_pageController.hasClients) {
+      return;
+    }
+
+
+    final double? page =
+        _pageController.page;
+
+
+    if (page == null) {
+      return;
+    }
+
+
+    final int newPage =
+        page.round();
+
+
+    if (newPage ==
+        _currentPage) {
+      return;
+    }
+
+
     setState(() {
-      _currentPage = _pageController.page!.round();
+      _currentPage =
+          newPage;
     });
   });
 }
-
 @override
 void dispose() {
-  BillingService.instance.dispose();
+  // ============================================================
+  // REMOVE SCREEN-SPECIFIC BILLING CALLBACKS
+  //
+  // BillingService is a singleton.
+  //
+  // Do NOT call BillingService.instance.dispose() here because
+  // leaving PlansScreen would cancel the global purchase stream.
+  // ============================================================
+
+  BillingService.instance.onPurchaseSuccess = null;
+
+  BillingService.instance.onPurchaseError = null;
+
+
+  // ============================================================
+  // DISPOSE PAGE CONTROLLER
+  // ============================================================
+
   _pageController.dispose();
+
+
+  // ============================================================
+  // DISPOSE STATE
+  // ============================================================
+
   super.dispose();
 }
 
@@ -701,195 +1109,7 @@ Widget _statItem(
     ],
   );
 }
-
-  Widget _buildMobilePlanLayout(
-  BuildContext context,
-) {
-  const double cardHeight = 520;
-
-  return Column(
-    children: [
-      SizedBox(
-        height: cardHeight,
-        child: PageView.builder(
-          controller: _pageController,
-          itemCount: _plans.length,
-          physics:
-              const BouncingScrollPhysics(),
-          itemBuilder: (
-            context,
-            index,
-          ) {
-            final plan =
-                _plans[index];
-
-            final bool isCurrentCard =
-                _currentPage == index;
-
-            return AnimatedContainer(
-              duration:
-                  const Duration(
-                milliseconds: 350,
-              ),
-              curve:
-                  Curves.easeOutCubic,
-              margin:
-                  EdgeInsets.symmetric(
-                horizontal: 10,
-                vertical:
-                    isCurrentCard
-                        ? 0
-                        : 20,
-              ),
-              child: _buildPlanCard(
-                context,
-                title:
-                    plan['title'],
-                price:
-                    plan['price'],
-                contacts:
-                    plan['contacts'],
-                features:
-                    plan['features'],
-                isHighlighted:
-                    plan[
-                        'isHighlighted'],
-                isSelected:
-                    _selectedIndex ==
-                        index,
-                onTap: () {
-                  setState(() {
-  _selectedIndex = index;
-  _selectedPlanName = plan['title'];
-  _selectedContacts = plan['contacts'];
-});
-
-                  _showPurchaseConfirmation(
-                    context,
-                    plan['title']
-                        as String,
-                    plan['contacts']
-                        as String,
-                  );
-                },
-                minHeight:
-                    cardHeight * .90,
-              ),
-            );
-          },
-        ),
-      ),
-
-      const SizedBox(height: 28),
-
-      Row(
-        mainAxisAlignment:
-            MainAxisAlignment.center,
-        children: List.generate(
-          _plans.length,
-          (index) {
-            final isActive =
-                _currentPage ==
-                    index;
-
-            return AnimatedContainer(
-              duration:
-                  const Duration(
-                milliseconds: 300,
-              ),
-              curve:
-                  Curves.easeInOut,
-              margin:
-                  const EdgeInsets
-                      .symmetric(
-                horizontal: 5,
-              ),
-              height: 10,
-              width:
-                  isActive
-                      ? 32
-                      : 10,
-              decoration:
-                  BoxDecoration(
-                gradient:
-                    isActive
-                        ? const LinearGradient(
-                            colors: [
-                              Colors
-                                  .white,
-                              Color(
-                                0xFFFFD700,
-                              ),
-                            ],
-                          )
-                        : null,
-                color:
-                    isActive
-                        ? null
-                        : Colors
-                            .white30,
-                borderRadius:
-                    BorderRadius
-                        .circular(
-                  20,
-                ),
-              ),
-            );
-          },
-        ),
-      ),
-
-      const SizedBox(height: 20),
-
-      Text(
-        "Swipe to compare plans",
-        style: TextStyle(
-          color: Colors.white
-              .withOpacity(.75),
-          fontSize: 13,
-          fontWeight:
-              FontWeight.w500,
-        ),
-      ),
-    ],
-  );
-}
-
-  Widget _buildWebPlanLayout(BuildContext context) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.center,
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: List.generate(_plans.length, (index) {
-        final plan = _plans[index];
-        return Expanded(
-          child: Padding(
-            padding: EdgeInsets.symmetric(horizontal: index == 1 ? 15.0 : 0.0),
-            child: _buildPlanCard(
-              context,
-              title: plan['title'],
-              price: plan['price'],
-              contacts: plan['contacts'],
-              features: plan['features'],
-              isHighlighted: plan['isHighlighted'],
-              isSelected: _selectedIndex == index,
-              onTap: () {
-               setState(() {
-  _selectedIndex = index;
-  _selectedPlanName = plan['title'];
-  _selectedContacts = plan['contacts'];
-});
-                _showPurchaseConfirmation(
-                    context, plan['title'] as String, plan['contacts'] as String);
-              },
-            ),
-          ),
-        );
-      }),
-    );
-  }
-
-  // --- Reusable Plan Card Widget ---
-  Widget _buildPlanCard(
+Widget _buildPlanCard(
   BuildContext context, {
   required String title,
   required String price,
@@ -898,75 +1118,499 @@ Widget _statItem(
   required bool isHighlighted,
   required bool isSelected,
   required VoidCallback onTap,
-  double? minHeight,
+  required double minHeight,
 }) {
-  final Color primaryColor =
-      isHighlighted
-          ? const Color(0xFFEC4899)
-          : const Color(0xFF7C3AED);
+  return AnimatedContainer(
+    duration: const Duration(
+      milliseconds: 300,
+    ),
+    curve: Curves.easeOutCubic,
 
-  return GestureDetector(
-    onTap: onTap,
-    child: AnimatedContainer(
-      duration: const Duration(
-        milliseconds: 350,
+    constraints: BoxConstraints(
+      minHeight: minHeight,
+    ),
+
+    decoration: BoxDecoration(
+      color: Colors.white,
+
+      borderRadius: BorderRadius.circular(28),
+
+      border: Border.all(
+        color: isSelected
+            ? const Color(0xFFFFD700)
+            : isHighlighted
+                ? const Color(0xFFEC4899)
+                : Colors.white.withOpacity(.20),
+
+        width: isSelected ? 3 : 1.5,
       ),
-      curve: Curves.easeOutCubic,
-      constraints: minHeight != null
-          ? BoxConstraints(
-              minHeight: minHeight,
-            )
-          : null,
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius:
-            BorderRadius.circular(32),
-        border: Border.all(
+
+      boxShadow: [
+        BoxShadow(
           color: isHighlighted
               ? const Color(
                   0xFFEC4899,
-                )
-              : isSelected
-                  ? const Color(
-                      0xFF9333EA,
-                    )
-                  : Colors.grey.shade200,
-          width: isHighlighted
-              ? 3
-              : 1.5,
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black
-                .withOpacity(.08),
-            blurRadius: 25,
-            offset:
-                const Offset(0, 15),
-          ),
-        ],
-      ),
+                ).withOpacity(.25)
+              : Colors.black.withOpacity(.12),
 
-      child: Stack(
-        clipBehavior: Clip.none,
-        children: [
-          Padding(
+          blurRadius:
+              isHighlighted ? 30 : 20,
+
+          offset: const Offset(
+            0,
+            12,
+          ),
+        ),
+      ],
+    ),
+
+    child: Material(
+      color: Colors.transparent,
+
+      child: InkWell(
+        onTap: onTap,
+
+        borderRadius:
+            BorderRadius.circular(28),
+
+        child: ClipRRect(
+          borderRadius:
+              BorderRadius.circular(28),
+
+          child: SingleChildScrollView(
+            physics:
+                const BouncingScrollPhysics(),
+
             padding:
-                const EdgeInsets.all(
-              28,
-            ),
+                const EdgeInsets.all(24),
+
             child: Column(
+              mainAxisSize:
+                  MainAxisSize.min,
+
               crossAxisAlignment:
-                  CrossAxisAlignment
-                      .center,
+                  CrossAxisAlignment.start,
+
               children: [
-                if (isHighlighted)
-                  Container(
-                    padding:
-                        const EdgeInsets
-                            .symmetric(
-                      horizontal: 14,
-                      vertical: 7,
+                // ==============================================
+                // HIGHLIGHTED BADGE
+                // ==============================================
+
+                if (isHighlighted) ...[
+                  Align(
+                    alignment:
+                        Alignment.center,
+
+                    child: Container(
+                      padding:
+                          const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 7,
+                      ),
+
+                      decoration:
+                          BoxDecoration(
+                        gradient:
+                            const LinearGradient(
+                          colors: [
+                            Color(
+                              0xFF7C3AED,
+                            ),
+                            Color(
+                              0xFFEC4899,
+                            ),
+                          ],
+                        ),
+
+                        borderRadius:
+                            BorderRadius.circular(
+                          30,
+                        ),
+                      ),
+
+                      child: const Text(
+                        'MOST POPULAR',
+
+                        style: TextStyle(
+                          color:
+                              Colors.white,
+
+                          fontSize:
+                              11,
+
+                          fontWeight:
+                              FontWeight.w900,
+
+                          letterSpacing:
+                              1,
+                        ),
+                      ),
                     ),
+                  ),
+
+                  const SizedBox(
+                    height: 18,
+                  ),
+                ],
+
+
+                // ==============================================
+                // ICON + SELECTED INDICATOR
+                // ==============================================
+
+                Row(
+                  mainAxisAlignment:
+                      MainAxisAlignment
+                          .spaceBetween,
+
+                  children: [
+                    Container(
+                      height: 58,
+                      width: 58,
+
+                      decoration:
+                          BoxDecoration(
+                        gradient:
+                            const LinearGradient(
+                          begin:
+                              Alignment.topLeft,
+
+                          end:
+                              Alignment.bottomRight,
+
+                          colors: [
+                            Color(
+                              0xFF7C3AED,
+                            ),
+                            Color(
+                              0xFF9333EA,
+                            ),
+                            Color(
+                              0xFFEC4899,
+                            ),
+                          ],
+                        ),
+
+                        borderRadius:
+                            BorderRadius.circular(
+                          18,
+                        ),
+                      ),
+
+                      child: const Icon(
+                        Icons
+                            .workspace_premium_rounded,
+
+                        color:
+                            Colors.white,
+
+                        size: 30,
+                      ),
+                    ),
+
+
+                    AnimatedContainer(
+                      duration:
+                          const Duration(
+                        milliseconds:
+                            250,
+                      ),
+
+                      height: 28,
+                      width: 28,
+
+                      decoration:
+                          BoxDecoration(
+                        shape:
+                            BoxShape.circle,
+
+                        color:
+                            isSelected
+                                ? const Color(
+                                    0xFF7C3AED,
+                                  )
+                                : Colors
+                                    .transparent,
+
+                        border:
+                            Border.all(
+                          color:
+                              isSelected
+                                  ? const Color(
+                                      0xFF7C3AED,
+                                    )
+                                  : Colors
+                                      .grey
+                                      .shade300,
+
+                          width: 2,
+                        ),
+                      ),
+
+                      child:
+                          isSelected
+                              ? const Icon(
+                                  Icons
+                                      .check_rounded,
+
+                                  color:
+                                      Colors.white,
+
+                                  size: 18,
+                                )
+                              : null,
+                    ),
+                  ],
+                ),
+
+
+                const SizedBox(
+                  height: 22,
+                ),
+
+
+                // ==============================================
+                // PLAN TITLE
+                // ==============================================
+
+                Text(
+                  title,
+
+                  style:
+                      const TextStyle(
+                    color:
+                        Color(
+                      0xFF111827,
+                    ),
+
+                    fontSize:
+                        26,
+
+                    fontWeight:
+                        FontWeight.w900,
+                  ),
+                ),
+
+
+                const SizedBox(
+                  height: 6,
+                ),
+
+
+                // ==============================================
+                // CHAT CREDITS
+                // ==============================================
+
+                Text(
+                  contacts,
+
+                  style:
+                      const TextStyle(
+                    color:
+                        Color(
+                      0xFF7C3AED,
+                    ),
+
+                    fontSize:
+                        16,
+
+                    fontWeight:
+                        FontWeight.w700,
+                  ),
+                ),
+
+
+                const SizedBox(
+                  height: 20,
+                ),
+
+
+                // ==============================================
+                // REAL STORE PRICE
+                // ==============================================
+
+                Text(
+                  price,
+
+                  style:
+                      const TextStyle(
+                    color:
+                        Color(
+                      0xFF111827,
+                    ),
+
+                    fontSize:
+                        38,
+
+                    fontWeight:
+                        FontWeight.w900,
+
+                    height:
+                        1,
+                  ),
+                ),
+
+
+                const SizedBox(
+                  height: 7,
+                ),
+
+
+                const Text(
+                  'One-time purchase',
+
+                  style:
+                      TextStyle(
+                    color:
+                        Color(
+                      0xFF64748B,
+                    ),
+
+                    fontSize:
+                        13,
+
+                    fontWeight:
+                        FontWeight.w500,
+                  ),
+                ),
+
+
+                const SizedBox(
+                  height: 22,
+                ),
+
+
+                Divider(
+                  color:
+                      Colors.grey.shade200,
+
+                  height:
+                      1,
+                ),
+
+
+                const SizedBox(
+                  height: 20,
+                ),
+
+
+                // ==============================================
+                // FIRESTORE FEATURES
+                // ==============================================
+
+                ...features.asMap().entries.map(
+                  (entry) {
+                    final int index =
+                        entry.key;
+
+                    final String feature =
+                        entry.value;
+
+
+                    return Padding(
+                      padding:
+                          EdgeInsets.only(
+                        bottom:
+                            index ==
+                                    features.length -
+                                        1
+                                ? 0
+                                : 13,
+                      ),
+
+                      child: Row(
+                        crossAxisAlignment:
+                            CrossAxisAlignment.start,
+
+                        children: [
+                          Container(
+                            height:
+                                22,
+
+                            width:
+                                22,
+
+                            decoration:
+                                BoxDecoration(
+                              color:
+                                  const Color(
+                                0xFF22C55E,
+                              ).withOpacity(
+                                .12,
+                              ),
+
+                              shape:
+                                  BoxShape.circle,
+                            ),
+
+                            child:
+                                const Icon(
+                              Icons
+                                  .check_rounded,
+
+                              color:
+                                  Color(
+                                0xFF16A34A,
+                              ),
+
+                              size:
+                                  15,
+                            ),
+                          ),
+
+
+                          const SizedBox(
+                            width: 10,
+                          ),
+
+
+                          Expanded(
+                            child: Text(
+                              feature,
+
+                              style:
+                                  const TextStyle(
+                                color:
+                                    Color(
+                                  0xFF475569,
+                                ),
+
+                                fontSize:
+                                    14,
+
+                                fontWeight:
+                                    FontWeight.w600,
+
+                                height:
+                                    1.4,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    );
+                  },
+                ),
+
+
+                const SizedBox(
+                  height: 26,
+                ),
+
+
+                // ==============================================
+                // PURCHASE BUTTON
+                // ==============================================
+
+                SizedBox(
+                  width:
+                      double.infinity,
+
+                  height:
+                      54,
+
+                  child:
+                      DecoratedBox(
                     decoration:
                         BoxDecoration(
                       gradient:
@@ -976,239 +1620,628 @@ Widget _statItem(
                             0xFF7C3AED,
                           ),
                           Color(
+                            0xFF9333EA,
+                          ),
+                          Color(
                             0xFFEC4899,
                           ),
                         ],
                       ),
+
                       borderRadius:
-                          BorderRadius
-                              .circular(
-                                  30),
-                    ),
-                    child:
-                        const Text(
-                      "⭐ MOST POPULAR",
-                      style:
-                          TextStyle(
-                        color: Colors
-                            .white,
-                        fontWeight:
-                            FontWeight
-                                .bold,
-                        fontSize:
-                            11,
+                          BorderRadius.circular(
+                        17,
                       ),
-                    ),
-                  ),
 
-                const SizedBox(
-                    height: 18),
-
-                Text(
-                  title,
-                  style:
-                      const TextStyle(
-                    fontSize: 30,
-                    fontWeight:
-                        FontWeight
-                            .w900,
-                    color: Color(
-                      0xFF111827,
-                    ),
-                  ),
-                ),
-
-                const SizedBox(
-                    height: 10),
-
-                Text(
-                  price,
-                  style:
-                      TextStyle(
-                    fontSize: 52,
-                    fontWeight:
-                        FontWeight
-                            .w900,
-                    color:
-                        primaryColor,
-                    height: 1,
-                  ),
-                ),
-
-                const SizedBox(
-                    height: 8),
-
-                Container(
-                  padding:
-                      const EdgeInsets
-                          .symmetric(
-                    horizontal: 16,
-                    vertical: 8,
-                  ),
-                  decoration:
-                      BoxDecoration(
-                    color:
-                        primaryColor
-                            .withOpacity(
-                                .08),
-                    borderRadius:
-                        BorderRadius
-                            .circular(
-                                30),
-                  ),
-                  child: Text(
-                    contacts,
-                    style:
-                        TextStyle(
-                      color:
-                          primaryColor,
-                      fontWeight:
-                          FontWeight
-                              .w700,
-                    ),
-                  ),
-                ),
-
-                const SizedBox(
-                    height: 28),
-
-                ...features.map(
-                  (feature) =>
-                      Padding(
-                    padding:
-                        const EdgeInsets
-                            .only(
-                      bottom: 14,
-                    ),
-                    child: Row(
-                      children: [
-                        Container(
-                          height: 28,
-                          width: 28,
-                          decoration:
-                              BoxDecoration(
-                            color: primaryColor
-                                .withOpacity(
-                                    .10),
-                            shape: BoxShape
-                                .circle,
+                      boxShadow: [
+                        BoxShadow(
+                          color:
+                              const Color(
+                            0xFF7C3AED,
+                          ).withOpacity(
+                            .22,
                           ),
-                          child:
-                              Icon(
-                            Icons
-                                .check_rounded,
-                            size: 18,
-                            color:
-                                primaryColor,
-                          ),
-                        ),
 
-                        const SizedBox(
-                            width: 12),
+                          blurRadius:
+                              15,
 
-                        Expanded(
-                          child:
-                              Text(
-                            feature,
-                            style:
-                                const TextStyle(
-                              fontSize:
-                                  15,
-                              fontWeight:
-                                  FontWeight
-                                      .w500,
-                              color:
-                                  Color(
-                                0xFF374151,
-                              ),
-                            ),
+                          offset:
+                              const Offset(
+                            0,
+                            7,
                           ),
                         ),
                       ],
                     ),
+
+                    child:
+                        const Center(
+                      child: Text(
+                        'SELECT PLAN',
+
+                        style:
+                            TextStyle(
+                          color:
+                              Colors.white,
+
+                          fontSize:
+                              14,
+
+                          fontWeight:
+                              FontWeight.w900,
+
+                          letterSpacing:
+                              .5,
+                        ),
+                      ),
+                    ),
                   ),
                 ),
 
-                const Spacer(),
 
-                Container(
-                  width:
-                      double.infinity,
-                  height: 58,
-                  decoration:
-                      BoxDecoration(
-                    borderRadius:
-                        BorderRadius
-                            .circular(
-                                18),
-                    gradient:
-                        LinearGradient(
-                      colors:
-                          isHighlighted
-                              ? const [
-                                  Color(
-                                    0xFF7C3AED,
-                                  ),
-                                  Color(
-                                    0xFF9333EA,
-                                  ),
-                                  Color(
-                                    0xFFEC4899,
-                                  ),
-                                ]
-                              : [
-                                  Colors
-                                      .deepPurple
-                                      .shade400,
-                                  Colors
-                                      .deepPurple
-                                      .shade600,
-                                ],
-                    ),
-                  ),
-                  child:
-                      ElevatedButton(
-                    onPressed:
-                        onTap,
-                    style:
-                        ElevatedButton
-                            .styleFrom(
-                      backgroundColor:
-                          Colors
-                              .transparent,
-                      shadowColor:
-                          Colors
-                              .transparent,
-                      shape:
-                          RoundedRectangleBorder(
-                        borderRadius:
-                            BorderRadius.circular(
-                                18),
-                      ),
-                    ),
-                    child: Text(
-                      isHighlighted
-                          ? "GO PREMIUM"
-                          : "SELECT PLAN",
-                      style:
-                          const TextStyle(
-                        color: Colors
-                            .white,
-                        fontSize:
-                            16,
-                        fontWeight:
-                            FontWeight
-                                .w800,
-                      ),
-                    ),
-                  ),
+                // Extra bottom room for the button shadow.
+
+                const SizedBox(
+                  height: 8,
                 ),
               ],
             ),
           ),
-        ],
+        ),
       ),
     ),
+  );
+}
+Widget _buildMobilePlanLayout(
+  BuildContext context,
+) {
+  const double cardHeight = 520;
+
+
+  // ============================================================
+  // LOADING
+  // ============================================================
+
+  if (_isLoadingPlans) {
+    return const SizedBox(
+      height: cardHeight,
+      child: Center(
+        child: CircularProgressIndicator(
+          color: Colors.white,
+        ),
+      ),
+    );
+  }
+
+
+  // ============================================================
+  // ERROR
+  // ============================================================
+
+  if (_plansError != null) {
+    return SizedBox(
+      height: 300,
+      child: Center(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Icon(
+              Icons.cloud_off_rounded,
+              color: Colors.white,
+              size: 50,
+            ),
+
+            const SizedBox(height: 16),
+
+            Text(
+              _plansError!,
+              textAlign: TextAlign.center,
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 15,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+
+            const SizedBox(height: 18),
+
+            ElevatedButton.icon(
+              onPressed: _loadPlans,
+              icon: const Icon(
+                Icons.refresh_rounded,
+              ),
+              label: const Text(
+                'Try Again',
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+
+  // ============================================================
+  // NO ACTIVE PLANS
+  // ============================================================
+
+  if (_plans.isEmpty) {
+    return const SizedBox(
+      height: 300,
+      child: Center(
+        child: Text(
+          'No chat plans are available right now.',
+          textAlign: TextAlign.center,
+          style: TextStyle(
+            color: Colors.white,
+            fontSize: 15,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+      ),
+    );
+  }
+
+
+  // ============================================================
+  // PLAN PAGE VIEW
+  // ============================================================
+
+  return Column(
+    children: [
+      SizedBox(
+        height: cardHeight,
+        child: PageView.builder(
+          controller: _pageController,
+
+          itemCount: _plans.length,
+
+          physics:
+              const BouncingScrollPhysics(),
+
+          itemBuilder: (
+            context,
+            index,
+          ) {
+            final ChatPlan plan =
+                _plans[index];
+
+
+            // ==================================================
+            // GET REAL STORE PRODUCT
+            // ==================================================
+
+            final productDetails =
+                BillingService.instance
+                    .getProductDetails(
+              plan.productId,
+            );
+
+
+            // ==================================================
+            // GET REAL STORE PRICE
+            // ==================================================
+
+            final String price =
+                productDetails?.price ??
+                    'Unavailable';
+
+
+            final bool isCurrentCard =
+                _currentPage == index;
+
+
+            return AnimatedContainer(
+              duration: const Duration(
+                milliseconds: 350,
+              ),
+              curve: Curves.easeOutCubic,
+
+              margin: EdgeInsets.symmetric(
+                horizontal: 10,
+                vertical:
+                    isCurrentCard
+                        ? 0
+                        : 20,
+              ),
+
+              child: _buildPlanCard(
+                context,
+
+                title:
+                    plan.title,
+
+                price:
+                    price,
+
+                contacts:
+                    '${plan.contacts} Chat Credits',
+
+                features:
+                    plan.features,
+
+                isHighlighted:
+                    plan.isHighlighted,
+
+                isSelected:
+                    _selectedPlan?.id ==
+                        plan.id,
+
+                onTap: () {
+                  // ============================================
+                  // DO NOT ALLOW PURCHASE IF STORE PRODUCT
+                  // WAS NOT LOADED
+                  // ============================================
+
+                  if (productDetails == null) {
+                    ScaffoldMessenger.of(context)
+                        .showSnackBar(
+                      const SnackBar(
+                        content: Text(
+                          'This purchase is currently unavailable.',
+                        ),
+                        backgroundColor:
+                            Colors.red,
+                      ),
+                    );
+
+                    return;
+                  }
+
+
+                  // ============================================
+                  // SELECT FIRESTORE PLAN
+                  // ============================================
+
+                  setState(() {
+                    _selectedIndex =
+                        index;
+
+                    _selectedPlan =
+                        plan;
+                  });
+
+
+                  // ============================================
+                  // OPEN PURCHASE CONFIRMATION
+                  // ============================================
+
+                  _showPurchaseConfirmation(
+                    context,
+                    plan,
+                  );
+                },
+
+                minHeight:
+                    cardHeight * .90,
+              ),
+            );
+          },
+        ),
+      ),
+
+
+      // ========================================================
+      // PAGE INDICATORS
+      // ========================================================
+
+      if (_plans.length > 1) ...[
+        const SizedBox(height: 28),
+
+        Row(
+          mainAxisAlignment:
+              MainAxisAlignment.center,
+
+          children: List.generate(
+            _plans.length,
+            (index) {
+              final bool isActive =
+                  _currentPage ==
+                      index;
+
+              return AnimatedContainer(
+                duration: const Duration(
+                  milliseconds: 300,
+                ),
+                curve: Curves.easeInOut,
+
+                margin:
+                    const EdgeInsets.symmetric(
+                  horizontal: 5,
+                ),
+
+                height: 10,
+
+                width:
+                    isActive
+                        ? 32
+                        : 10,
+
+                decoration:
+                    BoxDecoration(
+                  gradient:
+                      isActive
+                          ? const LinearGradient(
+                              colors: [
+                                Colors.white,
+                                Color(
+                                  0xFFFFD700,
+                                ),
+                              ],
+                            )
+                          : null,
+
+                  color:
+                      isActive
+                          ? null
+                          : Colors.white30,
+
+                  borderRadius:
+                      BorderRadius.circular(
+                    20,
+                  ),
+                ),
+              );
+            },
+          ),
+        ),
+
+        const SizedBox(height: 20),
+
+        Text(
+          'Swipe to compare plans',
+          style: TextStyle(
+            color:
+                Colors.white.withOpacity(.75),
+            fontSize: 13,
+            fontWeight:
+                FontWeight.w500,
+          ),
+        ),
+      ],
+    ],
+  );
+}
+
+Widget _buildWebPlanLayout(
+  BuildContext context,
+) {
+  // ============================================================
+  // LOADING
+  // ============================================================
+
+  if (_isLoadingPlans) {
+    return const SizedBox(
+      height: 520,
+      child: Center(
+        child: CircularProgressIndicator(
+          color: Colors.white,
+        ),
+      ),
+    );
+  }
+
+
+  // ============================================================
+  // ERROR
+  // ============================================================
+
+  if (_plansError != null) {
+    return SizedBox(
+      height: 300,
+      child: Center(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Icon(
+              Icons.cloud_off_rounded,
+              color: Colors.white,
+              size: 50,
+            ),
+
+            const SizedBox(height: 16),
+
+            Text(
+              _plansError!,
+              textAlign: TextAlign.center,
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 15,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+
+            const SizedBox(height: 18),
+
+            ElevatedButton.icon(
+              onPressed: _loadPlans,
+              icon: const Icon(
+                Icons.refresh_rounded,
+              ),
+              label: const Text(
+                'Try Again',
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+
+  // ============================================================
+  // NO ACTIVE PLANS
+  // ============================================================
+
+  if (_plans.isEmpty) {
+    return const SizedBox(
+      height: 300,
+      child: Center(
+        child: Text(
+          'No chat plans are available right now.',
+          textAlign: TextAlign.center,
+          style: TextStyle(
+            color: Colors.white,
+            fontSize: 15,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+      ),
+    );
+  }
+
+
+  // ============================================================
+  // PLAN CARDS
+  // ============================================================
+
+  return LayoutBuilder(
+    builder: (
+      context,
+      constraints,
+    ) {
+      // Keep cards readable if you later add more plans.
+
+      final double availableWidth =
+          constraints.maxWidth;
+
+      final double spacing =
+          _plans.length > 1
+              ? 20
+              : 0;
+
+      final double cardWidth =
+          _plans.length == 1
+              ? 440
+              : ((availableWidth -
+                          (spacing *
+                              (_plans.length - 1))) /
+                      _plans.length)
+                  .clamp(
+                    280.0,
+                    420.0,
+                  )
+                  .toDouble();
+
+
+      return Wrap(
+        alignment:
+            WrapAlignment.center,
+
+        crossAxisAlignment:
+            WrapCrossAlignment.start,
+
+        spacing:
+            spacing,
+
+        runSpacing:
+            24,
+
+        children: List.generate(
+          _plans.length,
+          (index) {
+            final ChatPlan plan =
+                _plans[index];
+
+
+            // ==================================================
+            // GET REAL STORE PRODUCT
+            // ==================================================
+
+            final productDetails =
+                BillingService.instance
+                    .getProductDetails(
+              plan.productId,
+            );
+
+
+            // ==================================================
+            // GET REAL STORE PRICE
+            // ==================================================
+
+            final String price =
+                productDetails?.price ??
+                    'Unavailable';
+
+
+            return SizedBox(
+              width: cardWidth,
+
+              child: _buildPlanCard(
+                context,
+
+                title:
+                    plan.title,
+
+                price:
+                    price,
+
+                contacts:
+                    '${plan.contacts} Chat Credits',
+
+                features:
+                    plan.features,
+
+                isHighlighted:
+                    plan.isHighlighted,
+
+                isSelected:
+                    _selectedPlan?.id ==
+                        plan.id,
+
+                onTap: () {
+                  // ============================================
+                  // DO NOT ALLOW PURCHASE IF STORE PRODUCT
+                  // WAS NOT LOADED
+                  // ============================================
+
+                  if (productDetails == null) {
+                    ScaffoldMessenger.of(context)
+                        .showSnackBar(
+                      const SnackBar(
+                        content: Text(
+                          'This purchase is currently unavailable.',
+                        ),
+                        backgroundColor:
+                            Colors.red,
+                      ),
+                    );
+
+                    return;
+                  }
+
+
+                  // ============================================
+                  // SELECT FIRESTORE PLAN
+                  // ============================================
+
+                  setState(() {
+                    _selectedIndex =
+                        index;
+
+                    _selectedPlan =
+                        plan;
+                  });
+
+
+                  // ============================================
+                  // OPEN PURCHASE CONFIRMATION
+                  // ============================================
+
+                  _showPurchaseConfirmation(
+                    context,
+                    plan,
+                  );
+                },
+
+                minHeight:
+                    500,
+              ),
+            );
+          },
+        ),
+      );
+    },
   );
 }
 Future<void> _showPurchaseSuccessDialog({
@@ -1602,441 +2635,835 @@ Future<void> _showPurchaseSuccessDialog({
     },
   );
 }
- void _showPurchaseConfirmation(
+void _showPurchaseConfirmation(
   BuildContext context,
-  String planName,
-  String contactsString,
+  ChatPlan plan,
 ) {
+  final productDetails =
+      BillingService.instance
+          .getProductDetails(
+    plan.productId,
+  );
+
+  if (productDetails == null) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text(
+          'This purchase is currently unavailable.',
+        ),
+        backgroundColor: Colors.red,
+      ),
+    );
+
+    return;
+  }
+
+
+  final String price =
+      productDetails.price;
+
+
   showModalBottomSheet(
     context: context,
     isScrollControlled: true,
     backgroundColor: Colors.transparent,
+    isDismissible: !_isPurchasing,
+    enableDrag: !_isPurchasing,
 
     builder: (sheetContext) {
       return StatefulBuilder(
-        builder: (context, setSheetState) {
+        builder: (
+          context,
+          setSheetState,
+        ) {
           return PopScope(
             canPop: !_isPurchasing,
+
             child: Container(
-              padding: const EdgeInsets.all(24),
-              decoration: const BoxDecoration(
+              constraints: BoxConstraints(
+                maxHeight:
+                    MediaQuery.of(sheetContext)
+                            .size
+                            .height *
+                        .92,
+              ),
+
+              decoration:
+                  const BoxDecoration(
                 color: Colors.white,
-                borderRadius: BorderRadius.vertical(
+
+                borderRadius:
+                    BorderRadius.vertical(
                   top: Radius.circular(32),
                 ),
               ),
+
               child: SafeArea(
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
+                top: false,
 
-                    // =====================================================
-                    // HANDLE
-                    // =====================================================
+                child: SingleChildScrollView(
+                  padding:
+                      const EdgeInsets.fromLTRB(
+                    24,
+                    14,
+                    24,
+                    24,
+                  ),
 
-                    Container(
-                      height: 5,
-                      width: 60,
-                      decoration: BoxDecoration(
-                        color: Colors.grey.shade300,
-                        borderRadius: BorderRadius.circular(20),
-                      ),
-                    ),
+                  child: Column(
+                    mainAxisSize:
+                        MainAxisSize.min,
 
-                    const SizedBox(height: 24),
+                    children: [
+                      // =========================================
+                      // HANDLE
+                      // =========================================
 
+                      Container(
+                        height: 5,
+                        width: 60,
 
-                    // =====================================================
-                    // PREMIUM ICON
-                    // =====================================================
+                        decoration:
+                            BoxDecoration(
+                          color:
+                              Colors.grey.shade300,
 
-                    AnimatedContainer(
-                      duration: const Duration(milliseconds: 300),
-                      height: 80,
-                      width: 80,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        gradient: const LinearGradient(
-                          colors: [
-                            Color(0xFF7C3AED),
-                            Color(0xFF9333EA),
-                            Color(0xFFEC4899),
-                          ],
-                        ),
-                        boxShadow: [
-                          BoxShadow(
-                            color: const Color(0xFF7C3AED)
-                                .withOpacity(.25),
-                            blurRadius: 20,
-                            offset: const Offset(0, 10),
+                          borderRadius:
+                              BorderRadius.circular(
+                            20,
                           ),
-                        ],
-                      ),
-                      child: const Icon(
-                        Icons.workspace_premium_rounded,
-                        color: Colors.white,
-                        size: 40,
-                      ),
-                    ),
-
-                    const SizedBox(height: 20),
-
-
-                    // =====================================================
-                    // PLAN NAME
-                    // =====================================================
-
-                    Text(
-                      planName,
-                      style: const TextStyle(
-                        fontSize: 28,
-                        fontWeight: FontWeight.w900,
-                        color: Color(0xFF111827),
-                      ),
-                    ),
-
-                    const SizedBox(height: 8),
-
-                    Text(
-                      contactsString,
-                      style: const TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.w700,
-                        color: Color(0xFF9333EA),
-                      ),
-                    ),
-
-                    const SizedBox(height: 24),
-
-
-                    // =====================================================
-                    // PLAN FEATURES
-                    // =====================================================
-
-                    Container(
-                      padding: const EdgeInsets.all(18),
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          colors: [
-                            const Color(0xFF7C3AED).withOpacity(.06),
-                            const Color(0xFFEC4899).withOpacity(.06),
-                          ],
-                        ),
-                        borderRadius: BorderRadius.circular(20),
-                        border: Border.all(
-                          color: const Color(0xFF9333EA)
-                              .withOpacity(.10),
                         ),
                       ),
-                      child: const Column(
-                        children: [
 
-                          Row(
-                            children: [
-                              Icon(
-                                Icons.check_circle_rounded,
-                                color: Colors.green,
+
+                      const SizedBox(
+                        height: 24,
+                      ),
+
+
+                      // =========================================
+                      // PREMIUM ICON
+                      // =========================================
+
+                      AnimatedContainer(
+                        duration:
+                            const Duration(
+                          milliseconds: 300,
+                        ),
+
+                        height: 80,
+                        width: 80,
+
+                        decoration:
+                            BoxDecoration(
+                          shape:
+                              BoxShape.circle,
+
+                          gradient:
+                              const LinearGradient(
+                            colors: [
+                              Color(
+                                0xFF7C3AED,
                               ),
-                              SizedBox(width: 10),
-                              Expanded(
-                                child: Text(
-                                  "Instant plan activation",
-                                  style: TextStyle(
-                                    fontWeight: FontWeight.w600,
-                                  ),
-                                ),
+                              Color(
+                                0xFF9333EA,
+                              ),
+                              Color(
+                                0xFFEC4899,
                               ),
                             ],
                           ),
 
-                          SizedBox(height: 12),
-
-                          Row(
-                            children: [
-                              Icon(
-                                Icons.check_circle_rounded,
-                                color: Colors.green,
+                          boxShadow: [
+                            BoxShadow(
+                              color:
+                                  const Color(
+                                0xFF7C3AED,
+                              ).withOpacity(
+                                .25,
                               ),
-                              SizedBox(width: 10),
-                              Expanded(
-                                child: Text(
-                                  "Access premium contacts",
-                                  style: TextStyle(
-                                    fontWeight: FontWeight.w600,
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
 
-                          SizedBox(height: 12),
+                              blurRadius: 20,
 
-                          Row(
-                            children: [
-                              Icon(
-                                Icons.check_circle_rounded,
-                                color: Colors.green,
-                              ),
-                              SizedBox(width: 10),
-                              Expanded(
-                                child: Text(
-                                  "Priority matching",
-                                  style: TextStyle(
-                                    fontWeight: FontWeight.w600,
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ],
-                      ),
-                    ),
-
-                    const SizedBox(height: 24),
-
-
-                    // =====================================================
-                    // SECURITY MESSAGE
-                    // =====================================================
-
-                    AnimatedContainer(
-                      duration: const Duration(milliseconds: 250),
-                      padding: const EdgeInsets.all(14),
-                      decoration: BoxDecoration(
-                        color: _isPurchasing
-                            ? const Color(0xFF7C3AED).withOpacity(.08)
-                            : Colors.green.shade50,
-                        borderRadius: BorderRadius.circular(16),
-                      ),
-                      child: Row(
-                        children: [
-
-                          Icon(
-                            _isPurchasing
-                                ? Icons.lock_clock_rounded
-                                : Icons.verified_user_rounded,
-                            color: _isPurchasing
-                                ? const Color(0xFF7C3AED)
-                                : Colors.green.shade700,
-                          ),
-
-                          const SizedBox(width: 10),
-
-                          Expanded(
-                            child: AnimatedSwitcher(
-                              duration: const Duration(milliseconds: 200),
-                              child: Text(
-                                _isPurchasing
-                                    ? "Please wait while your secure purchase is being processed."
-                                    : "Your purchase is securely stored in your account.",
-                                key: ValueKey(_isPurchasing),
-                                style: TextStyle(
-                                  color: _isPurchasing
-                                      ? const Color(0xFF7C3AED)
-                                      : Colors.green.shade800,
-                                  fontWeight: FontWeight.w600,
-                                ),
+                              offset:
+                                  const Offset(
+                                0,
+                                10,
                               ),
                             ),
-                          ),
-                        ],
-                      ),
-                    ),
-
-                    const SizedBox(height: 28),
-
-
-                    // =====================================================
-                    // PURCHASE BUTTON
-                    // =====================================================
-
-                    SizedBox(
-                      width: double.infinity,
-                      height: 58,
-                      child: ElevatedButton(
-                        onPressed: _isPurchasing
-                            ? null
-                            : () async {
-                                // Disable immediately.
-
-                                setState(() {
-                                  _isPurchasing = true;
-                                });
-
-                                // Update the open bottom sheet.
-
-                                setSheetState(() {});
-
-                                try {
-                                  await BillingService.instance
-                                      .buyBasicPlan();
-                                } catch (e) {
-                                  if (!mounted) return;
-
-                                  setState(() {
-                                    _isPurchasing = false;
-                                  });
-
-                                  // Bottom sheet may have been closed.
-
-                                  if (sheetContext.mounted) {
-                                    setSheetState(() {});
-                                  }
-
-                                  ScaffoldMessenger.of(this.context)
-                                      .showSnackBar(
-                                    SnackBar(
-                                      content: Text(e.toString()),
-                                      backgroundColor: Colors.red,
-                                    ),
-                                  );
-                                }
-                              },
-
-                        style: ElevatedButton.styleFrom(
-                          disabledBackgroundColor: Colors.transparent,
-                          backgroundColor: Colors.transparent,
-                          shadowColor: Colors.transparent,
-                          padding: EdgeInsets.zero,
+                          ],
                         ),
 
-                        child: Ink(
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(18),
+                        child: const Icon(
+                          Icons
+                              .workspace_premium_rounded,
 
-                            gradient: LinearGradient(
-                              colors: _isPurchasing
-                                  ? [
-                                      const Color(0xFF7C3AED)
-                                          .withOpacity(.70),
-                                      const Color(0xFF9333EA)
-                                          .withOpacity(.70),
-                                      const Color(0xFFEC4899)
-                                          .withOpacity(.70),
-                                    ]
-                                  : const [
-                                      Color(0xFF7C3AED),
-                                      Color(0xFF9333EA),
-                                      Color(0xFFEC4899),
-                                    ],
-                            ),
+                          color:
+                              Colors.white,
 
-                            boxShadow: _isPurchasing
-                                ? []
-                                : [
-                                    BoxShadow(
-                                      color: const Color(0xFF7C3AED)
-                                          .withOpacity(.25),
-                                      blurRadius: 15,
-                                      offset: const Offset(0, 8),
-                                    ),
-                                  ],
+                          size: 40,
+                        ),
+                      ),
+
+
+                      const SizedBox(
+                        height: 20,
+                      ),
+
+
+                      // =========================================
+                      // PLAN NAME
+                      // =========================================
+
+                      Text(
+                        plan.title,
+
+                        textAlign:
+                            TextAlign.center,
+
+                        style:
+                            const TextStyle(
+                          fontSize: 28,
+
+                          fontWeight:
+                              FontWeight.w900,
+
+                          color:
+                              Color(
+                            0xFF111827,
+                          ),
+                        ),
+                      ),
+
+
+                      const SizedBox(
+                        height: 8,
+                      ),
+
+
+                      // =========================================
+                      // CONTACTS
+                      // =========================================
+
+                      Text(
+                        '${plan.contacts} Chat Credits',
+
+                        style:
+                            const TextStyle(
+                          fontSize: 18,
+
+                          fontWeight:
+                              FontWeight.w700,
+
+                          color:
+                              Color(
+                            0xFF9333EA,
+                          ),
+                        ),
+                      ),
+
+
+                      const SizedBox(
+                        height: 8,
+                      ),
+
+
+                      // =========================================
+                      // REAL STORE PRICE
+                      // =========================================
+
+                      Text(
+                        price,
+
+                        style:
+                            const TextStyle(
+                          fontSize: 34,
+
+                          fontWeight:
+                              FontWeight.w900,
+
+                          color:
+                              Color(
+                            0xFF111827,
+                          ),
+                        ),
+                      ),
+
+
+                      const SizedBox(
+                        height: 6,
+                      ),
+
+
+                      const Text(
+                        'One-time purchase',
+
+                        style:
+                            TextStyle(
+                          color:
+                              Color(
+                            0xFF64748B,
                           ),
 
-                          child: Center(
-                            child: AnimatedSwitcher(
-                              duration:
-                                  const Duration(milliseconds: 250),
+                          fontSize: 13,
 
-                              child: _isPurchasing
+                          fontWeight:
+                              FontWeight.w500,
+                        ),
+                      ),
 
-                                  // =======================================
-                                  // LOADING STATE
-                                  // =======================================
 
-                                  ? const Row(
-                                      key: ValueKey('purchasing'),
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.center,
-                                      children: [
+                      const SizedBox(
+                        height: 24,
+                      ),
 
-                                        SizedBox(
-                                          height: 22,
-                                          width: 22,
-                                          child:
-                                              CircularProgressIndicator(
-                                            strokeWidth: 2.5,
-                                            valueColor:
-                                                AlwaysStoppedAnimation<
-                                                    Color>(
-                                              Colors.white,
-                                            ),
-                                          ),
+
+                      // =========================================
+                      // FIRESTORE PLAN FEATURES
+                      // =========================================
+
+                      Container(
+                        width:
+                            double.infinity,
+
+                        padding:
+                            const EdgeInsets.all(
+                          18,
+                        ),
+
+                        decoration:
+                            BoxDecoration(
+                          gradient:
+                              LinearGradient(
+                            colors: [
+                              const Color(
+                                0xFF7C3AED,
+                              ).withOpacity(
+                                .06,
+                              ),
+
+                              const Color(
+                                0xFFEC4899,
+                              ).withOpacity(
+                                .06,
+                              ),
+                            ],
+                          ),
+
+                          borderRadius:
+                              BorderRadius.circular(
+                            20,
+                          ),
+
+                          border:
+                              Border.all(
+                            color:
+                                const Color(
+                              0xFF9333EA,
+                            ).withOpacity(
+                              .10,
+                            ),
+                          ),
+                        ),
+
+                        child: Column(
+                          children:
+                              List.generate(
+                            plan.features.length,
+                            (index) {
+                              final String feature =
+                                  plan.features[
+                                      index];
+
+                              return Padding(
+                                padding:
+                                    EdgeInsets.only(
+                                  bottom:
+                                      index ==
+                                              plan.features.length -
+                                                  1
+                                          ? 0
+                                          : 12,
+                                ),
+
+                                child: Row(
+                                  children: [
+                                    const Icon(
+                                      Icons
+                                          .check_circle_rounded,
+
+                                      color:
+                                          Colors.green,
+                                    ),
+
+                                    const SizedBox(
+                                      width: 10,
+                                    ),
+
+                                    Expanded(
+                                      child: Text(
+                                        feature,
+
+                                        style:
+                                            const TextStyle(
+                                          fontWeight:
+                                              FontWeight.w600,
                                         ),
-
-                                        SizedBox(width: 12),
-
-                                        Text(
-                                          "PROCESSING PURCHASE...",
-                                          style: TextStyle(
-                                            color: Colors.white,
-                                            fontSize: 14,
-                                            fontWeight:
-                                                FontWeight.w800,
-                                          ),
-                                        ),
-                                      ],
-                                    )
-
-                                  // =======================================
-                                  // NORMAL STATE
-                                  // =======================================
-
-                                  : const Text(
-                                      "CONFIRM PURCHASE",
-                                      key: ValueKey('confirm'),
-                                      style: TextStyle(
-                                        color: Colors.white,
-                                        fontSize: 16,
-                                        fontWeight:
-                                            FontWeight.w800,
                                       ),
                                     ),
+                                  ],
+                                ),
+                              );
+                            },
+                          ),
+                        ),
+                      ),
+
+
+                      const SizedBox(
+                        height: 24,
+                      ),
+
+
+                      // =========================================
+                      // SECURITY / PROCESSING MESSAGE
+                      // =========================================
+
+                      AnimatedContainer(
+                        duration:
+                            const Duration(
+                          milliseconds: 250,
+                        ),
+
+                        padding:
+                            const EdgeInsets.all(
+                          14,
+                        ),
+
+                        decoration:
+                            BoxDecoration(
+                          color:
+                              _isPurchasing
+                                  ? const Color(
+                                      0xFF7C3AED,
+                                    ).withOpacity(
+                                      .08,
+                                    )
+                                  : Colors
+                                      .green
+                                      .shade50,
+
+                          borderRadius:
+                              BorderRadius.circular(
+                            16,
+                          ),
+                        ),
+
+                        child: Row(
+                          children: [
+                            Icon(
+                              _isPurchasing
+                                  ? Icons
+                                      .lock_clock_rounded
+                                  : Icons
+                                      .verified_user_rounded,
+
+                              color:
+                                  _isPurchasing
+                                      ? const Color(
+                                          0xFF7C3AED,
+                                        )
+                                      : Colors
+                                          .green
+                                          .shade700,
+                            ),
+
+                            const SizedBox(
+                              width: 10,
+                            ),
+
+                            Expanded(
+                              child:
+                                  AnimatedSwitcher(
+                                duration:
+                                    const Duration(
+                                  milliseconds:
+                                      200,
+                                ),
+
+                                child: Text(
+                                  _isPurchasing
+                                      ? 'Please wait while your secure purchase is being processed.'
+                                      : 'Secure one-time purchase through the app store.',
+
+                                  key:
+                                      ValueKey(
+                                    _isPurchasing,
+                                  ),
+
+                                  style:
+                                      TextStyle(
+                                    color:
+                                        _isPurchasing
+                                            ? const Color(
+                                                0xFF7C3AED,
+                                              )
+                                            : Colors
+                                                .green
+                                                .shade800,
+
+                                    fontWeight:
+                                        FontWeight.w600,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+
+
+                      const SizedBox(
+                        height: 28,
+                      ),
+
+
+                      // =========================================
+                      // PURCHASE BUTTON
+                      // =========================================
+
+                      SizedBox(
+                        width:
+                            double.infinity,
+
+                        height: 58,
+
+                        child:
+                            ElevatedButton(
+                          onPressed:
+                              _isPurchasing
+                                  ? null
+                                  : () async {
+                                      // =========================
+                                      // ENSURE THIS PLAN REMAINS
+                                      // SELECTED
+                                      // =========================
+
+                                      setState(() {
+                                        _selectedPlan =
+                                            plan;
+
+                                        _isPurchasing =
+                                            true;
+                                      });
+
+
+                                      // Update open bottom sheet.
+
+                                      setSheetState(
+                                        () {},
+                                      );
+
+
+                                      try {
+                                        // =======================
+                                        // PURCHASE FIRESTORE PLAN
+                                        // USING STORE PRODUCT ID
+                                        // =======================
+
+                                        await BillingService
+                                            .instance
+                                            .buyPlan(
+                                          plan.productId,
+                                        );
+                                      } catch (e) {
+                                        if (!mounted) {
+                                          return;
+                                        }
+
+
+                                        setState(() {
+                                          _isPurchasing =
+                                              false;
+                                        });
+
+
+                                        if (sheetContext
+                                            .mounted) {
+                                          setSheetState(
+                                            () {},
+                                          );
+                                        }
+
+
+                                        ScaffoldMessenger.of(
+                                          this.context,
+                                        ).showSnackBar(
+                                          SnackBar(
+                                            content:
+                                                Text(
+                                              e.toString(),
+                                            ),
+
+                                            backgroundColor:
+                                                Colors.red,
+                                          ),
+                                        );
+                                      }
+                                    },
+
+                          style:
+                              ElevatedButton.styleFrom(
+                            disabledBackgroundColor:
+                                Colors.transparent,
+
+                            backgroundColor:
+                                Colors.transparent,
+
+                            shadowColor:
+                                Colors.transparent,
+
+                            padding:
+                                EdgeInsets.zero,
+                          ),
+
+                          child: Ink(
+                            decoration:
+                                BoxDecoration(
+                              borderRadius:
+                                  BorderRadius.circular(
+                                18,
+                              ),
+
+                              gradient:
+                                  LinearGradient(
+                                colors:
+                                    _isPurchasing
+                                        ? [
+                                            const Color(
+                                              0xFF7C3AED,
+                                            ).withOpacity(
+                                              .70,
+                                            ),
+
+                                            const Color(
+                                              0xFF9333EA,
+                                            ).withOpacity(
+                                              .70,
+                                            ),
+
+                                            const Color(
+                                              0xFFEC4899,
+                                            ).withOpacity(
+                                              .70,
+                                            ),
+                                          ]
+                                        : const [
+                                            Color(
+                                              0xFF7C3AED,
+                                            ),
+                                            Color(
+                                              0xFF9333EA,
+                                            ),
+                                            Color(
+                                              0xFFEC4899,
+                                            ),
+                                          ],
+                              ),
+
+                              boxShadow:
+                                  _isPurchasing
+                                      ? []
+                                      : [
+                                          BoxShadow(
+                                            color:
+                                                const Color(
+                                              0xFF7C3AED,
+                                            ).withOpacity(
+                                              .25,
+                                            ),
+
+                                            blurRadius:
+                                                15,
+
+                                            offset:
+                                                const Offset(
+                                              0,
+                                              8,
+                                            ),
+                                          ),
+                                        ],
+                            ),
+
+                            child: Center(
+                              child:
+                                  AnimatedSwitcher(
+                                duration:
+                                    const Duration(
+                                  milliseconds:
+                                      250,
+                                ),
+
+                                child:
+                                    _isPurchasing
+                                        ? const Row(
+                                            key:
+                                                ValueKey(
+                                              'purchasing',
+                                            ),
+
+                                            mainAxisAlignment:
+                                                MainAxisAlignment
+                                                    .center,
+
+                                            children: [
+                                              SizedBox(
+                                                height:
+                                                    22,
+
+                                                width:
+                                                    22,
+
+                                                child:
+                                                    CircularProgressIndicator(
+                                                  strokeWidth:
+                                                      2.5,
+
+                                                  valueColor:
+                                                      AlwaysStoppedAnimation<
+                                                          Color>(
+                                                    Colors
+                                                        .white,
+                                                  ),
+                                                ),
+                                              ),
+
+                                              SizedBox(
+                                                width:
+                                                    12,
+                                              ),
+
+                                              Text(
+                                                'PROCESSING PURCHASE...',
+
+                                                style:
+                                                    TextStyle(
+                                                  color:
+                                                      Colors.white,
+
+                                                  fontSize:
+                                                      14,
+
+                                                  fontWeight:
+                                                      FontWeight.w800,
+                                                ),
+                                              ),
+                                            ],
+                                          )
+                                        : Text(
+                                            'BUY ${plan.contacts} CHAT CREDITS • $price',
+
+                                            key:
+                                                const ValueKey(
+                                              'confirm',
+                                            ),
+
+                                            style:
+                                                const TextStyle(
+                                              color:
+                                                  Colors.white,
+
+                                              fontSize:
+                                                  15,
+
+                                              fontWeight:
+                                                  FontWeight.w800,
+                                            ),
+                                          ),
+                              ),
                             ),
                           ),
                         ),
                       ),
-                    ),
-
-                    const SizedBox(height: 12),
 
 
-                    // =====================================================
-                    // CANCEL BUTTON
-                    // =====================================================
+                      const SizedBox(
+                        height: 12,
+                      ),
 
-                    AnimatedSwitcher(
-                      duration: const Duration(milliseconds: 200),
-                      child: _isPurchasing
-                          ? const Padding(
-                              key: ValueKey('waitMessage'),
-                              padding: EdgeInsets.symmetric(
-                                vertical: 12,
-                              ),
-                              child: Text(
-                                "Please don't close the app while processing",
-                                textAlign: TextAlign.center,
-                                style: TextStyle(
-                                  color: Color(0xFF94A3B8),
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.w500,
-                                ),
-                              ),
-                            )
-                          : TextButton(
-                              key: const ValueKey('cancelButton'),
-                              onPressed: () {
-                                Navigator.pop(sheetContext);
-                              },
-                              child: const Text(
-                                "Cancel",
-                                style: TextStyle(
-                                  color: Colors.grey,
-                                ),
-                              ),
-                            ),
-                    ),
-                  ],
+
+                      // =========================================
+                      // CANCEL / WAIT MESSAGE
+                      // =========================================
+
+                      AnimatedSwitcher(
+                        duration:
+                            const Duration(
+                          milliseconds: 200,
+                        ),
+
+                        child:
+                            _isPurchasing
+                                ? const Padding(
+                                    key:
+                                        ValueKey(
+                                      'waitMessage',
+                                    ),
+
+                                    padding:
+                                        EdgeInsets.symmetric(
+                                      vertical: 12,
+                                    ),
+
+                                    child:
+                                        Text(
+                                      "Please don't close the app while processing",
+
+                                      textAlign:
+                                          TextAlign.center,
+
+                                      style:
+                                          TextStyle(
+                                        color:
+                                            Color(
+                                          0xFF94A3B8,
+                                        ),
+
+                                        fontSize:
+                                            12,
+
+                                        fontWeight:
+                                            FontWeight.w500,
+                                      ),
+                                    ),
+                                  )
+                                : TextButton(
+                                    key:
+                                        const ValueKey(
+                                      'cancelButton',
+                                    ),
+
+                                    onPressed:
+                                        () {
+                                      Navigator.pop(
+                                        sheetContext,
+                                      );
+                                    },
+
+                                    child:
+                                        const Text(
+                                      'Cancel',
+
+                                      style:
+                                          TextStyle(
+                                        color:
+                                            Colors.grey,
+                                      ),
+                                    ),
+                                  ),
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ),
@@ -2044,7 +3471,6 @@ Future<void> _showPurchaseSuccessDialog({
         },
       );
     },
-    );
-
+  );
 }
 }
