@@ -525,43 +525,42 @@ Widget _buildProfileListField(
   String title,
   List<String>? values,
 ) {
-  if (values == null || values.isEmpty) {
-    return _buildSection(
-      title: title,
-      children: [
-        Container(
-          width: double.infinity,
-          padding: const EdgeInsets.all(18),
-          decoration: BoxDecoration(
-            color: kLightGrey,
-            borderRadius:
-                BorderRadius.circular(20),
-            border: Border.all(
-              color: kBorderColor,
-            ),
-          ),
-          child: const Row(
-            children: [
-              Icon(
-                Icons.info_outline_rounded,
-                color: kMediumText,
-                size: 18,
-              ),
-              SizedBox(width: 10),
-              Text(
-                "No information added yet",
-                style: TextStyle(
-                  color: kMediumText,
-                  fontSize: 14,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ],
-          ),
-        ),
-      ],
-    );
+  // ============================================================
+  // CLEAN VALUES
+  // ============================================================
+
+  final List<String> validValues =
+      values
+          ?.where((item) {
+            final String value =
+                item.trim();
+
+            if (value.isEmpty) {
+              return false;
+            }
+
+            final String normalized =
+                value.toLowerCase();
+
+            return normalized != 'n/a' &&
+                normalized != 'null' &&
+                normalized != 'none' &&
+                normalized != 'not specified';
+          })
+          .toList() ??
+      [];
+
+  // ============================================================
+  // EMPTY → HIDE COMPLETE SECTION
+  // ============================================================
+
+  if (validValues.isEmpty) {
+    return const SizedBox.shrink();
   }
+
+  // ============================================================
+  // SECTION
+  // ============================================================
 
   return _buildSection(
     title: title,
@@ -569,43 +568,34 @@ Widget _buildProfileListField(
       Wrap(
         spacing: 10,
         runSpacing: 10,
-        children: values.map((item) {
+        children: validValues.map((item) {
           return Container(
-            padding:
-                const EdgeInsets.symmetric(
+            padding: const EdgeInsets.symmetric(
               horizontal: 16,
               vertical: 12,
             ),
             decoration: BoxDecoration(
               borderRadius:
                   BorderRadius.circular(30),
-
-              gradient:
-                  kPrimaryGradient,
-
+              gradient: kPrimaryGradient,
               boxShadow: [
                 BoxShadow(
                   color: kPrimaryColor
                       .withOpacity(.15),
                   blurRadius: 12,
-                  offset:
-                      const Offset(0, 6),
+                  offset: const Offset(0, 6),
                 ),
               ],
             ),
-
             child: Row(
               mainAxisSize:
                   MainAxisSize.min,
               children: [
-
                 Container(
                   width: 22,
                   height: 22,
-                  decoration:
-                      BoxDecoration(
-                    shape:
-                        BoxShape.circle,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
                     color: Colors.white
                         .withOpacity(.20),
                   ),
@@ -620,13 +610,11 @@ Widget _buildProfileListField(
 
                 Text(
                   item,
-                  style:
-                      const TextStyle(
+                  style: const TextStyle(
                     fontSize: 13,
                     fontWeight:
                         FontWeight.w700,
-                    color:
-                        Colors.white,
+                    color: Colors.white,
                   ),
                 ),
               ],
@@ -1092,150 +1080,129 @@ Widget _buildCharacteristicGrid(
   String title,
   List<MapEntry<String, String?>> characteristics,
 ) {
-  final validItems = characteristics
-      .where(
-        (e) =>
-            e.value != null &&
-            e.value!.trim().isNotEmpty &&
-            e.value != 'N/A',
-      )
-      .toList();
+  // ============================================================
+  // REMOVE EMPTY VALUES
+  // ============================================================
+
+  final List<MapEntry<String, String?>> validItems =
+      characteristics.where((entry) {
+    final String value =
+        entry.value?.trim() ?? '';
+
+    if (value.isEmpty) {
+      return false;
+    }
+
+    final String normalized =
+        value.toLowerCase();
+
+    return normalized != 'n/a' &&
+        normalized != 'null' &&
+        normalized != 'none' &&
+        normalized != 'not specified';
+  }).toList();
+
+  // ============================================================
+  // NOTHING FILLED → HIDE COMPLETE SECTION
+  // ============================================================
 
   if (validItems.isEmpty) {
-    return _buildSection(
-      title: title,
-      children: [
-        Container(
-          width: double.infinity,
-          padding: const EdgeInsets.all(20),
-
-          decoration: BoxDecoration(
-            color: kLightGrey,
-
-            borderRadius:
-                BorderRadius.circular(20),
-
-            border: Border.all(
-              color: kBorderColor,
-            ),
-          ),
-
-          child: const Row(
-            children: [
-              Icon(
-                Icons.info_outline_rounded,
-                color: kMediumText,
-                size: 18,
-              ),
-
-              SizedBox(width: 10),
-
-              Text(
-                'No details available yet',
-                style: TextStyle(
-                  color: kMediumText,
-                  fontSize: 14,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ],
-          ),
-        ),
-      ],
-    );
+    return const SizedBox.shrink();
   }
+
+  // ============================================================
+  // SHOW ONLY FILLED ITEMS
+  // ============================================================
 
   return _buildSection(
     title: title,
     children: [
-
       GridView.builder(
         shrinkWrap: true,
-
         physics:
             const NeverScrollableScrollPhysics(),
 
         itemCount: validItems.length,
 
         gridDelegate:
-    const SliverGridDelegateWithFixedCrossAxisCount(
-  crossAxisCount: 2,
-  crossAxisSpacing: 14,
-  mainAxisSpacing: 14,
-  childAspectRatio: 0.82,
-),
+            const SliverGridDelegateWithFixedCrossAxisCount(
+          crossAxisCount: 2,
+          crossAxisSpacing: 14,
+          mainAxisSpacing: 14,
+          childAspectRatio: 1.35,
+        ),
 
         itemBuilder: (context, index) {
-          final entry =
-              validItems[index];
+          final MapEntry<String, String?>
+              item = validItems[index];
 
-          return TweenAnimationBuilder<double>(
-            duration: Duration(
-              milliseconds:
-                  250 + (index * 60),
+          return Container(
+            padding: const EdgeInsets.all(14),
+            decoration: BoxDecoration(
+              color: kPrimaryColor
+                  .withOpacity(.055),
+              borderRadius:
+                  BorderRadius.circular(18),
+              border: Border.all(
+                color: kPrimaryColor
+                    .withOpacity(.10),
+              ),
             ),
-
-            curve:
-                Curves.easeOutCubic,
-
-            tween: Tween(
-              begin: 0,
-              end: 1,
-            ),
-
-            builder:
-                (context, value, child) {
-              return Transform.translate(
-                offset: Offset(
-                  0,
-                  20 * (1 - value),
+            child: Column(
+              mainAxisAlignment:
+                  MainAxisAlignment.center,
+              crossAxisAlignment:
+                  CrossAxisAlignment.start,
+              children: [
+                Container(
+                  width: 34,
+                  height: 34,
+                  decoration: BoxDecoration(
+                    gradient: kPrimaryGradient,
+                    borderRadius:
+                        BorderRadius.circular(11),
+                  ),
+                  child: const Icon(
+                    Icons
+                        .check_circle_outline_rounded,
+                    color: Colors.white,
+                    size: 18,
+                  ),
                 ),
-                child: Opacity(
-                  opacity: value,
-                  child: child,
-                ),
-              );
-            },
 
-            child: _buildIconValueCard(
-              entry.key,
-              entry.value,
+                const SizedBox(height: 10),
+
+                Text(
+                  item.key,
+                  maxLines: 1,
+                  overflow:
+                      TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    color: kMediumText,
+                    fontSize: 11,
+                    fontWeight:
+                        FontWeight.w600,
+                  ),
+                ),
+
+                const SizedBox(height: 4),
+
+                Text(
+                  item.value!.trim(),
+                  maxLines: 2,
+                  overflow:
+                      TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    color: kDarkText,
+                    fontSize: 14,
+                    fontWeight:
+                        FontWeight.w800,
+                  ),
+                ),
+              ],
             ),
           );
         },
-      ),
-
-      const SizedBox(height: 8),
-
-      Align(
-        alignment: Alignment.centerRight,
-        child: Container(
-          padding:
-              const EdgeInsets.symmetric(
-            horizontal: 12,
-            vertical: 6,
-          ),
-
-          decoration: BoxDecoration(
-            color: kPrimaryColor
-                .withOpacity(.08),
-
-            borderRadius:
-                BorderRadius.circular(
-              30,
-            ),
-          ),
-
-          child: Text(
-            '${validItems.length} Details',
-            style: const TextStyle(
-              color: kPrimaryColor,
-              fontWeight:
-                  FontWeight.w700,
-              fontSize: 12,
-            ),
-          ),
-        ),
       ),
     ],
   );
@@ -1394,44 +1361,41 @@ Widget _buildPreferenceGrid(
   String title,
   List<String>? preferences,
 ) {
-  if (preferences == null ||
-      preferences.isEmpty) {
-    return _buildSection(
-      title: title,
-      children: [
-        Container(
-          width: double.infinity,
-          padding: const EdgeInsets.all(18),
-          decoration: BoxDecoration(
-            color: kLightGrey,
-            borderRadius:
-                BorderRadius.circular(20),
-            border: Border.all(
-              color: kBorderColor,
-            ),
-          ),
-          child: const Row(
-            children: [
-              Icon(
-                Icons.info_outline_rounded,
-                color: kMediumText,
-                size: 18,
-              ),
-              SizedBox(width: 10),
-              Text(
-                'No preferences added yet',
-                style: TextStyle(
-                  color: kMediumText,
-                  fontSize: 14,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ],
-          ),
-        ),
-      ],
-    );
+  // ============================================================
+  // CLEAN PREFERENCE VALUES
+  // ============================================================
+
+  final List<String> validPreferences =
+      preferences
+          ?.where((item) {
+            final String value = item.trim();
+
+            if (value.isEmpty) {
+              return false;
+            }
+
+            final String normalized =
+                value.toLowerCase();
+
+            return normalized != 'n/a' &&
+                normalized != 'null' &&
+                normalized != 'none' &&
+                normalized != 'not specified';
+          })
+          .toList() ??
+      [];
+
+  // ============================================================
+  // NOTHING FILLED → HIDE COMPLETE SECTION
+  // ============================================================
+
+  if (validPreferences.isEmpty) {
+    return const SizedBox.shrink();
   }
+
+  // ============================================================
+  // SHOW SECTION
+  // ============================================================
 
   return _buildSection(
     title: title,
@@ -1441,7 +1405,7 @@ Widget _buildPreferenceGrid(
         physics:
             const NeverScrollableScrollPhysics(),
 
-        itemCount: preferences.length,
+        itemCount: validPreferences.length,
 
         gridDelegate:
             const SliverGridDelegateWithFixedCrossAxisCount(
@@ -1452,188 +1416,91 @@ Widget _buildPreferenceGrid(
         ),
 
         itemBuilder: (context, index) {
-          final preference =
-              preferences[index];
+          final String preference =
+              validPreferences[index];
 
-          dynamic iconData =
-              _preferenceIcons[
-                  preference];
-
-          Widget iconWidget;
-
-          if (iconData is IconData) {
-            iconWidget = Icon(
-              iconData,
-              size: 24,
-              color: Colors.white,
-            );
-          } else if (iconData is String &&
-              iconData.endsWith('.json')) {
-            iconWidget = Lottie.asset(
-              iconData,
-              width: 36,
-              height: 36,
-              repeat: true,
-            );
-          } else {
-            iconWidget = const Icon(
-              Icons.auto_awesome_rounded,
-              size: 24,
-              color: Colors.white,
-            );
-          }
-
-          return TweenAnimationBuilder<double>(
-            duration: Duration(
-              milliseconds:
-                  250 + (index * 60),
-            ),
-            curve:
-                Curves.easeOutCubic,
-            tween: Tween(
-              begin: 0,
-              end: 1,
-            ),
-            builder:
-                (context, value, child) {
-              return Transform.translate(
-                offset: Offset(
-                  0,
-                  15 * (1 - value),
-                ),
-                child: Opacity(
-                  opacity: value,
-                  child: child,
-                ),
-              );
-            },
-
-            child: Container(
-              padding:
-                  const EdgeInsets.all(18),
-
-              decoration: BoxDecoration(
-                color: kCardColor,
-
-                borderRadius:
-                    BorderRadius.circular(
-                  24,
-                ),
-
-                border: Border.all(
-                  color: kBorderColor,
-                ),
-
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black
-                        .withOpacity(.04),
-                    blurRadius: 18,
-                    offset:
-                        const Offset(
-                      0,
-                      8,
-                    ),
-                  ),
-                ],
+          return Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: kPrimaryColor
+                  .withOpacity(.055),
+              borderRadius:
+                  BorderRadius.circular(20),
+              border: Border.all(
+                color: kPrimaryColor
+                    .withOpacity(.10),
               ),
-
-              child: Column(
-                crossAxisAlignment:
-                    CrossAxisAlignment.start,
-                children: [
-
-                  Container(
-                    width: 52,
-                    height: 52,
-
-                    decoration: BoxDecoration(
-                      gradient:
-                          kPrimaryGradient,
-
-                      borderRadius:
-                          BorderRadius
-                              .circular(
-                        16,
+            ),
+            child: Column(
+              mainAxisAlignment:
+                  MainAxisAlignment.center,
+              children: [
+                Container(
+                  width: 48,
+                  height: 48,
+                  decoration: BoxDecoration(
+                    gradient: kPrimaryGradient,
+                    borderRadius:
+                        BorderRadius.circular(16),
+                    boxShadow: [
+                      BoxShadow(
+                        color: kPrimaryColor
+                            .withOpacity(.18),
+                        blurRadius: 12,
+                        offset:
+                            const Offset(0, 6),
                       ),
-                    ),
-
-                    child: Center(
-                      child:
-                          iconWidget,
-                    ),
+                    ],
                   ),
-
-                  const Spacer(),
-
-                  Text(
-                    preference,
-                    maxLines: 2,
-                    overflow:
-                        TextOverflow
-                            .ellipsis,
-                    style:
-                        const TextStyle(
-                      fontSize: 15,
-                      fontWeight:
-                          FontWeight
-                              .w700,
-                      color:
-                          kDarkText,
-                      height: 1.3,
-                    ),
+                  child: const Icon(
+                    Icons.favorite_rounded,
+                    color: Colors.white,
+                    size: 24,
                   ),
+                ),
 
-                  const SizedBox(
-                    height: 10,
-                  ),
+                const SizedBox(height: 12),
 
-                  Container(
-                    width: 45,
-                    height: 4,
-                    decoration:
-                        BoxDecoration(
-                      borderRadius:
-                          BorderRadius
-                              .circular(
-                        20,
-                      ),
-                      gradient:
-                          kPrimaryGradient,
-                    ),
+                Text(
+                  preference,
+                  textAlign: TextAlign.center,
+                  maxLines: 2,
+                  overflow:
+                      TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    color: kDarkText,
+                    fontSize: 13,
+                    fontWeight:
+                        FontWeight.w700,
+                    height: 1.3,
                   ),
-                ],
-              ),
+                ),
+              ],
             ),
           );
         },
       ),
 
-      const SizedBox(height: 8),
+      const SizedBox(height: 14),
 
       Align(
-        alignment:
-            Alignment.centerRight,
+        alignment: Alignment.centerRight,
         child: Container(
-          padding:
-              const EdgeInsets.symmetric(
+          padding: const EdgeInsets.symmetric(
             horizontal: 12,
             vertical: 6,
           ),
           decoration: BoxDecoration(
-            color: kPrimaryColor
-                .withOpacity(.08),
+            color:
+                kPrimaryColor.withOpacity(.08),
             borderRadius:
-                BorderRadius.circular(
-              30,
-            ),
+                BorderRadius.circular(30),
           ),
           child: Text(
-            '${preferences.length} Selected',
+            '${validPreferences.length} Selected',
             style: const TextStyle(
               color: kPrimaryColor,
-              fontWeight:
-                  FontWeight.w700,
+              fontWeight: FontWeight.w700,
               fontSize: 12,
             ),
           ),
@@ -2009,17 +1876,7 @@ class _FlatListingProfileDisplayState
           ),
 
           /// ABOUT THE FLAT
-          _buildSection(
-            title: '📝 About My Home',
-            children: [
-
-              _buildProfileField(
-                'Description',
-                profile.flatDescription,
-                icon: Icons.description,
-              ),
-            ],
-          ),
+          
 
           /// CURRENT FLATMATE
           _buildCharacteristicGrid(

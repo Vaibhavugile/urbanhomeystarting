@@ -177,14 +177,22 @@ void dispose() {
     });
   }
 
-  void _navigateToUpdateProfile() {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => const CompleteUserProfileScreen(),
-      ),
-    );
-  }
+  Future<void> _navigateToUpdateProfile() async {
+  await Navigator.push(
+    context,
+    MaterialPageRoute(
+      builder: (_) => const CompleteUserProfileScreen(),
+    ),
+  );
+
+  if (!mounted) return;
+
+  setState(() {
+    _isLoading = true;
+  });
+
+  await _fetchUserProfile();
+}
 Future<void> _showDeleteAccountDialog() async {
   _deleteController.clear();
 
@@ -798,73 +806,79 @@ Widget build(BuildContext context) {
                           const EdgeInsets.all(20),
                       child: Column(
                         children: [
-                          Container(
-                            padding:
-                                const EdgeInsets.all(20),
-                            decoration: BoxDecoration(
-                              color: Colors.white,
-                              borderRadius:
-                                  BorderRadius.circular(
-                                      24),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.black
-                                      .withOpacity(.05),
-                                  blurRadius: 20,
-                                  offset:
-                                      const Offset(0, 8),
-                                ),
-                              ],
-                            ),
-                            child: Column(
-                              crossAxisAlignment:
-                                  CrossAxisAlignment
-                                      .start,
-                              children: [
-                                const Text(
-                                  "Profile Completion",
-                                  style: TextStyle(
-                                    fontSize: 18,
-                                    fontWeight:
-                                        FontWeight.w700,
-                                  ),
-                                ),
+                          Material(
+  color: Colors.transparent,
+  child: InkWell(
+    borderRadius: BorderRadius.circular(24),
 
-                                const SizedBox(
-                                    height: 14),
+    // OPEN UPDATE PROFILE SCREEN
+    onTap: _navigateToUpdateProfile,
 
-                                ClipRRect(
-                                  borderRadius:
-                                      BorderRadius
-                                          .circular(20),
-                                  child:
-                                      LinearProgressIndicator(
-                                    value:
-                                        _completionPercentage /
-                                            100,
-                                    minHeight: 10,
-                                    backgroundColor:
-                                        const Color(
-                                            0xFFE5E7EB),
-                                    color:
-                                        const Color(
-                                            0xFF7C3AED),
-                                  ),
-                                ),
+    child: Container(
+      padding: const EdgeInsets.all(20),
 
-                                const SizedBox(
-                                    height: 10),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(24),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(.05),
+            blurRadius: 20,
+            offset: const Offset(0, 8),
+          ),
+        ],
+      ),
 
-                                Text(
-                                  "${_completionPercentage.toStringAsFixed(0)}% profile completed",
-                                  style: const TextStyle(
-                                    color: Color(
-                                        0xFF6B7280),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
+      child: Column(
+        crossAxisAlignment:
+            CrossAxisAlignment.start,
+        children: [
+          // ====================================================
+          // TITLE
+          // ====================================================
+
+          const Text(
+            "Profile Completion",
+            style: TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+
+          const SizedBox(height: 14),
+
+          // ====================================================
+          // PROGRESS BAR
+          // ====================================================
+
+          ClipRRect(
+            borderRadius: BorderRadius.circular(20),
+            child: LinearProgressIndicator(
+              value: _completionPercentage / 100,
+              minHeight: 10,
+              backgroundColor:
+                  const Color(0xFFE5E7EB),
+              color: const Color(0xFF7C3AED),
+            ),
+          ),
+
+          const SizedBox(height: 10),
+
+          // ====================================================
+          // COMPLETION PERCENTAGE
+          // ====================================================
+
+          Text(
+            "${_completionPercentage.toStringAsFixed(0)}% profile completed",
+            style: const TextStyle(
+              color: Color(0xFF6B7280),
+            ),
+          ),
+        ],
+      ),
+    ),
+  ),
+),
 
                           const SizedBox(height: 20),
                           _buildVerificationCard(),
