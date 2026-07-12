@@ -21,10 +21,10 @@ class _HeroBannerState extends State<HeroBanner> {
   int _currentPage = 0;
 
   final List<String> images = [
-    "assets/banners/banner6.png",
-    "assets/banners/banner7.png",
-    "assets/banners/banner8.png",
-    "assets/banners/banner5.png",
+    "assets/banners/H1.jpeg",
+    "assets/banners/H2.jpeg",
+    "assets/banners/H3.jpeg",
+    "assets/banners/H4.jpeg",
   ];
 
   Timer? _timer;

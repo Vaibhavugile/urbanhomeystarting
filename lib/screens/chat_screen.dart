@@ -7,6 +7,7 @@ import 'package:rxdart/rxdart.dart'; // Ensure rxdart is imported if not already
 import 'dart:async';
 import 'package:mytennat/screens/PlansScreen.dart';
 import 'package:mytennat/widgets/profile_action_menu.dart';
+import 'package:mytennat/screens/view_profile_screen.dart';
 // Custom Colors for a modern look, aligned with your gradient theme
 // ======================================================
 // PREMIUM APP COLORS
@@ -131,7 +132,16 @@ void dispose() {
       _markVisibleMessagesAsRead();
     }
   }
-
+void _openPartnerProfile() {
+  Navigator.push(
+    context,
+    MaterialPageRoute(
+      builder: (_) => ViewProfileScreen(
+        userId: widget.chatPartnerId,
+      ),
+    ),
+  );
+}
   // NEW: Function to find or create the chat room document
   Future<void> _initializeChatRoom() async {
     if (_currentUser == null) {
@@ -872,105 +882,89 @@ if (_isMarkingRead) return;
               ),
             ),
 
-            Stack(
-              children: [
-                CircleAvatar(
-                  radius: 22,
-                  backgroundColor:
-                      Colors.white24,
-                  backgroundImage:
-                      widget.chatPartnerImageUrl != null &&
-                              widget.chatPartnerImageUrl!
-                                  .isNotEmpty
-                          ? NetworkImage(
-                              widget.chatPartnerImageUrl!,
-                            )
-                          : null,
-                  child: widget.chatPartnerImageUrl ==
-                              null ||
-                          widget.chatPartnerImageUrl!
-                              .isEmpty
-                      ? Text(
-                          widget
-                              .chatPartnerName[0]
-                              .toUpperCase(),
-                          style:
-                              const TextStyle(
-                            color:
-                                Colors.white,
-                            fontWeight:
-                                FontWeight
-                                    .bold,
-                          ),
-                        )
-                      : null,
+            GestureDetector(
+  behavior: HitTestBehavior.opaque,
+  onTap: _openPartnerProfile,
+  child: Stack(
+    children: [
+      CircleAvatar(
+        radius: 22,
+        backgroundColor: Colors.white24,
+        backgroundImage:
+            widget.chatPartnerImageUrl != null &&
+                    widget.chatPartnerImageUrl!.isNotEmpty
+                ? NetworkImage(
+                    widget.chatPartnerImageUrl!,
+                  )
+                : null,
+        child: widget.chatPartnerImageUrl == null ||
+                widget.chatPartnerImageUrl!.isEmpty
+            ? Text(
+                widget.chatPartnerName.isNotEmpty
+                    ? widget.chatPartnerName[0].toUpperCase()
+                    : 'U',
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
                 ),
+              )
+            : null,
+      ),
 
-                Positioned(
-                  right: 2,
-                  bottom: 2,
-                  child: Container(
-                    width: 12,
-                    height: 12,
-                    decoration:
-                        BoxDecoration(
-                      color:
-                          kOnlineColor,
-                      borderRadius:
-                          BorderRadius
-                              .circular(
-                                  100),
-                      border:
-                          Border.all(
-                        color:
-                            Colors.white,
-                        width: 2,
-                      ),
-                    ),
-                  ),
-                ),
-              ],
+      Positioned(
+        right: 2,
+        bottom: 2,
+        child: Container(
+          width: 12,
+          height: 12,
+          decoration: BoxDecoration(
+            color: kOnlineColor,
+            borderRadius: BorderRadius.circular(100),
+            border: Border.all(
+              color: Colors.white,
+              width: 2,
             ),
+          ),
+        ),
+      ),
+    ],
+  ),
+),
 
             const SizedBox(width: 12),
 
             Expanded(
-              child: Column(
-                mainAxisAlignment:
-                    MainAxisAlignment.center,
-                crossAxisAlignment:
-                    CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    widget.chatPartnerName,
-                    maxLines: 1,
-                    overflow:
-                        TextOverflow
-                            .ellipsis,
-                    style:
-                        const TextStyle(
-                      color:
-                          Colors.white,
-                      fontSize: 18,
-                      fontWeight:
-                          FontWeight
-                              .w800,
-                    ),
-                  ),
+  child: GestureDetector(
+    behavior: HitTestBehavior.opaque,
+    onTap: _openPartnerProfile,
+    child: Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          widget.chatPartnerName,
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+          style: const TextStyle(
+            color: Colors.white,
+            fontSize: 18,
+            fontWeight: FontWeight.w800,
+          ),
+        ),
 
-                  const SizedBox(height: 2),
+        const SizedBox(height: 2),
 
-                  const Text(
-                    "Active now",
-                    style: TextStyle(
-                      color:
-                          Colors.white70,
-                      fontSize: 12,
-                    ),
-                  ),
-                ],
-              ),
-            ),
+        const Text(
+          "Active now",
+          style: TextStyle(
+            color: Colors.white70,
+            fontSize: 12,
+          ),
+        ),
+      ],
+    ),
+  ),
+),
 
             Container(
               width: 42,

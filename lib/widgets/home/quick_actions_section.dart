@@ -23,7 +23,7 @@ children: [
   Expanded(
 child: _actionCard(
 title: "List Your Flat",
-subtitle: "Already have a Flat",
+subtitle: "",
 icon: Icons.groups_rounded,
 gradient: const [
 Color(0xFFFCE7F3),
@@ -38,7 +38,7 @@ onTap: onNeedFlatmate,
 Expanded(
 child: _actionCard(
 title: "Looking for a Flat",
-subtitle: "Find a flatmate",
+subtitle: "",
 icon: Icons.apartment_rounded,
 gradient: const [
 Color(0xFFEDE9FE),
