@@ -30,6 +30,7 @@ import 'package:mytennat/screens/initial_profile_screen.dart'hide kBackgroundCol
          kDarkText,
          kOnlineColor,
          kMediumText;
+import 'package:url_launcher/url_launcher.dart';
 class UserScreen extends StatefulWidget {
   const UserScreen({Key? key}) : super(key: key);
 
@@ -202,7 +203,45 @@ void dispose() {
 
   await _fetchUserProfile();
 }
+Future<void> _openWhatsAppSupport() async {
+  const String phoneNumber = '919096457700';
 
+  final String message = Uri.encodeComponent(
+    'Hi UrbanHomey Support,\n\n'
+    'I need help with the UrbanHomey app.',
+  );
+
+  final Uri whatsappUri = Uri.parse(
+    'https://wa.me/$phoneNumber?text=$message',
+  );
+
+  try {
+    final bool opened = await launchUrl(
+      whatsappUri,
+      mode: LaunchMode.externalApplication,
+    );
+
+    if (!opened && mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+            'Unable to open WhatsApp. Please try again.',
+          ),
+        ),
+      );
+    }
+  } catch (e) {
+    if (!mounted) return;
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text(
+          'Unable to open WhatsApp. Please try again.',
+        ),
+      ),
+    );
+  }
+}
   Future<void> _navigateToUpdateProfile() async {
   await Navigator.push(
     context,
@@ -922,6 +961,13 @@ _buildActionButton(
   },
 ),
 const SizedBox(height: 12),
+_buildActionButton(
+  label: 'Help & Support',
+  icon: Icons.support_agent_rounded,
+  onPressed: _openWhatsAppSupport,
+),
+
+const SizedBox(height: 12),
 
 _buildActionButton(
   label: 'Sign Out',
@@ -1315,6 +1361,7 @@ Widget _buildGuestProfilePage() {
               ),
 
               const SizedBox(height: 28),
+
 
               SizedBox(
                 width: double.infinity,
