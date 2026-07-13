@@ -340,6 +340,17 @@ if (isVerified) {
 
   badgeText = "Not Verified";
 }
+final double screenHeight =
+    MediaQuery.of(context).size.height;
+
+final bool isSmallScreen =
+    screenHeight < 750;
+
+final int imageFlex =
+    isSmallScreen ? 40 : 50;
+
+final int contentFlex =
+    isSmallScreen ? 60 : 50;
     return Container(
       height: MediaQuery.of(context).size.height * 0.82,
       margin: const EdgeInsets.all(12),
@@ -349,859 +360,624 @@ if (isVerified) {
           borderRadius: BorderRadius.circular(30),
         ),
         clipBehavior: Clip.antiAlias,
-        child: Stack(
-          children: [
-           
-            // IMAGE
-            Positioned.fill(
-  child: Stack(
-    children: [
+child: Column(
+  children: [
 
-      // IMAGE
-      Positioned.fill(
-        child: imageUrl != null
-            ? Image.network(
-                imageUrl,
-                fit: BoxFit.cover,
-              )
-            : Container(
-                color: Colors.grey.shade300,
-                child: const Center(
-                  child: Icon(
-                    Icons.person,
-                    size: 140,
-                    color: Colors.white,
-                  ),
-                ),
+    Expanded(
+      flex:imageFlex,
+      child: Stack(
+        fit: StackFit.expand,
+        children: [
+
+         /// IMAGE
+imageUrl != null
+    ? Image.network(
+        imageUrl,
+        fit: BoxFit.cover,
+        alignment: Alignment.center,
+        filterQuality: FilterQuality.high,
+
+        loadingBuilder: (
+          context,
+          child,
+          loadingProgress,
+        ) {
+          if (loadingProgress == null) {
+            return child;
+          }
+
+          return Container(
+            color: const Color(0xFFF5F3FF),
+            child: const Center(
+              child: CircularProgressIndicator(
+                color: Color(0xFF7C3AED),
+                strokeWidth: 2,
               ),
-      ),
+            ),
+          );
+        },
 
-      // LEFT TAP ZONE
-      Positioned(
-        left: 0,
-        top: 0,
-        bottom: 0,
-        width: 80,
-        child: Material(
-          color: Colors.transparent,
-          child: InkWell(
-            onTap: () {
-
-              debugPrint(
-                'LEFT IMAGE CLICK',
-              );
-
-              if (_currentImageIndex > 0) {
-
-                setState(() {
-
-                  _currentImageIndex--;
-                });
-              }
-            },
+        errorBuilder: (
+          context,
+          error,
+          stackTrace,
+        ) {
+          return Container(
+            color: const Color(0xFFF5F3FF),
+            child: const Center(
+              child: Icon(
+                Icons.broken_image_outlined,
+                size: 70,
+                color: Color(0xFF7C3AED),
+              ),
+            ),
+          );
+        },
+      )
+    : Container(
+        color: const Color(0xFFF5F3FF),
+        child: const Center(
+          child: Icon(
+            Icons.person_rounded,
+            size: 100,
+            color: Color(0xFF7C3AED),
           ),
         ),
       ),
 
-      // RIGHT TAP ZONE
-      Positioned(
-        right: 0,
-        top: 0,
-        bottom: 0,
-        width: 80,
-        child: Material(
-          color: Colors.transparent,
-          child: InkWell(
-            onTap: () {
-
-              debugPrint(
-                'RIGHT IMAGE CLICK',
-              );
-
-              if (_currentImageIndex <
-                  imageUrls.length - 1) {
-
-                setState(() {
-
-                  _currentImageIndex++;
-                });
-              }
-            },
-          ),
-        ),
-      ),
-    ],
+/// LEFT IMAGE TAP AREA
+Positioned(
+  left: 0,
+  top: 0,
+  bottom: 0,
+  width: 80,
+  child: GestureDetector(
+    behavior: HitTestBehavior.translucent,
+    onTap: () {
+      if (_currentImageIndex > 0) {
+        setState(() {
+          _currentImageIndex--;
+        });
+      }
+    },
   ),
 ),
+
+/// RIGHT IMAGE TAP AREA
 Positioned(
-  top: 16,
-  left: 16,
-  right: 16,
-  child: SafeArea(
-    child: Row(
-      children: List.generate(
-        imageUrls.isEmpty
-            ? 1
-            : imageUrls.length,
-        (index) => Expanded(
-          child: Container(
-            margin:
-                const EdgeInsets.symmetric(
-              horizontal: 3,
+  right: 0,
+  top: 0,
+  bottom: 0,
+  width: 80,
+  child: GestureDetector(
+    behavior: HitTestBehavior.translucent,
+    onTap: () {
+      if (_currentImageIndex <
+          imageUrls.length - 1) {
+        setState(() {
+          _currentImageIndex++;
+        });
+      }
+    },
+  ),
+),
+/// IMAGE INDICATORS
+Positioned(
+  top: 14,
+  left: 14,
+  right: 14,
+  child: Row(
+    children: List.generate(
+      imageUrls.isEmpty ? 1 : imageUrls.length,
+      (index) {
+        final bool isActive =
+            index == _currentImageIndex;
+
+        return Expanded(
+          child: AnimatedContainer(
+            duration: const Duration(
+              milliseconds: 220,
             ),
-            height: 5,
+            height: 4,
+            margin: const EdgeInsets.symmetric(
+              horizontal: 2,
+            ),
             decoration: BoxDecoration(
               gradient:
-                  index ==
-                          _currentImageIndex
-                      ? kPrimaryGradient
-                      : null,
-              color:
-                  index ==
-                          _currentImageIndex
-                      ? null
-                      : Colors.white
-                          .withOpacity(
-                            0.45,
-                          ),
+                  isActive ? kPrimaryGradient : null,
+
+              color: isActive
+                  ? null
+                  : Colors.white.withOpacity(.55),
+
               borderRadius:
-                  BorderRadius.circular(
-                999,
-              ),
-              border: Border.all(
-                color: Colors.white
-                    .withOpacity(0.25),
-                width: 0.5,
-              ),
+                  BorderRadius.circular(999),
+
+              boxShadow: isActive
+                  ? [
+                      BoxShadow(
+                        color: const Color(0xFF7C3AED)
+                            .withOpacity(.25),
+                        blurRadius: 8,
+                      ),
+                    ]
+                  : null,
             ),
           ),
-        ),
-      ),
+        );
+      },
     ),
   ),
 ),
-            // DARK OVERLAY
-            Positioned.fill(
-              child: Container(
-                decoration: const BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.topCenter,
-                    end: Alignment.bottomCenter,
-                    colors: [
-                      Colors.transparent,
-                      Colors.black26,
-                      Colors.black54,
-                      Colors.black87,
-                    ],
-                  ),
-                ),
-              ),
-            ),
-            
-
+/// MATCH BADGE
 Positioned(
-  top: 30,
-  left: 20,
+  left: 14,
+  bottom: 14,
   child: Container(
     padding: const EdgeInsets.symmetric(
-      horizontal: 16,
-      vertical: 10,
+      horizontal: 12,
+      vertical: 7,
     ),
     decoration: BoxDecoration(
-      color: Colors.black.withOpacity(0.35),
-      borderRadius: BorderRadius.circular(30),
-      border: Border.all(
-        color: Colors.white.withOpacity(0.25),
-      ),
+      color: Colors.white.withOpacity(.94),
+      borderRadius: BorderRadius.circular(999),
       boxShadow: [
         BoxShadow(
-          color: Colors.black.withOpacity(0.25),
-          blurRadius: 15,
-          offset: const Offset(0, 8),
-        ),
-      ],
-    ),
-    child: Row(
-  mainAxisSize: MainAxisSize.min,
-  children: [
-    const Text(
-      '🔥',
-      style: TextStyle(fontSize: 16),
-    ),
-    const SizedBox(width: 6),
-    Text(
-      '${widget.matchPercentage}% Match',
-      style: const TextStyle(
-        color: Colors.white,
-        fontWeight: FontWeight.w700,
-        fontSize: 14,
-      ),
-    ),
-  ],
-),
-  ),
-),
-
-           Positioned(
-  top: 30,
-  right: 20,
-  child: Container(
-    padding: const EdgeInsets.symmetric(
-      horizontal: 16,
-      vertical: 10,
-    ),
-    decoration: BoxDecoration(
-      color: Colors.black.withOpacity(0.35),
-      borderRadius: BorderRadius.circular(30),
-      border: Border.all(
-        color: Colors.white.withOpacity(0.25),
-      ),
-      boxShadow: [
-        BoxShadow(
-          color: Colors.black.withOpacity(0.25),
-          blurRadius: 15,
-          offset: const Offset(0, 8),
+          color: Colors.black.withOpacity(.10),
+          blurRadius: 14,
+          offset: const Offset(0, 6),
         ),
       ],
     ),
     child: Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        const Text(
-          '💰',
-          style: TextStyle(fontSize: 16),
+        const Icon(
+          Icons.auto_awesome_rounded,
+          size: 15,
+          color: Color(0xFFEC4899),
         ),
-        const SizedBox(width: 6),
+        const SizedBox(width: 5),
         Text(
-          budgetText,
+          '${widget.matchPercentage}% Match',
           style: const TextStyle(
-            color: Colors.white,
-            fontWeight: FontWeight.w700,
-            fontSize: 14,
+            color: Color(0xFF7C3AED),
+            fontSize: 12,
+            fontWeight: FontWeight.w800,
           ),
         ),
       ],
     ),
   ),
 ),
-            // CONTENT
-            Positioned(
-  left: 0,
-  right: 0,
-  bottom: 0,
+
+/// RENT / BUDGET BADGE
+Positioned(
+  right: 14,
+  bottom: 14,
   child: Container(
-    padding: const EdgeInsets.fromLTRB(
-      24,
-      24,
-      24,
-      24,
+    constraints: const BoxConstraints(
+      maxWidth: 160,
+    ),
+    padding: const EdgeInsets.symmetric(
+      horizontal: 13,
+      vertical: 7,
     ),
     decoration: BoxDecoration(
-      gradient: LinearGradient(
-        begin: Alignment.topCenter,
-        end: Alignment.bottomCenter,
-        colors: [
-          Colors.transparent,
-          Colors.black.withOpacity(.15),
-          Colors.black.withOpacity(.55),
-          Colors.black.withOpacity(.92),
+      gradient: kPrimaryGradient,
+      borderRadius: BorderRadius.circular(999),
+      boxShadow: [
+        BoxShadow(
+          color: const Color(0xFF7C3AED)
+              .withOpacity(.22),
+          blurRadius: 14,
+          offset: const Offset(0, 6),
+        ),
+      ],
+    ),
+    child: Text(
+      budgetText,
+      maxLines: 1,
+      overflow: TextOverflow.ellipsis,
+      style: const TextStyle(
+        color: Colors.white,
+        fontSize: 12,
+        fontWeight: FontWeight.w800,
+      ),
+    ),
+  ),
+),
         ],
       ),
+    ),
+
+    Expanded(
+  flex: contentFlex,
+  child: Container(
+    width: double.infinity,
+    color: Colors.white,
+    padding: const EdgeInsets.fromLTRB(
+      18,
+      16,
+      18,
+      16,
     ),
     child: Column(
-                crossAxisAlignment:
-                    CrossAxisAlignment.start,
-                mainAxisSize: MainAxisSize.min,
-                children: [
-       Row(
-  children: [
-    Expanded(
-      child: Text(
-        age.isNotEmpty
-            ? '$name, $age'
-            : name,
-        maxLines: 1,
-        overflow: TextOverflow.ellipsis,
-        style: const TextStyle(
-          color: Colors.white,
-          fontSize: 26,
-          fontWeight: FontWeight.w800,
-        ),
-      ),
-    ),
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
 
-    Container(
-  padding: const EdgeInsets.symmetric(
-    horizontal: 14,
-    vertical: 8,
-  ),
-  decoration: BoxDecoration(
-    gradient: LinearGradient(
-      colors: badgeGradient,
-      begin: Alignment.topLeft,
-      end: Alignment.bottomRight,
-    ),
-    borderRadius: BorderRadius.circular(999),
-    border: Border.all(
-      color: Colors.white.withOpacity(.28),
-      width: 1.2,
-    ),
-    boxShadow: [
-      BoxShadow(
-        color: badgeColor.withOpacity(.45),
-        blurRadius: 18,
-        spreadRadius: 1,
-        offset: const Offset(0, 8),
-      ),
-      BoxShadow(
-        color: Colors.white.withOpacity(.08),
-        blurRadius: 2,
-        offset: const Offset(0, -1),
-      ),
-    ],
-  ),
-  child: Row(
-    mainAxisSize: MainAxisSize.min,
-    children: [
-
-      Container(
-        width: 24,
-        height: 24,
-        decoration: BoxDecoration(
-          color: Colors.white.withOpacity(.18),
-          shape: BoxShape.circle,
-        ),
-        child: Icon(
-          badgeIcon,
-          color: Colors.white,
-          size: 14,
-        ),
-      ),
-
-      const SizedBox(width: 8),
-
-      Text(
-        badgeText,
-        style: const TextStyle(
-          color: Colors.white,
-          fontSize: 11.5,
-          fontWeight: FontWeight.w800,
-          letterSpacing: .35,
-          height: 1,
-        ),
-      ),
-
-      if (isVerified) ...[
-        const SizedBox(width: 6),
-
-        Container(
-          width: 20,
-          height: 20,
-          decoration: const BoxDecoration(
-            shape: BoxShape.circle,
-            gradient: LinearGradient(
-              colors: [
-                Color(0xFFFFF176),
-                Color(0xFFFFC107),
-              ],
-            ),
-          ),
-          child: const Icon(
-            Icons.workspace_premium_rounded,
-            color: Colors.white,
-            size: 12,
-          ),
-        ),
-      ],
-
-      if (verificationStatus == "pending") ...[
-        const SizedBox(width: 6),
-
-        Container(
-          padding: const EdgeInsets.symmetric(
-            horizontal: 6,
-            vertical: 2,
-          ),
-          decoration: BoxDecoration(
-            color: Colors.white.withOpacity(.18),
-            borderRadius: BorderRadius.circular(20),
-          ),
-          child: const Text(
-            "LIVE",
-            style: TextStyle(
-              color: Colors.white,
-              fontSize: 8,
-              fontWeight: FontWeight.w900,
-              letterSpacing: 1,
-            ),
-          ),
-        ),
-      ],
-    ],
-  ),
-),
-  ],
-),
-                  const SizedBox(height: 8),
-
-                Column(
-  crossAxisAlignment: CrossAxisAlignment.start,
-  children: [
-
-    // CITY
-    Container(
-      padding: const EdgeInsets.symmetric(
-        horizontal: 12,
-        vertical: 7,
-      ),
-      decoration: BoxDecoration(
-        color: Colors.white.withOpacity(.12),
-        borderRadius: BorderRadius.circular(30),
-        border: Border.all(
-          color: Colors.white.withOpacity(.18),
-        ),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-
-          Container(
-            width: 22,
-            height: 22,
-            decoration: BoxDecoration(
-              color: const Color(0xFF3B82F6)
-                  .withOpacity(.18),
-              shape: BoxShape.circle,
-            ),
-            child: const Icon(
-              Icons.location_on_rounded,
-              color: Color(0xFF60A5FA),
-              size: 14,
-            ),
-          ),
-
-          const SizedBox(width: 8),
-
-          Flexible(
-  child: Text(
-    address.isNotEmpty
-        ? address
-        : city,
-    maxLines: 1,
-    overflow: TextOverflow.ellipsis,
-    style: const TextStyle(
-      color: Colors.white,
-      fontSize: 14,
-      fontWeight: FontWeight.w700,
-    ),
-  ),
-),
-        ],
-      ),
-    ),
-
-    if (distanceText != null) ...[
-
-      const SizedBox(height: 10),
-
-      Container(
-        padding: const EdgeInsets.symmetric(
-          horizontal: 12,
-          vertical: 7,
-        ),
-        decoration: BoxDecoration(
-          gradient: const LinearGradient(
-            colors: [
-              Color(0xFF10B981),
-              Color(0xFF34D399),
-            ],
-          ),
-          borderRadius: BorderRadius.circular(30),
-          boxShadow: [
-            BoxShadow(
-              color: const Color(0xFF10B981)
-                  .withOpacity(.35),
-              blurRadius: 16,
-              offset: const Offset(0, 8),
-            ),
-          ],
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
+        /// NAME + AGE + VERIFICATION
+        Row(
           children: [
 
-            const Icon(
-              Icons.near_me_rounded,
-              color: Colors.white,
-              size: 15,
+            Expanded(
+              child: Text(
+                age.isNotEmpty
+                    ? '$name, $age'
+                    : name,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: const TextStyle(
+                  color: Color(0xFF111827),
+                  fontSize: 23,
+                  fontWeight: FontWeight.w800,
+                  letterSpacing: -.4,
+                ),
+              ),
             ),
 
-            const SizedBox(width: 6),
+            const SizedBox(width: 10),
 
-            Text(
-              distanceText!,
-              style: const TextStyle(
-                color: Colors.white,
-                fontSize: 13,
-                fontWeight: FontWeight.w800,
-                letterSpacing: .2,
+            /// VERIFICATION STATUS
+            Container(
+              padding: const EdgeInsets.symmetric(
+                horizontal: 9,
+                vertical: 6,
+              ),
+              decoration: BoxDecoration(
+                color: badgeColor.withOpacity(.10),
+                borderRadius: BorderRadius.circular(999),
+                border: Border.all(
+                  color: badgeColor.withOpacity(.22),
+                ),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(
+                    badgeIcon,
+                    color: badgeColor,
+                    size: 14,
+                  ),
+
+                  const SizedBox(width: 4),
+
+                  Text(
+                    badgeText,
+                    style: TextStyle(
+                      color: badgeColor,
+                      fontSize: 10,
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
+                ],
               ),
             ),
           ],
         ),
+
+        /// WE WILL ADD LOCATION NEXT
+        const SizedBox(height: 10),
+
+/// LOCATION
+Row(
+  children: [
+    const Icon(
+      Icons.location_on_rounded,
+      color: Color(0xFF7C3AED),
+      size: 17,
+    ),
+
+    const SizedBox(width: 5),
+
+    Expanded(
+      child: Text(
+        address.isNotEmpty
+            ? address
+            : city,
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
+        style: const TextStyle(
+          color: Color(0xFF475569),
+          fontSize: 13,
+          fontWeight: FontWeight.w600,
+        ),
       ),
-    ],
+    ),
   ],
 ),
 
-                  const SizedBox(height: 8),
+const SizedBox(height: 7),
 
-                  Row(
-                    children: [
-                      const Icon(
-                        Icons.work,
-                        color: Colors.white70,
-                        size: 18,
-                      ),
-                      const SizedBox(width: 4),
-                      Expanded(
-                        child: Text(
-                          occupation,
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 16,
-                          ),
-                        ),
-                      ),
-    
-                    ],
-                  ),
+/// DISTANCE + OCCUPATION
+Row(
+  children: [
 
-          
+    if (distanceText != null) ...[
+      const Icon(
+        Icons.near_me_rounded,
+        color: Color(0xFFEC4899),
+        size: 15,
+      ),
 
-                  
-   
-const SizedBox(height: 10),
+      const SizedBox(width: 4),
+
+      Text(
+        distanceText!,
+        style: const TextStyle(
+          color: Color(0xFFEC4899),
+          fontSize: 12,
+          fontWeight: FontWeight.w700,
+        ),
+      ),
+
+      const SizedBox(width: 10),
+
+      Container(
+        width: 4,
+        height: 4,
+        decoration: const BoxDecoration(
+          color: Color(0xFFCBD5E1),
+          shape: BoxShape.circle,
+        ),
+      ),
+
+      const SizedBox(width: 10),
+    ],
+
+    const Icon(
+      Icons.work_outline_rounded,
+      color: Color(0xFF7C3AED),
+      size: 15,
+    ),
+
+    const SizedBox(width: 4),
+
+    Expanded(
+      child: Text(
+        occupation,
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
+        style: const TextStyle(
+          color: Color(0xFF64748B),
+          fontSize: 12,
+          fontWeight: FontWeight.w600,
+        ),
+      ),
+    ),
+  ],
+),
+const SizedBox(height: 14),
+
+/// PROFILE-SPECIFIC SECTION TITLE
 Text(
-  profile is SeekingFlatmateProfile
-      ? 'Looking For'
-      : 'Property',
+  profile is FlatListingProfile
+      ? 'Property'
+      : 'Looking for a Home',
   style: const TextStyle(
-    color: Colors.white,
-    fontSize: 15,
-    fontWeight: FontWeight.bold,
+    color: Color(0xFF111827),
+    fontSize: 13,
+    fontWeight: FontWeight.w800,
   ),
 ),
 
 const SizedBox(height: 8),
+
+/// PROFILE-SPECIFIC CHIPS
 Wrap(
-  spacing: 8,
-  runSpacing: 8,
+  spacing: 7,
+  runSpacing: 7,
   children: [
 
+    /// FLAT LISTING PROFILE
     if (profile is FlatListingProfile) ...[
-
-      if (propertyText.isNotEmpty)
-        _buildChip(
-          Icons.home,
-          propertyText,
+      if (profile.flatType.isNotEmpty)
+        _buildPremiumInfoChip(
+          Icons.home_work_outlined,
+          profile.flatType,
         ),
 
-      if (bathroomType.isNotEmpty)
-        _buildChip(
-          Icons.bathtub,
-          bathroomType,
+      if (profile.furnishedStatus.isNotEmpty)
+        _buildPremiumInfoChip(
+          Icons.chair_outlined,
+          profile.furnishedStatus,
         ),
 
-      if (religion.isNotEmpty)
-        _buildChip(
-          Icons.temple_hindu,
-          religion,
+      if (profile.roomType.isNotEmpty)
+        _buildPremiumInfoChip(
+          Icons.bed_outlined,
+          profile.roomType,
         ),
     ],
 
+    /// SEEKING FLATMATE PROFILE
     if (profile is SeekingFlatmateProfile) ...[
-
       if (preferredFlatType.isNotEmpty)
-        _buildChip(
-          Icons.home_work,
+        _buildPremiumInfoChip(
+          Icons.home_work_outlined,
           preferredFlatType,
         ),
 
       if (preferredRoomType.isNotEmpty)
-        _buildChip(
-          Icons.bed,
+        _buildPremiumInfoChip(
+          Icons.bed_outlined,
           preferredRoomType,
         ),
 
       if (preferredFurnishedStatus.isNotEmpty)
-        _buildChip(
-          Icons.chair,
+        _buildPremiumInfoChip(
+          Icons.chair_outlined,
           preferredFurnishedStatus,
-        ),
-
-      if (moveInDateText.isNotEmpty)
-        _buildChip(
-          Icons.calendar_month,
-          moveInDateText,
-        ),
-
-      if (religion.isNotEmpty)
-        _buildChip(
-          Icons.temple_hindu,
-          religion,
         ),
     ],
   ],
 ),
 const SizedBox(height: 12),
 
-// const Text(
-//   'Lifestyle',
-//   style: TextStyle(
-//     color: Colors.white,
-//     fontSize: 15,
-//     fontWeight: FontWeight.bold,
-//   ),
-// ),
-
-// const SizedBox(height: 8),
-
-// Wrap(
-//   spacing: 8,
-//   runSpacing: 8,
-//   children: [
-
-//     if (cleanliness.isNotEmpty)
-//       _tagChip('✨ $cleanliness'),
-
-//     if (smoking.isNotEmpty)
-//       _tagChip('🚭 $smoking'),
-
-//     if (drinking.isNotEmpty)
-//       _tagChip('🍺 $drinking'),
-
-//     if (food.isNotEmpty)
-//       _tagChip('🥗 $food'),
-
-//     if (petTolerance.isNotEmpty)
-//       _tagChip('🐶 $petTolerance'),
-
-//     if (socialPreference.isNotEmpty)
-//       _tagChip('🎉 $socialPreference'),
-//   ],
-// ),
-
-// if (profile is SeekingFlatmateProfile) ...[
-
-// const SizedBox(height: 12),
-
-// const Text(
-//   'Preferred Amenities',
-//   style: TextStyle(
-//     color: Colors.white,
-//     fontSize: 15,
-//     fontWeight: FontWeight.bold,
-//   ),
-// ),
-
-// const SizedBox(height: 8),
-
-// Wrap(
-//   spacing: 8,
-//   runSpacing: 8,
-//   children: desiredAmenities.map((e) {
-//     return _tagChip('🏠 $e');
-//   }).toList(),
-// ),
-// ],
-const SizedBox(height: 12),
+/// =====================================================
+/// PREFERENCES
+/// =====================================================
 const Text(
-  'Looking For',
+  'Preferences',
   style: TextStyle(
-    color: Colors.white,
-    fontSize: 15,
-    fontWeight: FontWeight.bold,
+    color: Color(0xFF111827),
+    fontSize: 13,
+    fontWeight: FontWeight.w800,
   ),
 ),
 
 const SizedBox(height: 8),
+
 Wrap(
-  spacing: 8,
-  runSpacing: 8,
+  spacing: 7,
+  runSpacing: 7,
   children: [
 
-    if (availableFor.isNotEmpty)
-      _buildChip(
-        Icons.group,
-        availableFor,
-      ),
-
     if (preferredGender.isNotEmpty)
-      _buildChip(
-        Icons.person_outline,
+      _buildPremiumPreferenceChip(
+        Icons.person_outline_rounded,
         preferredGender,
       ),
 
     if (preferredAge.isNotEmpty)
-      _buildChip(
-        Icons.cake,
+      _buildPremiumPreferenceChip(
+        Icons.cake_outlined,
         preferredAge,
       ),
 
     if (preferredOccupation.isNotEmpty)
-      _buildChip(
-        Icons.work,
+      _buildPremiumPreferenceChip(
+        Icons.work_outline_rounded,
         preferredOccupation,
       ),
   ],
 ),
+const Spacer(),
 
-
-
-
-
-
-//                   const SizedBox(height: 20),
-//                   const SizedBox(height: 16),
-
-// GestureDetector(
-//   onTap: () {
-//     showModalBottomSheet(
-//       context: context,
-//       isScrollControlled: true,
-//       backgroundColor: Colors.transparent,
-//       builder: (_) => ProfileDetailsSheet(
-//   profile: profile,
-
-//   name: name,
-//   age: age,
-//   city: city,
-//   occupation: occupation,
-//   imageUrl: imageUrl,
-
-//   bio: bio,
-//   cleanliness: cleanliness,
-//   smoking: smoking,
-//   drinking: drinking,
-//   food: food,
-//   petTolerance: petTolerance,
-//   socialPreference: socialPreference,
-//   desiredAmenities: desiredAmenities,
-// ),
-//     );
-//   },
-//   child: Container(
-//     width: double.infinity,
-//     padding: const EdgeInsets.symmetric(
-//       vertical: 12,
-//     ),
-//     decoration: BoxDecoration(
-//       color: Colors.white.withOpacity(.08),
-//       borderRadius: BorderRadius.circular(18),
-//       border: Border.all(
-//         color: Colors.white.withOpacity(.12),
-//       ),
-//     ),
-//     child: const Row(
-//       mainAxisAlignment: MainAxisAlignment.center,
-//       children: [
-//         Text(
-//           'View More',
-//           style: TextStyle(
-//             color: Colors.white,
-//             fontSize: 14,
-//             fontWeight: FontWeight.w600,
-//           ),
-//         ),
-//         SizedBox(width: 6),
-//         Icon(
-//           Icons.keyboard_arrow_up_rounded,
-//           color: Colors.white,
-//           size: 18,
-//         ),
-//       ],
-//     ),
-//   ),
-// ),
-
-const SizedBox(height: 16),
-
-   Row(
-  mainAxisAlignment: MainAxisAlignment.center,
+/// PASS + LIKE BUTTONS
+Row(
   children: [
 
-    // PASS
-    GestureDetector(
-  onTap: onPass,
-  child: Container(
-    width: 72,
-    height: 72,
-    decoration: BoxDecoration(
-      shape: BoxShape.circle,
-      gradient: const LinearGradient(
-  colors: [
-    Color(0xFFFFB6C1),
-    Color(0xFFFF7AA2),
-  ],
-),
-      boxShadow: [
-        BoxShadow(
-          color: Color(0xFFFF6B81).withOpacity(.35),
-          blurRadius: 24,
-          spreadRadius: 1,
+    /// PASS
+    Expanded(
+      child: SizedBox(
+        height: 44,
+        child: OutlinedButton.icon(
+          onPressed: onPass,
+
+          style: OutlinedButton.styleFrom(
+            backgroundColor:
+                const Color(0xFFFAF5FF),
+
+            foregroundColor:
+                const Color(0xFF7C3AED),
+
+            side: const BorderSide(
+              color: Color(0xFFDDD6FE),
+            ),
+
+            elevation: 0,
+
+            shape: RoundedRectangleBorder(
+              borderRadius:
+                  BorderRadius.circular(14),
+            ),
+          ),
+
+          icon: const Icon(
+            Icons.close_rounded,
+            size: 19,
+          ),
+
+          label: const Text(
+            'Pass',
+            style: TextStyle(
+              fontSize: 13,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
         ),
-      ],
+      ),
     ),
-    child: const Icon(
-      Icons.close_rounded,
-      color: Colors.white,
-      size: 32,
-    ),
-  ),
-),
 
-    const SizedBox(width: 28),
+    const SizedBox(width: 10),
 
-    // LIKE
-    GestureDetector(
-      onTap: onLike,
-      child: Container(
-        width: 72,
-        height: 72,
-        decoration: BoxDecoration(
-          shape: BoxShape.circle,
-          gradient: const LinearGradient(
-            colors: [
-              Color(0xFFEC4899),
-              Color(0xFF7C3AED),
+    /// LIKE
+    Expanded(
+      child: SizedBox(
+        height: 44,
+        child: DecoratedBox(
+          decoration: BoxDecoration(
+            gradient: kPrimaryGradient,
+
+            borderRadius:
+                BorderRadius.circular(14),
+
+            boxShadow: [
+              BoxShadow(
+                color: const Color(0xFF7C3AED)
+                    .withOpacity(.18),
+                blurRadius: 12,
+                offset: const Offset(0, 5),
+              ),
             ],
           ),
-          boxShadow: [
-            BoxShadow(
-              color: const Color(
-                0xFFEC4899,
-              ).withOpacity(.45),
-              blurRadius: 30,
-              spreadRadius: 2,
+
+          child: ElevatedButton.icon(
+            onPressed: onLike,
+
+            style: ElevatedButton.styleFrom(
+              backgroundColor:
+                  Colors.transparent,
+
+              shadowColor:
+                  Colors.transparent,
+
+              foregroundColor:
+                  Colors.white,
+
+              elevation: 0,
+
+              shape: RoundedRectangleBorder(
+                borderRadius:
+                    BorderRadius.circular(14),
+              ),
             ),
-          ],
-        ),
-        child: const Icon(
-          Icons.favorite_rounded,
-          color: Colors.white,
-          size: 32,
+
+            icon: const Icon(
+              Icons.favorite_rounded,
+              size: 18,
+            ),
+
+            label: const Text(
+              'Like',
+              style: TextStyle(
+                fontSize: 13,
+                fontWeight: FontWeight.w800,
+              ),
+            ),
+          ),
         ),
       ),
     ),
   ],
 ),
-                ],
-              ),
-            ),
-        ),
-          ],
-        ),
+      ],
+    ),
+  ),
+),
+  ],
+),
       ),
     );
       } catch (e, stack) {
@@ -1254,6 +1030,82 @@ Widget _buildChip(
             fontSize: 13,
             fontWeight: FontWeight.w500,
             letterSpacing: 0.2,
+          ),
+        ),
+      ],
+    ),
+  );
+}
+Widget _buildPremiumInfoChip(
+  IconData icon,
+  String text,
+) {
+  return Container(
+    padding: const EdgeInsets.symmetric(
+      horizontal: 10,
+      vertical: 7,
+    ),
+    decoration: BoxDecoration(
+      color: const Color(0xFFF8F7FF),
+      borderRadius: BorderRadius.circular(12),
+      border: Border.all(
+        color: const Color(0xFFEDE9FE),
+      ),
+    ),
+    child: Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Icon(
+          icon,
+          size: 14,
+          color: const Color(0xFF7C3AED),
+        ),
+        const SizedBox(width: 5),
+        Text(
+          text,
+          style: const TextStyle(
+            color: Color(0xFF5B21B6),
+            fontSize: 11,
+            fontWeight: FontWeight.w700,
+          ),
+        ),
+      ],
+    ),
+  );
+}
+Widget _buildPremiumPreferenceChip(
+  IconData icon,
+  String text,
+) {
+  return Container(
+    padding: const EdgeInsets.symmetric(
+      horizontal: 10,
+      vertical: 7,
+    ),
+    decoration: BoxDecoration(
+      color: const Color(0xFFFDF2F8),
+      borderRadius: BorderRadius.circular(12),
+      border: Border.all(
+        color: const Color(0xFFFBCFE8),
+      ),
+    ),
+    child: Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Icon(
+          icon,
+          size: 14,
+          color: const Color(0xFFEC4899),
+        ),
+
+        const SizedBox(width: 5),
+
+        Text(
+          text,
+          style: const TextStyle(
+            color: Color(0xFFBE185D),
+            fontSize: 11,
+            fontWeight: FontWeight.w700,
           ),
         ),
       ],
