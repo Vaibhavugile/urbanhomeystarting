@@ -349,23 +349,23 @@ Future<void> _showWelcomeRewardDialog() async {
 
                                   SizedBox(height: 4),
 
-                                  Text(
-                                    "Start 2 conversations for free",
-                                    style: TextStyle(
-                                      color: Color(0xFF64748B),
-                                      fontSize: 12,
-                                      fontWeight: FontWeight.w500,
-                                    ),
-                                  ),
+                                  // Text(
+                                  //   "Start 2 conversations for free",
+                                  //   style: TextStyle(
+                                  //     color: Color(0xFF64748B),
+                                  //     fontSize: 12,
+                                  //     fontWeight: FontWeight.w500,
+                                  //   ),
+                                  // ),
                                 ],
                               ),
                             ),
 
-                            Icon(
-                              Icons.verified_rounded,
-                              color: Color(0xFF7C3AED),
-                              size: 24,
-                            ),
+                            // Icon(
+                            //   Icons.verified_rounded,
+                            //   color: Color(0xFF7C3AED),
+                            //   size: 24,
+                            // ),
                           ],
                         ),
                       ),
