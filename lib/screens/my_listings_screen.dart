@@ -321,20 +321,17 @@ class _MyListingsScreenState
                         const SizedBox(
                             width: 4),
                         Expanded(
-                          child: Text(
-                            data['address'] ??
-                                '',
-                            maxLines: 1,
-                            overflow:
-                                TextOverflow
-                                    .ellipsis,
-                            style:
-                                const TextStyle(
-                              color: Colors
-                                  .white70,
-                            ),
-                          ),
-                        ),
+  child: Text(
+    data['locationName']?.toString().trim().isNotEmpty == true
+        ? data['locationName'].toString()
+        : 'Address not available',
+    maxLines: 2,
+    overflow: TextOverflow.ellipsis,
+    style: const TextStyle(
+      color: Colors.white70,
+    ),
+  ),
+),
                       ],
                     ),
                   ],
@@ -732,16 +729,18 @@ class _MyListingsScreenState
                         ),
                         const SizedBox(
                             width: 4),
-                        Text(
-                          userProfile[
-                                  'city'] ??
-                              '',
-                          style:
-                              const TextStyle(
-                            color: Colors
-                                .white70,
-                          ),
-                        ),
+                       Expanded(
+  child: Text(
+    data['locationName']?.toString().trim().isNotEmpty == true
+        ? data['locationName'].toString()
+        : 'Address not available',
+    maxLines: 2,
+    overflow: TextOverflow.ellipsis,
+    style: const TextStyle(
+      color: Colors.white70,
+    ),
+  ),
+),
                       ],
                     ),
                   ],

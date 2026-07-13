@@ -25,6 +25,7 @@ required this.matchPercentage,
   Widget build(BuildContext context) {
     String name = '';
     String city = '';
+    String address = '';
     String occupation = '';
     String age = '';
     String budgetText = '';
@@ -36,8 +37,14 @@ required this.matchPercentage,
     List<String> tags = [];
 
     if (profile is FlatListingProfile) {
-      name = profile.userProfile.name ?? 'Flat Owner';
+     final String fullName =
+    profile.userProfile.name?.trim() ?? '';
+
+name = fullName.isNotEmpty
+    ? fullName.split(RegExp(r'\s+')).first
+    : 'Flat Owner';
       city = profile.userProfile.city ?? '';
+      address = profile.locationName ?? '';
       occupation = profile.userProfile.occupation ?? '';
       age = profile.userProfile.age?.toString() ?? '';
 
@@ -62,8 +69,14 @@ required this.matchPercentage,
     }
 
     if (profile is SeekingFlatmateProfile) {
-      name = profile.userProfile.name ?? 'Flatmate';
+      final String fullName =
+    profile.userProfile.name?.trim() ?? '';
+
+name = fullName.isNotEmpty
+    ? fullName.split(RegExp(r'\s+')).first
+    : 'Flatmate';
       city = profile.userProfile.city ?? '';
+      address = profile.locationName ?? '';
       occupation = profile.userProfile.occupation ?? '';
       age = profile.userProfile.age?.toString() ?? '';
 
@@ -293,16 +306,18 @@ if (isVerified) {
                           ),
                           const SizedBox(width: 4),
                           Expanded(
-                            child: Text(
-                              city,
-                              style:
-                                  const TextStyle(
-                                color:
-                                    Colors.white70,
-                                fontSize: 13,
-                              ),
-                            ),
-                          ),
+  child: Text(
+    address.isNotEmpty
+        ? address
+        : city,
+    maxLines: 1,
+    overflow: TextOverflow.ellipsis,
+    style: const TextStyle(
+      color: Colors.white70,
+      fontSize: 13,
+    ),
+  ),
+),
                         ],
                       ),
                       if (distanceText != null) ...[

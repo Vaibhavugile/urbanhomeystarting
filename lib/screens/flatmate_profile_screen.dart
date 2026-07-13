@@ -12,6 +12,8 @@ import 'package:mytennat/data/user_profile.dart'; // Or the correct path to your
 import 'package:firebase_storage/firebase_storage.dart';
 import '../widgets/location_selector_widget.dart';
 import '../constants/google_keys.dart';
+import 'package:flutter_image_compress/flutter_image_compress.dart';
+import 'package:path_provider/path_provider.dart';
 // Data model to hold all the answers for the user listing a flat
 class FlatListingProfile {
   String documentId; // Added: To store the Firestore document ID
@@ -1084,8 +1086,11 @@ class _FlatmateProfileScreenState extends State<FlatmateProfileScreen> {
   late final FlatListingProfile _flatListingProfile;
   final ImagePicker _picker = ImagePicker();
 
-List<File> _selectedFlatImages = [];
-bool _isUploadingImages = false;
+final List<File> _selectedFlatImages = [];
+
+final List<String> _uploadedFlatImageUrls = [];
+
+bool _isProcessingImages = false;
   int _currentPage = 0;
   bool _isSubmitting = false; // Added for loading indicator
 
@@ -1328,32 +1333,177 @@ IconData _getCurrentSectionIcon() {
     _pageController.dispose();
     super.dispose();
   }
+  Future<File> _compressFlatImage(File originalFile) async {
+  final Directory tempDirectory =
+      await getTemporaryDirectory();
 
-Future<void> _pickFlatImages() async {
-  try {
-    final List<XFile> images =
-        await _picker.pickMultiImage(
-      imageQuality: 80,
+  int quality = 75;
+
+  while (true) {
+    final String targetPath =
+        '${tempDirectory.path}/'
+        'flat_${DateTime.now().microsecondsSinceEpoch}_'
+        '$quality.jpg';
+
+    final XFile? result =
+        await FlutterImageCompress.compressAndGetFile(
+      originalFile.absolute.path,
+      targetPath,
+      quality: quality,
+      minWidth: 1280,
+      minHeight: 1280,
+      format: CompressFormat.jpeg,
+      keepExif: false,
     );
 
-    if (images.isNotEmpty) {
-      setState(() {
-        _selectedFlatImages.addAll(
-          images.map(
-            (e) => File(e.path),
-          ),
+    if (result == null) {
+      throw Exception('Image compression failed');
+    }
+
+    final File compressedFile =
+        File(result.path);
+
+    final int sizeBytes =
+        await compressedFile.length();
+
+    debugPrint(
+      'Compressed size: '
+      '${(sizeBytes / 1024).toStringAsFixed(1)} KB',
+    );
+
+    if (sizeBytes <= 200 * 1024 ||
+        quality <= 25) {
+      return compressedFile;
+    }
+
+    quality -= 5;
+  }
+}
+Future<String> _uploadSingleFlatImage(
+  File compressedImage,
+) async {
+  final String uid =
+      FirebaseAuth.instance.currentUser!.uid;
+
+  final String fileName =
+      '${DateTime.now().microsecondsSinceEpoch}.jpg';
+
+  final Reference storageReference =
+      FirebaseStorage.instance
+          .ref()
+          .child('flat_images')
+          .child(uid)
+          .child(fileName);
+
+  await storageReference.putFile(
+    compressedImage,
+    SettableMetadata(
+      contentType: 'image/jpeg',
+      cacheControl: 'public,max-age=31536000',
+    ),
+  );
+
+  return storageReference.getDownloadURL();
+}
+Future<void> _pickFlatImages() async {
+  if (_isProcessingImages) {
+    return;
+  }
+
+  try {
+    final List<XFile> pickedImages =
+        await _picker.pickMultiImage(
+      imageQuality: 100,
+    );
+
+    if (pickedImages.isEmpty) {
+      return;
+    }
+
+    if (!mounted) {
+      return;
+    }
+
+    setState(() {
+      _isProcessingImages = true;
+    });
+
+    // Add originals immediately so previews appear.
+    setState(() {
+      _selectedFlatImages.addAll(
+        pickedImages.map(
+          (image) => File(image.path),
+        ),
+      );
+    });
+
+    // Process images sequentially in background.
+    for (final XFile pickedImage in pickedImages) {
+      try {
+        final File originalImage =
+            File(pickedImage.path);
+
+        // 1. COMPRESS
+        final File compressedImage =
+            await _compressFlatImage(
+          originalImage,
         );
-      });
+
+        // 2. UPLOAD COMPRESSED FILE
+        final String downloadUrl =
+            await _uploadSingleFlatImage(
+          compressedImage,
+        );
+
+        // 3. SAVE URL IN MEMORY
+        if (mounted) {
+          setState(() {
+            _uploadedFlatImageUrls.add(
+              downloadUrl,
+            );
+          });
+        }
+      } catch (e) {
+        debugPrint(
+          'Single image processing failed: $e',
+        );
+      }
     }
   } catch (e) {
     debugPrint(
-      'Error selecting images: $e',
+      'Image selection failed: $e',
     );
+  } finally {
+    if (mounted) {
+      setState(() {
+        _isProcessingImages = false;
+      });
+    }
   }
 }
-void _removeFlatImage(int index) {
+Future<void> _removeFlatImage(int index) async {
+  if (_isProcessingImages) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text(
+          'Please wait until photos finish processing.',
+        ),
+      ),
+    );
+    return;
+  }
+
+  if (index < 0 ||
+      index >= _selectedFlatImages.length) {
+    return;
+  }
+
   setState(() {
     _selectedFlatImages.removeAt(index);
+
+    if (index < _uploadedFlatImageUrls.length) {
+      _uploadedFlatImageUrls.removeAt(index);
+    }
   });
 }
 Future<List<String>> _uploadFlatImages() async {
@@ -3800,26 +3950,30 @@ Future<void> _submitProfileToFirebase() async {
     // 3. UPLOAD FLAT IMAGES
     // ============================================================
 
-    List<String> uploadedImageUrls = [];
+   // ============================================================
+// 3. VERIFY BACKGROUND IMAGE PROCESSING
+// ============================================================
 
-    if (_selectedFlatImages.isNotEmpty) {
-      if (mounted) {
-        setState(() {
-          _isUploadingImages = true;
-        });
-      }
+if (_isProcessingImages) {
+  throw Exception(
+    'Your property photos are still being optimized. '
+    'Please wait a moment and submit again.',
+  );
+}
 
-      try {
-        uploadedImageUrls =
-            await _uploadFlatImages();
-      } finally {
-        if (mounted) {
-          setState(() {
-            _isUploadingImages = false;
-          });
-        }
-      }
-    }
+if (_selectedFlatImages.isNotEmpty &&
+    _uploadedFlatImageUrls.length !=
+        _selectedFlatImages.length) {
+  throw Exception(
+    'Some property photos could not be uploaded. '
+    'Please remove them and try again.',
+  );
+}
+
+final List<String> uploadedImageUrls =
+    List<String>.from(
+  _uploadedFlatImageUrls,
+);
 
     // ============================================================
     // 4. CREATE FLAT LISTING PROFILE
@@ -4131,7 +4285,6 @@ Future<void> _submitProfileToFirebase() async {
     if (mounted) {
       setState(() {
         _isSubmitting = false;
-        _isUploadingImages = false;
       });
     }
   }

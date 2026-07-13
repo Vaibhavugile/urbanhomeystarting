@@ -282,6 +282,81 @@ class _VerificationScreenState extends State<VerificationScreen> {
       quality -= 5;
     }
   }
+  Future<ImageSource?> _showImageSourcePicker({
+  required String title,
+}) async {
+  return showModalBottomSheet<ImageSource>(
+    context: context,
+    backgroundColor: Colors.transparent,
+    builder: (sheetContext) {
+      return SafeArea(
+        child: Container(
+          margin: const EdgeInsets.all(16),
+          padding: const EdgeInsets.all(20),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(24),
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                title,
+                style: const TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.w800,
+                  color: kDarkText,
+                ),
+              ),
+
+              const SizedBox(height: 20),
+
+              ListTile(
+                leading: const Icon(
+                  Icons.camera_alt_rounded,
+                  color: kPrimaryColor,
+                ),
+                title: const Text(
+                  'Take Photo',
+                  style: TextStyle(
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+                onTap: () {
+                  Navigator.pop(
+                    sheetContext,
+                    ImageSource.camera,
+                  );
+                },
+              ),
+
+              const Divider(),
+
+              ListTile(
+                leading: const Icon(
+                  Icons.photo_library_rounded,
+                  color: kPrimaryColor,
+                ),
+                title: const Text(
+                  'Choose from Gallery',
+                  style: TextStyle(
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+                onTap: () {
+                  Navigator.pop(
+                    sheetContext,
+                    ImageSource.gallery,
+                  );
+                },
+              ),
+            ],
+          ),
+        ),
+      );
+    },
+  );
+}
 
   // ============================================================
   // PICK SELFIE
@@ -292,12 +367,23 @@ class _VerificationScreenState extends State<VerificationScreen> {
       return;
     }
 
-    final XFile? image = await _picker.pickImage(
-      source: ImageSource.camera,
-      imageQuality: 100,
-    );
+    final ImageSource? source =
+    await _showImageSourcePicker(
+  title: 'Select Selfie Source',
+);
 
-    if (image == null) return;
+if (source == null) {
+  return;
+}
+
+final XFile? image = await _picker.pickImage(
+  source: source,
+  imageQuality: 100,
+);
+
+if (image == null) {
+  return;
+}
 
     if (!mounted) return;
 
@@ -349,12 +435,23 @@ class _VerificationScreenState extends State<VerificationScreen> {
       return;
     }
 
-    final XFile? image = await _picker.pickImage(
-      source: ImageSource.gallery,
-      imageQuality: 100,
-    );
+    final ImageSource? source =
+    await _showImageSourcePicker(
+  title: 'Select Government ID Source',
+);
 
-    if (image == null) return;
+if (source == null) {
+  return;
+}
+
+final XFile? image = await _picker.pickImage(
+  source: source,
+  imageQuality: 100,
+);
+
+if (image == null) {
+  return;
+}
 
     if (!mounted) return;
 

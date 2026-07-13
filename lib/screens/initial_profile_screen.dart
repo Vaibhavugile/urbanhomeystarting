@@ -115,6 +115,20 @@ void initState() {
 
     super.dispose();
   }
+  String _formatWords(String value) {
+  return value
+      .trim()
+      .split(RegExp(r'\s+'))
+      .where((part) => part.isNotEmpty)
+      .map((part) {
+        final String lowerCasePart =
+            part.toLowerCase();
+
+        return '${lowerCasePart[0].toUpperCase()}'
+            '${lowerCasePart.substring(1)}';
+      })
+      .join(' ');
+}
   Future<void> _loadExistingProfile() async {
   final User? user =
       FirebaseAuth.instance.currentUser;
@@ -151,9 +165,8 @@ void initState() {
     // SPLIT EXISTING FULL NAME
     // ==========================================================
 
-    final String fullName =
-        data['name']?.toString().trim() ?? '';
-
+   final String fullName =
+    data['name']?.toString().trim() ?? '';
     final List<String> nameParts =
         fullName
             .split(RegExp(r'\s+'))
@@ -436,35 +449,61 @@ if (_profileImageFile != null) {
       profileImageUrl;
 }
 
-      final String fullName = [
-        _firstNameController.text.trim(),
-        _lastNameController.text.trim(),
-      ].where(
-        (value) => value.isNotEmpty,
-      ).join(' ');
+     final String firstName =
+    _formatWords(_firstNameController.text);
 
-      final UserProfile userProfile =
-          UserProfile(
-        uid: user.uid,
-        name: fullName,
-        age: int.tryParse(
-          _ageController.text.trim(),
-        ),
-        gender: _selectedGender,
-        city: _cityController.text.trim(),
-        profilePhotoUrl: profileImageUrl,
-      );
+final String lastName =
+    _formatWords(_lastNameController.text);
 
-      await FirebaseFirestore.instance
-          .collection('users')
-          .doc(user.uid)
-          .set(
-        userProfile.toMap(),
-        SetOptions(
-          merge: true,
-        ),
-      );
+final String fullName =
+    '$firstName $lastName'.trim();
 
+final DocumentReference<Map<String, dynamic>>
+    userReference = FirebaseFirestore.instance
+        .collection('users')
+        .doc(user.uid);
+
+if (widget.isEditMode) {
+  final Map<String, dynamic> updates = {
+    'name': fullName,
+    'age': int.tryParse(
+      _ageController.text.trim(),
+    ),
+    'gender': _selectedGender,
+    'city': _formatWords(
+      _cityController.text,
+    ),
+  };
+
+  if (_profileImageFile != null &&
+      profileImageUrl != null) {
+    updates['profilePhotoUrl'] =
+        profileImageUrl;
+  }
+
+  await userReference.update(updates);
+} else {
+  final UserProfile userProfile =
+      UserProfile(
+    uid: user.uid,
+    name: fullName,
+    age: int.tryParse(
+      _ageController.text.trim(),
+    ),
+    gender: _selectedGender,
+    city: _formatWords(
+      _cityController.text,
+    ),
+    profilePhotoUrl: profileImageUrl,
+  );
+
+  await userReference.set(
+    userProfile.toMap(),
+    SetOptions(
+      merge: true,
+    ),
+  );
+}
      if (!mounted) return;
 
 // ============================================================
@@ -997,33 +1036,8 @@ await _showProfileCompletionDialog();
                       children: [
                         // BACK BUTTON
 
-                        Container(
-                          width: 44,
-                          height: 44,
-                          decoration: BoxDecoration(
-                            color: Colors.white
-                                .withOpacity(.14),
-                            borderRadius:
-                                BorderRadius.circular(14),
-                            border: Border.all(
-                              color: Colors.white
-                                  .withOpacity(.15),
-                            ),
-                          ),
-                          child: IconButton(
-                            onPressed: () {
-                              Navigator.pop(context);
-                            },
-                            icon: const Icon(
-                              Icons
-                                  .arrow_back_ios_new_rounded,
-                              color: Colors.white,
-                              size: 19,
-                            ),
-                          ),
-                        ),
+                       
 
-                        const SizedBox(height: 12),
 
                         // HEADER
 
@@ -1158,6 +1172,7 @@ await _showProfileCompletionDialog();
                                             'First Name',
                                         icon: Icons
                                             .person_outline_rounded,
+                                        textCapitalization: TextCapitalization.words,
                                         validator:
                                             (value) {
                                           if (value ==
@@ -1186,6 +1201,7 @@ await _showProfileCompletionDialog();
                                             'Last Name',
                                         icon: Icons
                                             .person_outline_rounded,
+                                        textCapitalization: TextCapitalization.words,
                                         validator:
                                             (value) {
                                           if (value ==
@@ -1263,6 +1279,7 @@ await _showProfileCompletionDialog();
                                   label: 'HomeTown',
                                   icon: Icons
                                       .location_on_rounded,
+                                  textCapitalization: TextCapitalization.words,
                                   validator:
                                       (value) {
                                     if (value ==
@@ -1468,18 +1485,20 @@ await _showProfileCompletionDialog();
   // TEXT FORM FIELD
   // ============================================================
 
-  Widget _buildTextFormField({
-    required TextEditingController controller,
-    required String label,
-    required IconData icon,
-    required String? Function(String?) validator,
-    TextInputType keyboardType =
-        TextInputType.text,
-  }) {
-    return TextFormField(
-      controller: controller,
-      keyboardType: keyboardType,
-      validator: validator,
+Widget _buildTextFormField({
+  required TextEditingController controller,
+  required String label,
+  required IconData icon,
+  required String? Function(String?) validator,
+  TextInputType keyboardType = TextInputType.text,
+  TextCapitalization textCapitalization =
+      TextCapitalization.none,
+}) {
+  return TextFormField(
+    controller: controller,
+    keyboardType: keyboardType,
+    textCapitalization: textCapitalization,
+    validator: validator,
       style: const TextStyle(
         fontSize: 15,
         fontWeight: FontWeight.w600,

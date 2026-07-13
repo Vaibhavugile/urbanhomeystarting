@@ -132,15 +132,70 @@ void dispose() {
       _markVisibleMessagesAsRead();
     }
   }
-void _openPartnerProfile() {
-  Navigator.push(
-    context,
-    MaterialPageRoute(
-      builder: (_) => ViewProfileScreen(
-        userId: widget.chatPartnerId,
+Future<void> _openPartnerProfile() async {
+  if (_chatRoomId == null) {
+    return;
+  }
+
+  try {
+    final chatDoc = await _firestore
+        .collection('chats')
+        .doc(_chatRoomId)
+        .get();
+
+    if (!chatDoc.exists) {
+      return;
+    }
+
+    final Map<String, dynamic> data =
+        chatDoc.data()!;
+
+    final List<dynamic> participants =
+        data['participants'] ?? [];
+
+    final List<dynamic> profileIds =
+        data['participants_profile_ids'] ?? [];
+
+    final int partnerIndex =
+        participants.indexOf(
+      widget.chatPartnerId,
+    );
+
+    if (partnerIndex == -1 ||
+        partnerIndex >= profileIds.length) {
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+            'Profile information is not available.',
+          ),
+        ),
+      );
+
+      return;
+    }
+
+    final String partnerProfileId =
+        profileIds[partnerIndex].toString();
+
+    if (!mounted) return;
+
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => ViewProfileScreen(
+          userId: widget.chatPartnerId,
+          profileDocumentId:
+              partnerProfileId,
+        ),
       ),
-    ),
-  );
+    );
+  } catch (e) {
+    debugPrint(
+      'OPEN PARTNER PROFILE ERROR: $e',
+    );
+  }
 }
   // NEW: Function to find or create the chat room document
   Future<void> _initializeChatRoom() async {

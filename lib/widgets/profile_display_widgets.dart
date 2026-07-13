@@ -1053,7 +1053,12 @@ Widget _buildPremiumHeroSection(
 
                 Expanded(
                   child: Text(
-                    profile.userProfile.name ?? "",
+                    (profile.userProfile.name?.trim().isNotEmpty == true)
+    ? profile.userProfile.name!
+        .trim()
+        .split(RegExp(r'\s+'))
+        .first
+    : "",
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: const TextStyle(
@@ -1322,7 +1327,12 @@ Widget _buildSeekingHeroSection(
 
                 Expanded(
                   child: Text(
-                    profile.userProfile.name ?? "",
+                    (profile.userProfile.name?.trim().isNotEmpty == true)
+    ? profile.userProfile.name!
+        .trim()
+        .split(RegExp(r'\s+'))
+        .first
+    : "",
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: const TextStyle(
@@ -1571,6 +1581,17 @@ class _SeekingFlatmateProfileDisplayState
 
                 // Basic Info - NOW AS A GRID
                         /// 👤 ABOUT ME
+                        /// LOCATION
+_buildSection(
+  title: '📍 Location',
+  children: [
+    _buildProfileField(
+      'Address',
+      profile.locationName,
+      icon: Icons.location_on_outlined,
+    ),
+  ],
+),
                         _buildSection(
                           title: '👤 About Me',
                           children: [
@@ -1809,6 +1830,16 @@ class _FlatListingProfileDisplayState
             profile,
             _pageController,
           ),
+_buildSection(
+  title: '📍 Location',
+  children: [
+    _buildProfileField(
+      'Address',
+      profile.locationName,
+      icon: Icons.location_on_outlined,
+    ),
+  ],
+),
 
           /// QUICK OVERVIEW
           _buildCharacteristicGrid(
@@ -1884,7 +1915,12 @@ class _FlatListingProfileDisplayState
             [
               MapEntry(
                 'Name',
-                profile.userProfile.name,
+                (profile.userProfile.name?.trim().isNotEmpty == true)
+    ? profile.userProfile.name!
+        .trim()
+        .split(RegExp(r'\s+'))
+        .first
+    : "",
               ),
 
               MapEntry(

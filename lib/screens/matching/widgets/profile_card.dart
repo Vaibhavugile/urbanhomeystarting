@@ -93,7 +93,12 @@ String bio = '';
 List<String> tags = [];
 
 if (profile is FlatListingProfile) {
-  name = profile.userProfile.name ?? '';
+  final String fullName =
+    profile.userProfile.name?.trim() ?? '';
+
+name = fullName.isNotEmpty
+    ? fullName.split(RegExp(r'\s+')).first
+    : 'Flat Owner';
   city = profile.userProfile.city ?? '';
   age = profile.userProfile.age?.toString() ?? '';
   occupation = profile.userProfile.occupation ?? '';
@@ -172,8 +177,14 @@ print("rentPrice: ${profile.rentPrice}");
 }
 
 if (profile is SeekingFlatmateProfile) {
-  name = profile.userProfile.name ?? '';
+  final String fullName =
+    profile.userProfile.name?.trim() ?? '';
+
+name = fullName.isNotEmpty
+    ? fullName.split(RegExp(r'\s+')).first
+    : 'Flatmate';
   city = profile.userProfile.city ?? '';
+  address = profile.locationName ?? '';
   age = profile.userProfile.age?.toString() ?? '';
   occupation =
       profile.userProfile.occupation ?? '';
@@ -772,16 +783,19 @@ Positioned(
           const SizedBox(width: 8),
 
           Flexible(
-            child: Text(
-              city,
-              overflow: TextOverflow.ellipsis,
-              style: const TextStyle(
-                color: Colors.white,
-                fontSize: 14,
-                fontWeight: FontWeight.w700,
-              ),
-            ),
-          ),
+  child: Text(
+    address.isNotEmpty
+        ? address
+        : city,
+    maxLines: 1,
+    overflow: TextOverflow.ellipsis,
+    style: const TextStyle(
+      color: Colors.white,
+      fontSize: 14,
+      fontWeight: FontWeight.w700,
+    ),
+  ),
+),
         ],
       ),
     ),

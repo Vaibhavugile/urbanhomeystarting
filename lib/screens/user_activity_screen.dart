@@ -510,20 +510,23 @@ void _showOutOfContactsPopup() {
   );
 }
 String _getProfileDisplayName(dynamic profile) {
+  String fullName = '';
 
   if (profile is FlatListingProfile) {
+    fullName =
+        profile.userProfile.name?.trim() ?? '';
 
-    return profile.userProfile.name != null &&
-            profile.userProfile.name!.isNotEmpty
-        ? profile.userProfile.name!
+    return fullName.isNotEmpty
+        ? fullName.split(RegExp(r'\s+')).first
         : 'Room Listing';
   }
 
   if (profile is SeekingFlatmateProfile) {
+    fullName =
+        profile.userProfile.name?.trim() ?? '';
 
-    return profile.userProfile.name != null &&
-            profile.userProfile.name!.isNotEmpty
-        ? profile.userProfile.name!
+    return fullName.isNotEmpty
+        ? fullName.split(RegExp(r'\s+')).first
         : 'Seeking Flatmate';
   }
 
