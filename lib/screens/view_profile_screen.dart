@@ -1246,32 +1246,32 @@ return Scaffold(
     ),
 
     title: Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Text(
-          widget.userId == null
-              ? 'My Profile'
-              : 'User Profile',
-          style: const TextStyle(
-            color: Colors.white,
-            fontSize: 22,
-            fontWeight: FontWeight.w800,
-            letterSpacing: -.5,
-          ),
-        ),
-
-        Text(
-          widget.userId == null
-              ? 'Manage your profiles'
-              : 'Explore profile',
-          style: TextStyle(
-            color: Colors.white.withOpacity(.85),
-            fontSize: 11,
-            fontWeight: FontWeight.w500,
-          ),
-        ),
-      ],
+  mainAxisSize: MainAxisSize.min,
+  children: [
+    Text(
+      widget.userId == null
+          ? 'My Profile'
+          : 'Profile Details',
+      style: const TextStyle(
+        color: Colors.white,
+        fontSize: 22,
+        fontWeight: FontWeight.w800,
+        letterSpacing: -.5,
+      ),
     ),
+
+    Text(
+      widget.userId == null
+          ? 'Manage your profiles'
+          : 'View profile details',
+      style: TextStyle(
+        color: Colors.white.withOpacity(.85),
+        fontSize: 11,
+        fontWeight: FontWeight.w500,
+      ),
+    ),
+  ],
+),
 
     actions: [
         if (widget.userId != null)

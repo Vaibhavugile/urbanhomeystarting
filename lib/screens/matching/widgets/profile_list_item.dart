@@ -139,25 +139,26 @@ if (isVerified) {
         borderRadius: BorderRadius.circular(28),
         onTap: onTap,
         child: Container(
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(28),
-            gradient: const LinearGradient(
-  begin: Alignment.topLeft,
-  end: Alignment.bottomRight,
-  colors: [
-    Color(0xFF6A1B9A),
-    Color(0xFF8E24AA),
-    Color(0xFFAD1457),
+         decoration: BoxDecoration(
+  color: Colors.white,
+
+  borderRadius: BorderRadius.circular(28),
+
+  border: Border.all(
+    color: const Color(0xFFEDE9FE),
+    width: 1,
+  ),
+
+  boxShadow: [
+    BoxShadow(
+      color: const Color(0xFF7C3AED)
+          .withOpacity(.10),
+      blurRadius: 28,
+      spreadRadius: 0,
+      offset: const Offset(0, 12),
+    ),
   ],
 ),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withOpacity(.25),
-                blurRadius: 18,
-                offset: const Offset(0, 10),
-              ),
-            ],
-          ),
           child: Padding(
             padding: const EdgeInsets.all(16),
             child: Row(
@@ -176,9 +177,9 @@ if (isVerified) {
                         decoration: BoxDecoration(
                           shape: BoxShape.circle,
                           border: Border.all(
-                            color: Colors.white24,
-                            width: 2,
-                          ),
+  color: const Color(0xFFDDD6FE),
+  width: 3,
+),
                         ),
                         child: ClipOval(
                           child: imageUrl != null
@@ -187,10 +188,10 @@ if (isVerified) {
                                   fit: BoxFit.cover,
                                 )
                               : Container(
-                                  color: Colors.white10,
+                                  color: const Color(0xFFF5F3FF),
                                   child: const Icon(
                                     Icons.person,
-                                    color: Colors.white,
+                                    color: const Color(0xFF7C3AED),
                                     size: 42,
                                   ),
                                 ),
@@ -237,42 +238,46 @@ if (isVerified) {
                               overflow:
                                   TextOverflow.ellipsis,
                               style:
-                                  const TextStyle(
-                                color: Colors.white,
-                                fontSize: 20,
-                                fontWeight:
-                                    FontWeight.w700,
-                              ),
+                                const TextStyle(
+  color: Color(0xFF111827),
+  fontSize: 20,
+  fontWeight: FontWeight.w800,
+  letterSpacing: -.2,
+),
                             ),
                           ),
 
-                          Container(
-                            padding:
-                                const EdgeInsets
-                                    .symmetric(
-                              horizontal: 10,
-                              vertical: 5,
-                            ),
-                            decoration:
-                                BoxDecoration(
-                              color:
-                                  Colors.greenAccent
-                                      .withOpacity(
-                                          .15),
-                              borderRadius:
-                                  BorderRadius
-                                      .circular(
-                                          20),
-                            ),
-                            child:  Text(
-  "$matchPercentage% Match",
-  style: const TextStyle(
-    color: Colors.greenAccent,
-    fontSize: 11,
-    fontWeight: FontWeight.bold,
+                       Container(
+  padding: const EdgeInsets.symmetric(
+    horizontal: 10,
+    vertical: 6,
+  ),
+  decoration: BoxDecoration(
+    gradient: const LinearGradient(
+      colors: [
+        Color(0xFF7C3AED),
+        Color(0xFFEC4899),
+      ],
+    ),
+    borderRadius: BorderRadius.circular(20),
+    boxShadow: [
+      BoxShadow(
+        color: const Color(0xFF7C3AED)
+            .withOpacity(.18),
+        blurRadius: 12,
+        offset: const Offset(0, 5),
+      ),
+    ],
+  ),
+  child: Text(
+    "$matchPercentage% Match",
+    style: const TextStyle(
+      color: Colors.white,
+      fontSize: 11,
+      fontWeight: FontWeight.w800,
+    ),
   ),
 ),
-                          ),
                         ],
                       ),
 
@@ -297,50 +302,48 @@ if (isVerified) {
                       const SizedBox(height: 10),
 
                       /// LOCATION
-                      Row(
-                        children: [
-                          const Icon(
-                            Icons.location_on,
-                            color: Colors.white70,
-                            size: 15,
-                          ),
-                          const SizedBox(width: 4),
-                          Expanded(
-  child: Text(
-    address.isNotEmpty
-        ? address
-        : city,
-    maxLines: 1,
-    overflow: TextOverflow.ellipsis,
-    style: const TextStyle(
-      color: Colors.white70,
-      fontSize: 13,
+                    /// LOCATION
+Row(
+  children: [
+    const Icon(
+      Icons.location_on_rounded,
+      color: Color(0xFF7C3AED),
+      size: 16,
     ),
-  ),
+    const SizedBox(width: 5),
+    Expanded(
+      child: Text(
+        address.isNotEmpty ? address : city,
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
+        style: const TextStyle(
+          color: Color(0xFF64748B),
+          fontSize: 13,
+          fontWeight: FontWeight.w500,
+        ),
+      ),
+    ),
+  ],
 ),
-                        ],
-                      ),
                       if (distanceText != null) ...[
-
   const SizedBox(height: 6),
 
   Row(
     children: [
-
       const Icon(
         Icons.near_me_rounded,
-        color: Colors.greenAccent,
+        color: Color(0xFFEC4899),
         size: 15,
       ),
 
-      const SizedBox(width: 4),
+      const SizedBox(width: 5),
 
       Text(
         distanceText!,
         style: const TextStyle(
-          color: Colors.greenAccent,
+          color: Color(0xFFEC4899),
           fontSize: 13,
-          fontWeight: FontWeight.w600,
+          fontWeight: FontWeight.w700,
         ),
       ),
     ],
@@ -350,60 +353,54 @@ if (isVerified) {
                       const SizedBox(height: 6),
 
                       /// OCCUPATION
-                      Row(
-                        children: [
-                          const Icon(
-                            Icons.work_outline,
-                            size: 15,
-                            color: Colors.white70,
-                          ),
-                          const SizedBox(width: 4),
-                          Expanded(
-                            child: Text(
-                              occupation,
-                              maxLines: 1,
-                              overflow:
-                                  TextOverflow
-                                      .ellipsis,
-                              style:
-                                  const TextStyle(
-                                color: Colors.white,
-                                fontSize: 13,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
+                      /// OCCUPATION
+Row(
+  children: [
+    const Icon(
+      Icons.work_outline_rounded,
+      size: 15,
+      color: Color(0xFF7C3AED),
+    ),
+    const SizedBox(width: 5),
+    Expanded(
+      child: Text(
+        occupation,
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
+        style: const TextStyle(
+          color: Color(0xFF475569),
+          fontSize: 13,
+          fontWeight: FontWeight.w500,
+        ),
+      ),
+    ),
+  ],
+),
 
                       const SizedBox(height: 10),
 
                       /// PROPERTY
                       Container(
-                        padding:
-                            const EdgeInsets
-                                .symmetric(
-                          horizontal: 10,
-                          vertical: 6,
-                        ),
-                        decoration:
-                            BoxDecoration(
-                          color:
-                              Colors.white10,
-                          borderRadius:
-                              BorderRadius
-                                  .circular(
-                                      14),
-                        ),
-                        child: Text(
-                          propertyInfo,
-                          style:
-                              const TextStyle(
-                            color:
-                                Colors.white,
-                            fontSize: 12,
-                          ),
-                        ),
-                      ),
+  padding: const EdgeInsets.symmetric(
+    horizontal: 11,
+    vertical: 7,
+  ),
+  decoration: BoxDecoration(
+    color: const Color(0xFFF8F7FF),
+    borderRadius: BorderRadius.circular(14),
+    border: Border.all(
+      color: const Color(0xFFEDE9FE),
+    ),
+  ),
+  child: Text(
+    propertyInfo,
+    style: const TextStyle(
+      color: Color(0xFF6D28D9),
+      fontSize: 12,
+      fontWeight: FontWeight.w700,
+    ),
+  ),
+),
 
                       const SizedBox(height: 10),
 
@@ -418,15 +415,24 @@ if (isVerified) {
                               horizontal: 10,
                               vertical: 6,
                             ),
-                            decoration:
-                                BoxDecoration(
-                              color:
-                                  Colors.deepPurple,
-                              borderRadius:
-                                  BorderRadius
-                                      .circular(
-                                          30),
-                            ),
+                           decoration: BoxDecoration(
+  gradient: const LinearGradient(
+    colors: [
+      Color(0xFF7C3AED),
+      Color(0xFF9333EA),
+      Color(0xFFEC4899),
+    ],
+  ),
+  borderRadius: BorderRadius.circular(30),
+  boxShadow: [
+    BoxShadow(
+      color: const Color(0xFF7C3AED)
+          .withOpacity(.14),
+      blurRadius: 10,
+      offset: const Offset(0, 4),
+    ),
+  ],
+),
                             child: Text(
                               budgetText,
                               style:
@@ -443,34 +449,28 @@ if (isVerified) {
 
                           const SizedBox(width: 8),
 
-                          if (lifestyle
-                              .isNotEmpty)
-                            Container(
-                              padding:
-                                  const EdgeInsets
-                                      .symmetric(
-                                horizontal: 10,
-                                vertical: 6,
-                              ),
-                              decoration:
-                                  BoxDecoration(
-                                color:
-                                    Colors.white12,
-                                borderRadius:
-                                    BorderRadius
-                                        .circular(
-                                            30),
-                              ),
-                              child: Text(
-                                lifestyle,
-                                style:
-                                    const TextStyle(
-                                  color:
-                                      Colors.white,
-                                  fontSize: 12,
-                                ),
-                              ),
-                            ),
+                          if (lifestyle.isNotEmpty)
+  Container(
+    padding: const EdgeInsets.symmetric(
+      horizontal: 10,
+      vertical: 6,
+    ),
+    decoration: BoxDecoration(
+      color: const Color(0xFFFDF2F8),
+      borderRadius: BorderRadius.circular(30),
+      border: Border.all(
+        color: const Color(0xFFFBCFE8),
+      ),
+    ),
+    child: Text(
+      lifestyle,
+      style: const TextStyle(
+        color: Color(0xFFBE185D),
+        fontSize: 12,
+        fontWeight: FontWeight.w600,
+      ),
+    ),
+  ),
                         ],
                       ),
 
@@ -496,23 +496,20 @@ if (isVerified) {
                                       vertical:
                                           5,
                                     ),
-                                    decoration:
-                                        BoxDecoration(
-                                      color: Colors
-                                          .white10,
-                                      borderRadius:
-                                          BorderRadius.circular(
-                                              20),
-                                    ),
+                                    decoration: BoxDecoration(
+  color: const Color(0xFFF8FAFC),
+  borderRadius: BorderRadius.circular(20),
+  border: Border.all(
+    color: const Color(0xFFE2E8F0),
+  ),
+),
                                     child: Text(
                                       e,
-                                      style:
-                                          const TextStyle(
-                                        color: Colors
-                                            .white70,
-                                        fontSize:
-                                            11,
-                                      ),
+                                     style: const TextStyle(
+  color: Color(0xFF64748B),
+  fontSize: 11,
+  fontWeight: FontWeight.w600,
+),
                                     ),
                                   ),
                                 )
@@ -523,49 +520,87 @@ if (isVerified) {
 
 Row(
   children: [
-
+    /// PASS BUTTON
     Expanded(
-      child: OutlinedButton.icon(
-        onPressed: onPass,
-        style: OutlinedButton.styleFrom(
-          side: const BorderSide(
-            color: Colors.white24,
+      child: SizedBox(
+        height: 46,
+        child: OutlinedButton.icon(
+          onPressed: onPass,
+          style: OutlinedButton.styleFrom(
+            backgroundColor: const Color(0xFFFAF5FF),
+            foregroundColor: const Color(0xFF7C3AED),
+            side: const BorderSide(
+              color: Color(0xFFDDD6FE),
+              width: 1.2,
+            ),
+            elevation: 0,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(15),
+            ),
           ),
-          foregroundColor: Colors.white,
-          shape: RoundedRectangleBorder(
-            borderRadius:
-                BorderRadius.circular(16),
+          icon: const Icon(
+            Icons.close_rounded,
+            size: 20,
           ),
-        ),
-        icon: const Icon(
-          Icons.close_rounded,
-        ),
-        label: const Text(
-          'Pass',
+          label: const Text(
+            'Dislike',
+            style: TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
         ),
       ),
     ),
 
     const SizedBox(width: 12),
 
+    /// LIKE BUTTON
     Expanded(
-      child: ElevatedButton.icon(
-        onPressed: onLike,
-        style: ElevatedButton.styleFrom(
-          backgroundColor:
-              const Color(0xFF22C55E),
-          foregroundColor:
-              Colors.white,
-          shape: RoundedRectangleBorder(
-            borderRadius:
-                BorderRadius.circular(16),
+      child: SizedBox(
+        height: 46,
+        child: DecoratedBox(
+          decoration: BoxDecoration(
+            gradient: const LinearGradient(
+              colors: [
+                Color(0xFF7C3AED),
+                Color(0xFF9333EA),
+                Color(0xFFEC4899),
+              ],
+            ),
+            borderRadius: BorderRadius.circular(15),
+            boxShadow: [
+              BoxShadow(
+                color: const Color(0xFF7C3AED)
+                    .withOpacity(.20),
+                blurRadius: 14,
+                offset: const Offset(0, 6),
+              ),
+            ],
           ),
-        ),
-        icon: const Icon(
-          Icons.favorite_rounded,
-        ),
-        label: const Text(
-          'Like',
+          child: ElevatedButton.icon(
+            onPressed: onLike,
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.transparent,
+              shadowColor: Colors.transparent,
+              foregroundColor: Colors.white,
+              elevation: 0,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(15),
+              ),
+            ),
+            icon: const Icon(
+              Icons.favorite_rounded,
+              size: 19,
+            ),
+            label: const Text(
+              'Like',
+              style: TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w800,
+              ),
+            ),
+          ),
         ),
       ),
     ),
@@ -584,62 +619,45 @@ Row(
     );
   }
 
- static Widget _chip(
+static Widget _chip(
   IconData icon,
   String text,
   Color color,
 ) {
   return Container(
     padding: const EdgeInsets.symmetric(
-      horizontal: 12,
-      vertical: 7,
+      horizontal: 10,
+      vertical: 6,
     ),
     decoration: BoxDecoration(
-      gradient: LinearGradient(
-        colors: [
-          color,
-          color.withOpacity(.75),
-        ],
-      ),
-      borderRadius: BorderRadius.circular(30),
+      color: color.withOpacity(.10),
+      borderRadius: BorderRadius.circular(20),
       border: Border.all(
-        color: Colors.white.withOpacity(.25),
+        color: color.withOpacity(.22),
       ),
-      boxShadow: [
-        BoxShadow(
-          color: color.withOpacity(.35),
-          blurRadius: 14,
-          offset: const Offset(0, 6),
-        ),
-      ],
     ),
     child: Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-
         Icon(
           icon,
-          color: Colors.white,
+          color: color,
           size: 14,
         ),
-
         const SizedBox(width: 5),
-
         Text(
           text,
-          style: const TextStyle(
-            color: Colors.white,
+          style: TextStyle(
+            color: color,
             fontSize: 11,
-            fontWeight: FontWeight.w800,
-            letterSpacing: .3,
+            fontWeight: FontWeight.w700,
           ),
         ),
-
         if (text == "Verified") ...[
-          const SizedBox(width: 5),
+          const SizedBox(width: 4),
           const Icon(
             Icons.workspace_premium_rounded,
-            color: Color(0xFFFFD54F),
+            color: Color(0xFFF59E0B),
             size: 13,
           ),
         ],
@@ -648,25 +666,27 @@ Row(
   );
 }
 
-  static Widget _textChip(String text) {
-    return Container(
-      padding: const EdgeInsets.symmetric(
-        horizontal: 8,
-        vertical: 4,
+ static Widget _textChip(String text) {
+  return Container(
+    padding: const EdgeInsets.symmetric(
+      horizontal: 10,
+      vertical: 6,
+    ),
+    decoration: BoxDecoration(
+      color: const Color(0xFFF5F3FF),
+      borderRadius: BorderRadius.circular(20),
+      border: Border.all(
+        color: const Color(0xFFDDD6FE),
       ),
-      decoration: BoxDecoration(
-        color: Colors.orange.withOpacity(.2),
-        borderRadius:
-            BorderRadius.circular(20),
+    ),
+    child: Text(
+      text,
+      style: const TextStyle(
+        color: Color(0xFF7C3AED),
+        fontSize: 11,
+        fontWeight: FontWeight.w700,
       ),
-      child: Text(
-        text,
-        style: const TextStyle(
-          color: Colors.white,
-          fontSize: 11,
-          fontWeight: FontWeight.w600,
-        ),
-      ),
-    );
-  }
+    ),
+  );
+}
 }
