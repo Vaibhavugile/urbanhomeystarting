@@ -169,7 +169,7 @@ void initState() {
     data['name']?.toString().trim() ?? '';
     final List<String> nameParts =
         fullName
-            .split(RegExp(r'\s+'))
+            .split(RegExp(r'\s+'))chr
             .where((part) => part.isNotEmpty)
             .toList();
 
