@@ -50,13 +50,26 @@ class NotificationService {
 
     if (user == null) return;
 
-    final token =
-        await FirebaseMessaging.instance
-            .getToken();
+    final apnsToken =
+    await FirebaseMessaging.instance
+        .getAPNSToken();
 
-    if (token == null) return;
+final token =
+    await FirebaseMessaging.instance
+        .getToken();
 
-    print('FCM TOKEN: $token');
+await FirebaseFirestore.instance
+    .collection("debug")
+    .doc("ios")
+    .set({
+
+  "apnsToken": apnsToken,
+
+  "fcmToken": token,
+
+  "time": FieldValue.serverTimestamp(),
+
+});
 
     await FirebaseFirestore.instance
         .collection('users')

@@ -2,7 +2,7 @@ name: mytennat
 description: "A new Flutter project."
 publish_to: 'none'
 
-version: 22.0.0+34
+version: 23.0.0+35
 
 environment:
   sdk: ">=3.2.0 <4.0.0"
