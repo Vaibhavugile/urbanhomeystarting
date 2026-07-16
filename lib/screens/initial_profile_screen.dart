@@ -167,21 +167,22 @@ void initState() {
 
    final String fullName =
     data['name']?.toString().trim() ?? '';
-    final List<String> nameParts =
-        fullName
-            .split(RegExp(r'\s+'))chr
-            .where((part) => part.isNotEmpty)
-            .toList();
 
-    _firstNameController.text =
-        nameParts.isNotEmpty
-            ? nameParts.first
-            : '';
+final List<String> nameParts =
+    fullName
+        .split(RegExp(r'\s+'))
+        .where((part) => part.isNotEmpty)
+        .toList();
 
-    _lastNameController.text =
-        nameParts.length > 1
-            ? nameParts.sublist(1).join(' ')
-            : '';
+_firstNameController.text =
+    nameParts.isNotEmpty
+        ? nameParts.first
+        : '';
+
+_lastNameController.text =
+    nameParts.length > 1
+        ? nameParts.sublist(1).join(' ')
+        : '';
 
     // ==========================================================
     // LOAD OTHER DATA
