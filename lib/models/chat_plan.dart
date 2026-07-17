@@ -7,6 +7,9 @@ class ChatPlan {
 
   final int contacts;
 
+  /// Amount in INR (e.g. 99, 199, 499)
+  final int amount;
+
   final int sortOrder;
 
   final String badge;
@@ -17,19 +20,18 @@ class ChatPlan {
 
   final List<String> features;
 
-
   const ChatPlan({
     required this.id,
     required this.title,
     required this.productId,
     required this.contacts,
+    required this.amount,
     required this.sortOrder,
     required this.badge,
     required this.isHighlighted,
     required this.isActive,
     required this.features,
   });
-
 
   // ============================================================
   // CREATE CHAT PLAN FROM FIRESTORE
@@ -54,6 +56,11 @@ class ChatPlan {
                   ?.toInt() ??
               0,
 
+      amount:
+          (data['amount'] as num?)
+                  ?.toInt() ??
+              0,
+
       sortOrder:
           (data['sortOrder'] as num?)
                   ?.toInt() ??
@@ -71,14 +78,12 @@ class ChatPlan {
       features:
           (data['features'] as List<dynamic>?)
                   ?.map(
-                    (item) =>
-                        item.toString(),
+                    (item) => item.toString(),
                   )
                   .toList() ??
               [],
     );
   }
-
 
   // ============================================================
   // CONVERT CHAT PLAN TO MAP
@@ -92,6 +97,8 @@ class ChatPlan {
 
       'contacts': contacts,
 
+      'amount': amount,
+
       'sortOrder': sortOrder,
 
       'badge': badge,
@@ -104,7 +111,6 @@ class ChatPlan {
     };
   }
 
-
   @override
   String toString() {
     return 'ChatPlan('
@@ -112,6 +118,7 @@ class ChatPlan {
         'title: $title, '
         'productId: $productId, '
         'contacts: $contacts, '
+        'amount: $amount, '
         'sortOrder: $sortOrder, '
         'badge: $badge, '
         'isHighlighted: $isHighlighted, '

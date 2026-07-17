@@ -4,6 +4,8 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import '../services/billing_service.dart';
 import 'package:mytennat/models/chat_plan.dart';
 import 'package:mytennat/services/chat_plan_service.dart';
+import 'package:mytennat/models/payment_method.dart';
+import '../services/razorpay_service.dart';
 
 class PlansScreen extends StatefulWidget {
   const PlansScreen({super.key});
@@ -36,7 +38,12 @@ String? _plansError;
 // ============================================================
 
 ChatPlan? _selectedPlan;
+// ============================================================
+// PAYMENT METHOD
+// ============================================================
 
+PaymentMethod _selectedPaymentMethod =
+    PaymentMethod.inApp;
   // ============================================================
 // LOAD CHAT PLANS FROM FIRESTORE
 // ============================================================
@@ -109,8 +116,10 @@ Future<void> _loadPlans() async {
     // ============================================================
 
     await BillingService.instance.initialize(
-      productIds: productIds,
-    );
+  productIds: productIds,
+);
+
+await RazorpayService.instance.initialize();
 
 
     if (!mounted) {
@@ -326,42 +335,11 @@ Future<ChatPlan> _resolvePlanForPurchase(
 
   return plan;
 }
-@override
-void initState() {
-  super.initState();
-
-
-  // ============================================================
-  // PAGE CONTROLLER
-  // ============================================================
-
-  _pageController = PageController(
-    initialPage: 0,
-    viewportFraction: 0.85,
-  );
-
-
-  // ============================================================
-  // REGISTER PURCHASE SUCCESS CALLBACK
-  //
-  // IMPORTANT:
-  // Register callbacks BEFORE _loadPlans().
-  //
-  // _loadPlans() will:
-  //
-  // 1. Fetch active plans from Firestore.
-  // 2. Extract product IDs.
-  // 3. Initialize BillingService.
-  // 4. Subscribe to purchaseStream.
-  // 5. Load ProductDetails from the store.
-  //
-  // Registering callbacks first ensures that a redelivered
-  // unfinished purchase can be processed safely.
-  // ============================================================
-
-  BillingService.instance.onPurchaseSuccess =
-      (purchase) async {
-    if (!mounted) {
+Future<void> _activatePurchase({
+  required String purchaseId,
+  required String productId,
+}) async {
+ if (!mounted) {
       return;
     }
 
@@ -398,10 +376,9 @@ void initState() {
       // ========================================================
 
       final ChatPlan selectedPlan =
-          await _resolvePlanForPurchase(
-        purchase.productID,
-      );
-
+    await _resolvePlanForPurchase(
+  productId,
+);
 
       // ========================================================
       // UPDATE CURRENT SELECTED PLAN
@@ -427,8 +404,8 @@ void initState() {
           selectedPlan.title;
 
 
-      final String productId =
-          selectedPlan.productId;
+      final String purchasedProductId =
+    selectedPlan.productId;
 
 
       final String planId =
@@ -450,21 +427,18 @@ void initState() {
       // VALIDATE PURCHASE ID
       // ========================================================
 
-      final String? rawPurchaseId =
-          purchase.purchaseID;
+      final String rawPurchaseId =
+    purchaseId;
+
+if (rawPurchaseId.trim().isEmpty) {
+  throw Exception(
+    "Purchase ID is missing."
+  );
+}
 
 
-      if (rawPurchaseId == null ||
-          rawPurchaseId.trim().isEmpty) {
-        throw Exception(
-          "Purchase ID is missing. "
-          "Purchase cannot be activated safely.",
-        );
-      }
-
-
-      final String purchaseId =
-          rawPurchaseId.trim();
+      final String normalizedPurchaseId =
+    rawPurchaseId.trim();
 
 
       // ========================================================
@@ -475,7 +449,7 @@ void initState() {
               Map<String, dynamic>>
           purchaseRef = userRef
               .collection('purchases')
-              .doc(purchaseId);
+              .doc(normalizedPurchaseId);
 
 
       // ========================================================
@@ -554,8 +528,7 @@ void initState() {
               'currentPlanId':
                   planId,
 
-              'currentPlanProductId':
-                  productId,
+              'currentPlanProductId': purchasedProductId,
 
               'currentPlanContacts':
                   contactsValue,
@@ -586,11 +559,10 @@ void initState() {
               'contactsPurchased':
                   contactsValue,
 
-              'productId':
-                  productId,
+              'productId': purchasedProductId,
 
               'purchaseId':
-                  purchaseId,
+                  normalizedPurchaseId,
 
               'purchaseDate':
                   FieldValue
@@ -614,7 +586,7 @@ void initState() {
       if (!contactsGranted) {
         debugPrint(
           '[PlansScreen] '
-          'Purchase $purchaseId '
+          'Purchase $normalizedPurchaseId '
           'was already processed. '
           'Skipping duplicate contact grant.',
         );
@@ -726,7 +698,47 @@ void initState() {
 
       rethrow;
     }
-  };
+}
+@override
+void initState() {
+  super.initState();
+
+
+  // ============================================================
+  // PAGE CONTROLLER
+  // ============================================================
+
+  _pageController = PageController(
+    initialPage: 0,
+    viewportFraction: 0.85,
+  );
+
+
+  // ============================================================
+  // REGISTER PURCHASE SUCCESS CALLBACK
+  //
+  // IMPORTANT:
+  // Register callbacks BEFORE _loadPlans().
+  //
+  // _loadPlans() will:
+  //
+  // 1. Fetch active plans from Firestore.
+  // 2. Extract product IDs.
+  // 3. Initialize BillingService.
+  // 4. Subscribe to purchaseStream.
+  // 5. Load ProductDetails from the store.
+  //
+  // Registering callbacks first ensures that a redelivered
+  // unfinished purchase can be processed safely.
+  // ============================================================
+
+ BillingService.instance.onPurchaseSuccess =
+    (purchase) async {
+  await _activatePurchase(
+    purchaseId: purchase.purchaseID!,
+    productId: purchase.productID,
+  );
+};
 
 
   // ============================================================
@@ -756,8 +768,35 @@ void initState() {
       ),
     );
   };
+RazorpayService.instance.onPurchaseSuccess =
+(
+  payment,
+  planId,
+) async {
 
+  await _activatePurchase(
+    purchaseId: payment.paymentId!,
+    productId: planId,
+  );
+};
 
+RazorpayService.instance.onPurchaseError =
+(
+  error,
+) {
+  if (!mounted) return;
+
+  setState(() {
+    _isPurchasing = false;
+  });
+
+  ScaffoldMessenger.of(context).showSnackBar(
+    SnackBar(
+      content: Text(error),
+      backgroundColor: Colors.red,
+    ),
+  );
+};
   // ============================================================
   // LOAD FIRESTORE PLANS AND INITIALIZE BILLING
   // ============================================================
@@ -816,7 +855,9 @@ void dispose() {
 
   BillingService.instance.onPurchaseError = null;
 
+RazorpayService.instance.onPurchaseSuccess = null;
 
+RazorpayService.instance.onPurchaseError = null;
   // ============================================================
   // DISPOSE PAGE CONTROLLER
   // ============================================================
@@ -3023,7 +3064,99 @@ void _showPurchaseConfirmation(
                       const SizedBox(
                         height: 24,
                       ),
+// =========================================
+// PAYMENT METHOD
+// =========================================
 
+const Align(
+  alignment: Alignment.centerLeft,
+  child: Text(
+    "Choose Payment Method",
+    style: TextStyle(
+      fontSize: 18,
+      fontWeight: FontWeight.w800,
+      color: Color(0xFF111827),
+    ),
+  ),
+),
+
+const SizedBox(height: 16),
+
+Container(
+  decoration: BoxDecoration(
+    borderRadius: BorderRadius.circular(18),
+    border: Border.all(
+      color: _selectedPaymentMethod ==
+              PaymentMethod.razorpay
+          ? const Color(0xFF7C3AED)
+          : Colors.grey.shade300,
+      width: 2,
+    ),
+  ),
+  child: RadioListTile<PaymentMethod>(
+    value: PaymentMethod.razorpay,
+    groupValue: _selectedPaymentMethod,
+    activeColor: const Color(0xFF7C3AED),
+    onChanged: (value) {
+      if (value == null) return;
+
+      setState(() {
+        _selectedPaymentMethod = value;
+      });
+
+      setSheetState(() {});
+    },
+    title: const Text(
+      "Razorpay",
+      style: TextStyle(
+        fontWeight: FontWeight.w700,
+      ),
+    ),
+    subtitle: const Text(
+      "UPI • Google Pay • PhonePe • Cards",
+    ),
+  ),
+),
+
+const SizedBox(height: 14),
+
+Container(
+  decoration: BoxDecoration(
+    borderRadius: BorderRadius.circular(18),
+    border: Border.all(
+      color: _selectedPaymentMethod ==
+              PaymentMethod.inApp
+          ? const Color(0xFF7C3AED)
+          : Colors.grey.shade300,
+      width: 2,
+    ),
+  ),
+  child: RadioListTile<PaymentMethod>(
+    value: PaymentMethod.inApp,
+    groupValue: _selectedPaymentMethod,
+    activeColor: const Color(0xFF7C3AED),
+    onChanged: (value) {
+      if (value == null) return;
+
+      setState(() {
+        _selectedPaymentMethod = value;
+      });
+
+      setSheetState(() {});
+    },
+    title: const Text(
+      "Google Play / Apple",
+      style: TextStyle(
+        fontWeight: FontWeight.w700,
+      ),
+    ),
+    subtitle: const Text(
+      "Official In-App Purchase",
+    ),
+  ),
+),
+
+const SizedBox(height: 24),
 
                       // =========================================
                       // SECURITY / PROCESSING MESSAGE
@@ -3171,11 +3304,21 @@ void _showPurchaseConfirmation(
                                         // USING STORE PRODUCT ID
                                         // =======================
 
-                                        await BillingService
-                                            .instance
-                                            .buyPlan(
-                                          plan.productId,
-                                        );
+                                       switch (_selectedPaymentMethod) {
+  case PaymentMethod.inApp:
+    await BillingService.instance.buyPlan(
+      plan.productId,
+    );
+    break;
+
+  case PaymentMethod.razorpay:
+  await RazorpayService.instance.buyPlan(
+    plan.productId,
+    plan.amount,
+    FirebaseAuth.instance.currentUser!.uid,
+  );
+  break;
+}
                                       } catch (e) {
                                         if (!mounted) {
                                           return;

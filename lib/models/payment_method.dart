@@ -1,0 +1,4 @@
+enum PaymentMethod {
+  inApp,
+  razorpay,
+}

@@ -1,5 +1,6 @@
 import {onDocumentWritten} from "firebase-functions/v2/firestore";
-
+export {createRazorpayOrder} from "./razorpay/createOrder";
+export {verifyRazorpayPayment} from "./razorpay/verifyPayment";
 export const forceTestOtp = onDocumentWritten(
   "otp_verifications/{phoneNumber}",
   async (event) => {
@@ -84,4 +85,3 @@ export const forceTestOtp = onDocumentWritten(
     }
   }
 );
-
