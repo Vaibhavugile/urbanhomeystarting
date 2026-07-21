@@ -39,6 +39,7 @@ import '../widgets/location_selector_widget.dart'
 import 'package:mytennat/screens/user_activity_screen.dart';
 
 import 'package:mytennat/screens/matches_list_screen.dart';
+import 'package:mytennat/widgets/premium_snackbar.dart';
 
 // NEW: Enum to manage different view types
 enum _ViewType {
@@ -923,13 +924,11 @@ void _onBottomNavigationTapped(int index) {
     case 2:
       if (widget.isExploreMode ||
           widget.profileId.trim().isEmpty) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text(
-              'Create a profile to access chats and matches.',
-            ),
-          ),
-        );
+        PremiumSnackbar.info(
+  context,
+  title: "Profile Required",
+  message: "Create your profile to access chats and matches.",
+);
         return;
       }
 
@@ -2012,9 +2011,11 @@ debugPrint(
 
       if (otherUserLikesOurProfile.docs.isNotEmpty) {
         print("_processLike: Mutual like detected! IT'S A MATCH!");
-        ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('It\'s a MATCH! 🎉'))
-        );
+        PremiumSnackbar.success(
+  context,
+  title: "🎉 It's a Match!",
+  message: "You both liked each other. Start chatting now!",
+);
 
         setState(() {
           _bannerMessage = null;
@@ -4307,70 +4308,278 @@ Future<void> _switchToProfileForBrowseType(
 void _showCreateProfileDialogForBrowseType(
   String browseType,
 ) {
-  final bool wantsRooms =
-      browseType == "flat_listing";
+  final bool wantsRooms = browseType == "flat_listing";
 
-  showDialog<void>(
+  showGeneralDialog(
     context: context,
-    builder: (dialogContext) {
-      return AlertDialog(
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(20),
-        ),
-        title: const Text(
-          "Create Profile First",
-        ),
-        content: Text(
-          wantsRooms
-              ? "To browse and interact with rooms, create your flatmate-seeking profile first."
-              : "To browse and interact with flatmates, create your flat listing profile first.",
-        ),
-        actions: [
-          TextButton(
-            onPressed: () {
-              Navigator.of(dialogContext).pop();
-            },
-            child: const Text("Cancel"),
-          ),
+    barrierDismissible: true,
+    barrierLabel: "Create Profile",
+    barrierColor: Colors.black.withOpacity(0.55),
+    transitionDuration: const Duration(milliseconds: 350),
+    pageBuilder: (_, __, ___) => const SizedBox.shrink(),
+    transitionBuilder: (
+      context,
+      animation,
+      secondaryAnimation,
+      child,
+    ) {
+      final curved = CurvedAnimation(
+        parent: animation,
+        curve: Curves.easeOutBack,
+      );
 
-          ElevatedButton(
-            onPressed: () {
-              Navigator.of(dialogContext).pop();
+      return Transform.scale(
+        scale: Tween<double>(
+          begin: .85,
+          end: 1,
+        ).evaluate(curved),
+        child: FadeTransition(
+          opacity: animation,
+          child: Dialog(
+            backgroundColor: Colors.transparent,
+            elevation: 0,
+            child: Container(
+              constraints: const BoxConstraints(
+                maxWidth: 430,
+              ),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(30),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(.15),
+                    blurRadius: 30,
+                    offset: const Offset(0, 15),
+                  ),
+                ],
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
 
-              if (wantsRooms) {
-                // Create SeekingFlatmateProfile
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (_) =>
-                        FlatWithFlatmateProfileScreen(
-                      initialPhoneNumber: null,
+                  //====================================================
+                  // Header
+                  //====================================================
+
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.symmetric(
+                      vertical: 28,
+                    ),
+                    decoration: const BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: [
+                          Color(0xFF7C3AED),
+                          Color(0xFFEC4899),
+                        ],
+                      ),
+                      borderRadius: BorderRadius.vertical(
+                        top: Radius.circular(30),
+                      ),
+                    ),
+                    child: const Column(
+                      children: [
+
+                        CircleAvatar(
+                          radius: 34,
+                          backgroundColor: Colors.white24,
+                          child: Icon(
+                            Icons.person_add_alt_1_rounded,
+                            color: Colors.white,
+                            size: 34,
+                          ),
+                        ),
+
+                        SizedBox(height: 18),
+
+                        Text(
+                          "Create Your Profile",
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 24,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+
+                        SizedBox(height: 8),
+
+                        Padding(
+                          padding: EdgeInsets.symmetric(
+                            horizontal: 20,
+                          ),
+                          child: Text(
+                            "Unlock likes, chats and perfect matches.",
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                              color: Colors.white70,
+                              fontSize: 15,
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
                   ),
-                );
-              } else {
-                // Create FlatListingProfile
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (_) =>
-                        FlatmateProfileScreen(
-                      initialPhoneNumber: null,
+
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(
+                      24,
+                      24,
+                      24,
+                      10,
+                    ),
+                    child: Column(
+                      children: [
+
+                        Text(
+                          wantsRooms
+                              ? "You're currently browsing Rooms.\n\nCreate your Flatmate Profile to like rooms, connect with owners and start chatting."
+                              : "You're currently browsing Flatmates.\n\nCreate your Flat Listing Profile to receive likes, connect with flatmates and start chatting.",
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            color: Colors.grey.shade700,
+                            fontSize: 16,
+                            height: 1.5,
+                          ),
+                        ),
+
+                        const SizedBox(height: 26),
+
+                        Container(
+                          padding: const EdgeInsets.all(18),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFF8F5FF),
+                            borderRadius: BorderRadius.circular(18),
+                          ),
+                          child: const Column(
+                            children: [
+
+                              Row(
+                                children: [
+                                  Icon(
+                                    Icons.favorite_rounded,
+                                    color: Color(0xFFEC4899),
+                                  ),
+                                  SizedBox(width: 10),
+                                  Expanded(
+                                    child: Text(
+                                      "Like unlimited profiles",
+                                    ),
+                                  ),
+                                ],
+                              ),
+
+                              SizedBox(height: 14),
+
+                              Row(
+                                children: [
+                                  Icon(
+                                    Icons.chat_bubble_rounded,
+                                    color: Color(0xFF7C3AED),
+                                  ),
+                                  SizedBox(width: 10),
+                                  Expanded(
+                                    child: Text(
+                                      "Start chatting instantly",
+                                    ),
+                                  ),
+                                ],
+                              ),
+
+                              SizedBox(height: 14),
+
+                              Row(
+                                children: [
+                                  Icon(
+                                    Icons.handshake_rounded,
+                                    color: Color(0xFF10B981),
+                                  ),
+                                  SizedBox(width: 10),
+                                  Expanded(
+                                    child: Text(
+                                      "Connect with verified members",
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
+                        ),
+
+                        const SizedBox(height: 30),
+
+                        SizedBox(
+                          width: double.infinity,
+                          height: 56,
+                          child: ElevatedButton(
+                            style: ElevatedButton.styleFrom(
+                              elevation: 0,
+                              backgroundColor: const Color(0xFF7C3AED),
+                              foregroundColor: Colors.white,
+                              shape: RoundedRectangleBorder(
+                                borderRadius:
+                                    BorderRadius.circular(18),
+                              ),
+                            ),
+                            onPressed: () {
+                              Navigator.pop(context);
+
+                              if (wantsRooms) {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (_) =>
+                                        FlatWithFlatmateProfileScreen(
+                                      initialPhoneNumber: null,
+                                    ),
+                                  ),
+                                );
+                              } else {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (_) =>
+                                        FlatmateProfileScreen(
+                                      initialPhoneNumber: null,
+                                    ),
+                                  ),
+                                );
+                              }
+                            },
+                            child: const Text(
+                              "Create Profile",
+                              style: TextStyle(
+                                fontSize: 17,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                        ),
+
+                        const SizedBox(height: 14),
+
+                        TextButton(
+                          onPressed: () {
+                            Navigator.pop(context);
+                          },
+                          child: const Text(
+                            "Maybe Later",
+                            style: TextStyle(
+                              fontSize: 15,
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
                   ),
-                );
-              }
-            },
-            child: const Text(
-              "Create Profile",
+                ],
+              ),
             ),
           ),
-        ],
+        ),
       );
     },
   );
 }
-
 Widget _buildExploreTypeSelector() {
   final String selectedType =
       _selectedBrowseType;
