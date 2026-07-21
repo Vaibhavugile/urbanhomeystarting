@@ -9,6 +9,7 @@ import 'package:mytennat/data/location_data.dart'; // Adjust path as needed
 import 'package:mytennat/data/user_profile.dart'; // Or the correct path to your UserProfile class
 import 'package:mytennat/widgets/location_selector_widget.dart';
 import '../constants/google_keys.dart';
+import 'package:mytennat/widgets/premium_snackbar.dart';
 
 // Data model to hold all the answers for the user seeking a flat
 class SeekingFlatmateProfile {
@@ -3149,9 +3150,60 @@ LocationSelectorWidget(
      _buildFlatmatePreferencesPage(),
     ];
   }
-
- void _nextPage() {
+void _nextPage() {
   FocusScope.of(context).unfocus();
+
+  // Location
+  if (_currentPage == 0) {
+    if (_seekingFlatmateProfile.locationName.trim().isEmpty ||
+        _seekingFlatmateProfile.placeId.trim().isEmpty ||
+        _seekingFlatmateProfile.latitude == null ||
+        _seekingFlatmateProfile.longitude == null) {
+      PremiumSnackbar.error(
+        context,
+        title: "Location Required",
+        message: "Please select your preferred location.",
+      );
+      return;
+    }
+  }
+
+  // Minimum Budget
+  if (_currentPage == 2) {
+    if (_seekingFlatmateProfile.budgetMin == null ||
+        _seekingFlatmateProfile.budgetMin! <= 0) {
+      PremiumSnackbar.error(
+        context,
+        title: "Minimum Budget Required",
+        message: "Please enter your minimum budget.",
+      );
+      return;
+    }
+  }
+
+  // Maximum Budget
+  if (_currentPage == 3) {
+    if (_seekingFlatmateProfile.budgetMax == null ||
+        _seekingFlatmateProfile.budgetMax! <= 0) {
+      PremiumSnackbar.error(
+        context,
+        title: "Maximum Budget Required",
+        message: "Please enter your maximum budget.",
+      );
+      return;
+    }
+
+    if (_seekingFlatmateProfile.budgetMin != null &&
+        _seekingFlatmateProfile.budgetMax! <
+            _seekingFlatmateProfile.budgetMin!) {
+      PremiumSnackbar.error(
+        context,
+        title: "Invalid Budget Range",
+        message: "Maximum budget cannot be less than minimum budget.",
+      );
+      return;
+    }
+  }
 
   if (_currentPage < _pages.length - 1) {
     _pageController.nextPage(

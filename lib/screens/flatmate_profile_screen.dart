@@ -14,6 +14,8 @@ import '../widgets/location_selector_widget.dart';
 import '../constants/google_keys.dart';
 import 'package:flutter_image_compress/flutter_image_compress.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:mytennat/widgets/premium_snackbar.dart';
+
 // Data model to hold all the answers for the user listing a flat
 class FlatListingProfile {
   String documentId; // Added: To store the Firestore document ID
@@ -3671,8 +3673,34 @@ _buildFlatmatePreferencesPage(),
     ];
   }
 
-  void _nextPage() {
+void _nextPage() {
   FocusScope.of(context).unfocus();
+
+  if (_currentPage == 5) {
+    if (_flatListingProfile.locationName.trim().isEmpty ||
+        _flatListingProfile.placeId.trim().isEmpty ||
+        _flatListingProfile.latitude == null ||
+        _flatListingProfile.longitude == null) {
+      PremiumSnackbar.error(
+        context,
+        title: "Property Location Required",
+        message: "Please select your property location to continue.",
+      );
+      return;
+    }
+  }
+
+  if (_currentPage == 8) { // Replace with your Rent page index
+    if (_flatListingProfile.rentPrice == null ||
+        _flatListingProfile.rentPrice! <= 0) {
+      PremiumSnackbar.error(
+        context,
+        title: "Monthly Rent Required",
+        message: "Please enter the monthly rent to continue.",
+      );
+      return;
+    }
+  }
 
   if (_currentPage < _pages.length - 1) {
     _pageController.nextPage(
