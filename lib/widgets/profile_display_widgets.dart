@@ -1680,27 +1680,40 @@ _buildSection(
   ],
 ),
                         /// ✨ LIFESTYLE
-                        _buildProfileListField(
-                          '🌿 My Lifestyle',
-                          [
-                            profile.userProfile.cleanlinessLevel ?? '',
-                            profile.userProfile.socialPreferences ?? '',
-                            profile.userProfile.smokingHabit ?? '',
-                            profile.userProfile.drinkingHabit ?? '',
-                            profile.userProfile.foodPreference ?? '',
-                            profile.userProfile.petOwnership ?? '',
-                            profile.userProfile.petTolerance ?? '',
-                          ].where((e) => e.isNotEmpty).toList(),
-                        ),
-
-                        /// 🏡 DESIRED AMENITIES
-                        _buildProfileListField(
-                          "🏡 Amenities I'd Love",
-                          profile.amenitiesDesired,
-                        ),
-
-                        /// 🤝 IDEAL FLATMATE
-                        _buildSection(
+                        _buildCharacteristicGrid(
+  '🌿 My Lifestyle',
+  [
+    MapEntry(
+      '🧹 Cleanliness',
+      profile.userProfile.cleanlinessLevel,
+    ),
+    MapEntry(
+      '🎉 Social',
+      profile.userProfile.socialPreferences,
+    ),
+    MapEntry(
+      '🚭 Smoking',
+      profile.userProfile.smokingHabit,
+    ),
+    MapEntry(
+      '🍺 Drinking',
+      profile.userProfile.drinkingHabit,
+    ),
+    MapEntry(
+      '🍛 Food',
+      profile.userProfile.foodPreference,
+    ),
+    MapEntry(
+      '🐶 Pet Ownership',
+      profile.userProfile.petOwnership,
+    ),
+    MapEntry(
+      '❤️ Pet Preference',
+      profile.userProfile.petTolerance,
+    ),
+  ],
+),
+_buildSection(
                           title: "Who I'm Looking For",
                           children: [
                             _buildProfileField(
@@ -1720,6 +1733,14 @@ _buildSection(
                             ),
                           ],
                         ),
+                        /// 🏡 DESIRED AMENITIES
+                        _buildProfileListField(
+                          "🏡 Amenities I'd Love",
+                          profile.amenitiesDesired,
+                        ),
+
+                        /// 🤝 IDEAL FLATMATE
+                        
 
                         /// ⭐ PREFERRED HABITS
                         _buildProfileListField(
