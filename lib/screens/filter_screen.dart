@@ -305,8 +305,9 @@ void _applyFilters() {
           : _occupationController.text.trim();
 
   widget.onFiltersChanged(_filters);
-}
 
+  Navigator.pop(context); // Go back to MatchingScreen
+}
 void _clearAllFilters() {
   setState(() {
     _filters.clear();

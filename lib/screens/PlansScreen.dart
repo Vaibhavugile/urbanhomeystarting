@@ -993,28 +993,9 @@ Widget build(BuildContext context) {
               const SizedBox(
                   height: 30),
 
-              Row(
-                mainAxisAlignment:
-                    MainAxisAlignment
-                        .spaceEvenly,
-                children: [
-                  _statItem(
-                    "1500+",
-                    "Users",
-                  ),
-                  _statItem(
-                    "500+",
-                    "Matches",
-                  ),
-                  _statItem(
-                    "25+",
-                    "Cities",
-                  ),
-                ],
-              ),
+              
 
-              const SizedBox(
-                  height: 40),
+              
 
               isMobile
                   ? _buildMobilePlanLayout(

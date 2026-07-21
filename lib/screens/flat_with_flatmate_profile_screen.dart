@@ -1078,6 +1078,184 @@ String _getCurrentStepText() {
     super.dispose();
   }
 
+Future<bool> _showExitDialog() async {
+  const Color primary = Color(0xFF7C3AED);
+  const Color secondary = Color(0xFFEC4899);
+
+  final result = await showGeneralDialog<bool>(
+    context: context,
+    barrierDismissible: false,
+    barrierLabel: "",
+    barrierColor: Colors.black54,
+    transitionDuration: const Duration(milliseconds: 280),
+    pageBuilder: (_, __, ___) => const SizedBox.shrink(),
+    transitionBuilder: (context, animation, _, __) {
+      final curved = CurvedAnimation(
+        parent: animation,
+        curve: Curves.easeOutBack,
+      );
+
+      return ScaleTransition(
+        scale: Tween<double>(
+          begin: .85,
+          end: 1,
+        ).animate(curved),
+        child: FadeTransition(
+          opacity: animation,
+          child: AlertDialog(
+            backgroundColor: Colors.white,
+            elevation: 0,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(28),
+            ),
+            contentPadding: EdgeInsets.zero,
+            content: Container(
+              width: 360,
+              padding: const EdgeInsets.all(28),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+
+                  // Premium Icon
+                  Container(
+                    width: 82,
+                    height: 82,
+                    decoration: BoxDecoration(
+                      gradient: const LinearGradient(
+                        colors: [
+                          primary,
+                          secondary,
+                        ],
+                      ),
+                      borderRadius: BorderRadius.circular(25),
+                      boxShadow: [
+                        BoxShadow(
+                          color: primary.withOpacity(.25),
+                          blurRadius: 25,
+                          offset: const Offset(0, 10),
+                        ),
+                      ],
+                    ),
+                    child: const Icon(
+                      Icons.logout_rounded,
+                      color: Colors.white,
+                      size: 42,
+                    ),
+                  ),
+
+                  const SizedBox(height: 24),
+
+                  const Text(
+                    "Exit Profile Setup?",
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontSize: 23,
+                      fontWeight: FontWeight.w800,
+                      color: Color(0xFF111827),
+                    ),
+                  ),
+
+                  const SizedBox(height: 12),
+
+                  const Text(
+                    "If you exit now, your current progress won't be saved.",
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontSize: 15,
+                      height: 1.5,
+                      color: Color(0xFF64748B),
+                    ),
+                  ),
+
+                  const SizedBox(height: 30),
+
+                  Row(
+                    children: [
+
+                      Expanded(
+                        child: OutlinedButton(
+                          style: OutlinedButton.styleFrom(
+                            minimumSize: const Size(0, 55),
+                            side: BorderSide(
+                              color: Colors.grey.shade300,
+                            ),
+                            shape: RoundedRectangleBorder(
+                              borderRadius:
+                                  BorderRadius.circular(16),
+                            ),
+                          ),
+                          onPressed: () {
+                            Navigator.pop(context, false);
+                          },
+                          child: const Text(
+                            "Stay",
+                            style: TextStyle(
+                              fontWeight: FontWeight.w700,
+                              color: Color(0xFF374151),
+                            ),
+                          ),
+                        ),
+                      ),
+
+                      const SizedBox(width: 14),
+
+                      Expanded(
+                        child: Container(
+                          height: 55,
+                          decoration: BoxDecoration(
+                            gradient: const LinearGradient(
+                              colors: [
+                                primary,
+                                secondary,
+                              ],
+                            ),
+                            borderRadius:
+                                BorderRadius.circular(16),
+                            boxShadow: [
+                              BoxShadow(
+                                color: primary.withOpacity(.30),
+                                blurRadius: 16,
+                                offset: const Offset(0, 8),
+                              ),
+                            ],
+                          ),
+                          child: ElevatedButton(
+                            style: ElevatedButton.styleFrom(
+                              elevation: 0,
+                              shadowColor: Colors.transparent,
+                              backgroundColor: Colors.transparent,
+                              foregroundColor: Colors.white,
+                              shape: RoundedRectangleBorder(
+                                borderRadius:
+                                    BorderRadius.circular(16),
+                              ),
+                            ),
+                            onPressed: () {
+                              Navigator.pop(context, true);
+                            },
+                            child: const Text(
+                              "Exit",
+                              style: TextStyle(
+                                fontWeight: FontWeight.w700,
+                                fontSize: 15,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      );
+    },
+  );
+
+  return result ?? false;
+}
   // --- Common Question Builders ---
 Widget _buildTextQuestion({
   required String title,
@@ -3690,7 +3868,18 @@ Widget build(BuildContext context) {
   final bool isLastPage =
       _currentPage == _pages.length - 1;
 
-  return Scaffold(
+  return PopScope(
+  canPop: false,
+  onPopInvoked: (didPop) async {
+    if (didPop) return;
+
+    final shouldExit = await _showExitDialog();
+
+    if (shouldExit && mounted) {
+      Navigator.of(context).pop();
+    }
+  },
+  child: Scaffold(
     backgroundColor: backgroundColor,
 
     body: Stack(
@@ -4447,7 +4636,8 @@ Widget build(BuildContext context) {
           ),
       ],
     ),
-  );
+    ),
+);
 }
 }
 class _PremiumSnackBarIcon extends StatelessWidget {

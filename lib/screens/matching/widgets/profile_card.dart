@@ -340,17 +340,23 @@ if (isVerified) {
 
   badgeText = "Not Verified";
 }
-final double screenHeight =
-    MediaQuery.of(context).size.height;
 
-final bool isSmallScreen =
-    screenHeight < 750;
 
-final int imageFlex =
-    isSmallScreen ? 40 : 50;
+final media = MediaQuery.of(context);
 
-final int contentFlex =
-    isSmallScreen ? 60 : 50;
+final double screenHeight = media.size.height;
+final double screenWidth = media.size.width;
+
+final bool isIOS = Theme.of(context).platform == TargetPlatform.iOS;
+
+final bool compactScreen =
+    screenHeight < 760 ||
+    screenWidth < 390 ||
+    isIOS;
+
+final int imageFlex = compactScreen ? 34 : 46;
+
+final int contentFlex = compactScreen ? 66 : 54;
     return Container(
       height: MediaQuery.of(context).size.height * 0.82,
       margin: const EdgeInsets.all(12),

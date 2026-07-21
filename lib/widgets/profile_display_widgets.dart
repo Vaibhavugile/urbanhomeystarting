@@ -132,96 +132,76 @@ Widget _buildSection({
   return Container(
     margin: margin ??
         const EdgeInsets.symmetric(
-          horizontal: 20,
-          vertical: 10,
+          horizontal: 16,
+          vertical: 8,
         ),
-
     decoration: BoxDecoration(
-      color: kCardColor,
-
-      borderRadius: BorderRadius.circular(28),
-
+      color: Colors.white,
+      borderRadius: BorderRadius.circular(18),
       border: Border.all(
-        color: kBorderColor,
-        width: 1,
+        color: const Color(0xFFE9EDF3),
       ),
-
       boxShadow: [
         BoxShadow(
           color: Colors.black.withOpacity(.04),
-          blurRadius: 30,
-          offset: const Offset(0, 12),
+          blurRadius: 18,
+          offset: const Offset(0, 8),
         ),
       ],
     ),
-
     child: Padding(
-      padding:
-          padding ??
-              const EdgeInsets.symmetric(
-                horizontal: 24,
-                vertical: 24,
-              ),
-
+      padding: padding ??
+          const EdgeInsets.symmetric(
+            horizontal: 18,
+            vertical: 16,
+          ),
       child: Column(
-        crossAxisAlignment:
-            CrossAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
 
-          /// HEADER
+          /// Header
           Row(
             children: [
 
               Container(
-                width: 14,
-                height: 14,
-                decoration: BoxDecoration(
+                width: 10,
+                height: 10,
+                decoration: const BoxDecoration(
                   shape: BoxShape.circle,
                   gradient: kPrimaryGradient,
-
-                  boxShadow: [
-                    BoxShadow(
-                      color: kPrimaryColor
-                          .withOpacity(.30),
-                      blurRadius: 12,
-                      spreadRadius: 1,
-                    ),
-                  ],
                 ),
               ),
 
-              const SizedBox(width: 12),
+              const SizedBox(width: 10),
 
               Expanded(
                 child: Text(
                   title,
                   style: const TextStyle(
-                    fontSize: 22,
+                    fontSize: 18,
                     fontWeight: FontWeight.w800,
                     color: kDarkText,
-                    letterSpacing: -.5,
                   ),
                 ),
               ),
             ],
           ),
 
-          const SizedBox(height: 18),
+          const SizedBox(height: 12),
 
           Container(
             height: 1,
             decoration: BoxDecoration(
               gradient: LinearGradient(
                 colors: [
-                  kPrimaryColor.withOpacity(.15),
-                  kAccentColor.withOpacity(.08),
+                  kPrimaryColor.withOpacity(.18),
                   Colors.transparent,
                 ],
               ),
             ),
           ),
 
-          const SizedBox(height: 22),
+          const SizedBox(height: 14),
 
           ...children,
         ],
@@ -407,113 +387,76 @@ Widget _buildProfileField(
 }) {
   if (value == null ||
       value.trim().isEmpty ||
-      value == 'N/A') {
+      value == "N/A") {
     return const SizedBox.shrink();
   }
 
   return Container(
-    margin: const EdgeInsets.only(
-      bottom: 14,
-    ),
-    padding: const EdgeInsets.all(18),
-
+    margin: const EdgeInsets.only(bottom: 10),
+    padding: const EdgeInsets.all(14),
     decoration: BoxDecoration(
-      color: kCardColor,
-
-      borderRadius:
-          BorderRadius.circular(22),
-
+      color: Colors.white,
+      borderRadius: BorderRadius.circular(16),
       border: Border.all(
-        color: kBorderColor,
+        color: const Color(0xFFE8ECF2),
       ),
-
       boxShadow: [
         BoxShadow(
-          color: Colors.black.withOpacity(
-            .04,
-          ),
-          blurRadius: 20,
-          offset: const Offset(0, 8),
+          color: Colors.black.withOpacity(.03),
+          blurRadius: 12,
+          offset: const Offset(0, 5),
         ),
       ],
     ),
-
     child: Row(
-      crossAxisAlignment:
-          CrossAxisAlignment.start,
       children: [
 
-        /// ICON
         if (icon != null)
           Container(
-            width: 52,
-            height: 52,
-
+            width: 42,
+            height: 42,
             decoration: BoxDecoration(
-              borderRadius:
-                  BorderRadius.circular(
-                16,
-              ),
-
-              gradient:
-                  kPrimaryGradient,
+              gradient: kPrimaryGradient,
+              borderRadius: BorderRadius.circular(12),
             ),
-
             child: Icon(
               icon,
               color: Colors.white,
-              size: 24,
+              size: 20,
             ),
           ),
 
         if (icon != null)
-          const SizedBox(width: 16),
+          const SizedBox(width: 12),
 
-        /// TEXT
         Expanded(
           child: Column(
-            crossAxisAlignment:
-                CrossAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
 
               Text(
                 label.toUpperCase(),
                 style: const TextStyle(
-                  color: kLightText,
-                  fontSize: 11,
-                  fontWeight:
-                      FontWeight.w700,
-                  letterSpacing: 1.1,
+                  fontSize: 10,
+                  fontWeight: FontWeight.w700,
+                  color: kMediumText,
+                  letterSpacing: 1,
                 ),
               ),
 
-              const SizedBox(height: 8),
+              const SizedBox(height: 4),
 
               Text(
                 value,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
                 style: const TextStyle(
+                  fontSize: 15,
+                  fontWeight: FontWeight.w700,
                   color: kDarkText,
-                  fontSize: 16,
-                  fontWeight:
-                      FontWeight.w700,
-                  height: 1.4,
                 ),
               ),
             ],
-          ),
-        ),
-
-        /// STATUS DOT
-        Container(
-          width: 10,
-          height: 10,
-          margin:
-              const EdgeInsets.only(
-            top: 8,
-          ),
-          decoration: const BoxDecoration(
-            shape: BoxShape.circle,
-            color: kOnlineColor,
           ),
         ),
       ],
@@ -793,7 +736,7 @@ Widget _buildIconValueCard(
     return const SizedBox.shrink();
   }
 
-  dynamic iconData =
+  final dynamic iconData =
       _characteristicIcons[label] ??
       _characteristicIcons[value];
 
@@ -802,133 +745,95 @@ Widget _buildIconValueCard(
   if (iconData is IconData) {
     iconWidget = Icon(
       iconData,
-      size: 24,
+      size: 20,
       color: Colors.white,
     );
   } else if (iconData is String &&
       iconData.endsWith('.json')) {
     iconWidget = Lottie.asset(
       iconData,
-      width: 36,
-      height: 36,
+      width: 26,
+      height: 26,
       repeat: true,
     );
   } else {
     iconWidget = const Icon(
       Icons.auto_awesome_rounded,
-      size: 24,
+      size: 20,
       color: Colors.white,
     );
   }
 
   return Container(
-    padding: const EdgeInsets.all(18),
-
+    padding: const EdgeInsets.all(14),
     decoration: BoxDecoration(
-      color: kCardColor,
-
-      borderRadius:
-          BorderRadius.circular(24),
-
+      color: backgroundColor ?? kCardColor,
+      borderRadius: BorderRadius.circular(18),
       border: Border.all(
         color: kBorderColor,
       ),
-
       boxShadow: [
         BoxShadow(
-          color: Colors.black.withOpacity(
-            .04,
-          ),
-          blurRadius: 18,
-          offset: const Offset(0, 8),
+          color: Colors.black.withOpacity(.03),
+          blurRadius: 12,
+          offset: const Offset(0, 5),
         ),
       ],
     ),
-
     child: Column(
-  crossAxisAlignment:
-      CrossAxisAlignment.start,
-  mainAxisSize: MainAxisSize.max,
-  children: [
-
-        /// TOP ROW
-        Column(
-  crossAxisAlignment: CrossAxisAlignment.start,
-  children: [
-
-    Container(
-      width: 58,
-      height: 58,
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(18),
-        gradient: kPrimaryGradient,
-        boxShadow: [
-          BoxShadow(
-            color: const Color(0xFF7C3AED)
-                .withOpacity(.20),
-            blurRadius: 15,
-            offset: const Offset(0, 8),
-          ),
-        ],
-      ),
-      child: Center(
-        child: iconWidget,
-      ),
-    ),
-
-    const SizedBox(height: 14),
-
-    Container(
-      padding: const EdgeInsets.symmetric(
-        horizontal: 12,
-        vertical: 7,
-      ),
-      decoration: BoxDecoration(
-        color: kLightGrey,
-        borderRadius: BorderRadius.circular(30),
-      ),
-      child: Text(
-        label.toUpperCase(),
-        maxLines: 2,
-        textAlign: TextAlign.center,
-        style: const TextStyle(
-          color: kMediumText,
-          fontSize: 10,
-          fontWeight: FontWeight.w700,
-          letterSpacing: .8,
+      crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Row(
+          children: [
+            Container(
+              width: 42,
+              height: 42,
+              decoration: BoxDecoration(
+                gradient: kPrimaryGradient,
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Center(child: iconWidget),
+            ),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Text(
+                label,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+                style: const TextStyle(
+                  fontSize: 11,
+                  fontWeight: FontWeight.w700,
+                  color: kMediumText,
+                  letterSpacing: .3,
+                ),
+              ),
+            ),
+          ],
         ),
-      ),
-    ),
-  ],
-),
 
-    const SizedBox(height: 18),
-
-Expanded(
-  child: Text(
-    value,
-    maxLines: 3,
-    overflow: TextOverflow.ellipsis,
-    style: const TextStyle(
-      fontSize: 17,
-      fontWeight: FontWeight.w800,
-      color: kDarkText,
-      height: 1.3,
-    ),
-  ),
-),
         const SizedBox(height: 12),
 
+        Text(
+          value,
+          maxLines: 2,
+          overflow: TextOverflow.ellipsis,
+          style: const TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.w800,
+            color: kDarkText,
+            height: 1.25,
+          ),
+        ),
+
+        const SizedBox(height: 10),
+
         Container(
-          width: 50,
-          height: 5,
+          width: 38,
+          height: 4,
           decoration: BoxDecoration(
-            borderRadius:
-                BorderRadius.circular(
-              100,
-            ),
-            gradient:
-                kPrimaryGradient,
+            gradient: kPrimaryGradient,
+            borderRadius: BorderRadius.circular(100),
           ),
         ),
       ],
@@ -1044,39 +949,126 @@ Widget _buildPremiumHeroSection(
           ),
 
           /// NAME + VERIFIED
-          Positioned(
-            left: 24,
-            right: 24,
-            bottom: 26,
-            child: Row(
-              children: [
+         Positioned(
+  left: 20,
+  right: 20,
+  bottom: 24,
+  child: Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
 
-                Expanded(
-                  child: Text(
-                    (profile.userProfile.name?.trim().isNotEmpty == true)
-    ? profile.userProfile.name!
-        .trim()
-        .split(RegExp(r'\s+'))
-        .first
-    : "",
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 30,
-                      fontWeight: FontWeight.w800,
-                    ),
-                  ),
-                ),
+      Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
 
-                const SizedBox(width: 12),
-
-                _buildVerificationBadge(profile),
-              ],
+          Expanded(
+            child: Text(
+              (profile.userProfile.name?.trim().isNotEmpty == true)
+                  ? profile.userProfile.name!
+                      .trim()
+                      .split(RegExp(r'\s+'))
+                      .first
+                  : "",
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 30,
+                fontWeight: FontWeight.w900,
+              ),
             ),
           ),
+
+          const SizedBox(width: 10),
+
+          _buildVerificationBadge(profile),
         ],
       ),
+
+      const SizedBox(height: 10),
+
+      Wrap(
+        spacing: 8,
+        runSpacing: 8,
+        children: [
+
+          if (profile.locationName != null &&
+              profile.locationName!.isNotEmpty)
+            _heroChip(
+              Icons.location_on,
+              profile.locationName!,
+            ),
+
+          if (profile.rentPrice != null)
+            _heroChip(
+              Icons.currency_rupee,
+              "₹${profile.rentPrice}",
+            ),
+
+          if (profile.flatType != null)
+            _heroChip(
+              Icons.home_work,
+              profile.flatType!,
+            ),
+
+          if (profile.roomType != null)
+            _heroChip(
+              Icons.bed,
+              profile.roomType!,
+            ),
+        ],
+      ),
+    ],
+  ),
+),
+        ],
+      ),
+    ),
+  );
+}
+Widget _heroChip(
+  IconData icon,
+  String text,
+) {
+  return Container(
+    constraints: const BoxConstraints(
+      maxWidth: 320, // Prevent chip from becoming too wide
+    ),
+    padding: const EdgeInsets.symmetric(
+      horizontal: 12,
+      vertical: 8,
+    ),
+    decoration: BoxDecoration(
+      color: Colors.black.withOpacity(.35),
+      borderRadius: BorderRadius.circular(30),
+      border: Border.all(
+        color: Colors.white24,
+      ),
+    ),
+    child: Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Icon(
+          icon,
+          color: Colors.white,
+          size: 15,
+        ),
+        const SizedBox(width: 6),
+
+        Flexible(
+          child: Text(
+            text,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            softWrap: false,
+            style: const TextStyle(
+              color: Colors.white,
+              fontWeight: FontWeight.w700,
+              fontSize: 12,
+            ),
+          ),
+        ),
+      ],
     ),
   );
 }
@@ -1085,21 +1077,12 @@ Widget _buildCharacteristicGrid(
   String title,
   List<MapEntry<String, String?>> characteristics,
 ) {
-  // ============================================================
-  // REMOVE EMPTY VALUES
-  // ============================================================
+  final validItems = characteristics.where((entry) {
+    final value = entry.value?.trim() ?? '';
 
-  final List<MapEntry<String, String?>> validItems =
-      characteristics.where((entry) {
-    final String value =
-        entry.value?.trim() ?? '';
+    if (value.isEmpty) return false;
 
-    if (value.isEmpty) {
-      return false;
-    }
-
-    final String normalized =
-        value.toLowerCase();
+    final normalized = value.toLowerCase();
 
     return normalized != 'n/a' &&
         normalized != 'null' &&
@@ -1107,101 +1090,76 @@ Widget _buildCharacteristicGrid(
         normalized != 'not specified';
   }).toList();
 
-  // ============================================================
-  // NOTHING FILLED → HIDE COMPLETE SECTION
-  // ============================================================
-
   if (validItems.isEmpty) {
     return const SizedBox.shrink();
   }
-
-  // ============================================================
-  // SHOW ONLY FILLED ITEMS
-  // ============================================================
 
   return _buildSection(
     title: title,
     children: [
       GridView.builder(
         shrinkWrap: true,
-        physics:
-            const NeverScrollableScrollPhysics(),
-
+        physics: const NeverScrollableScrollPhysics(),
         itemCount: validItems.length,
-
         gridDelegate:
             const SliverGridDelegateWithFixedCrossAxisCount(
           crossAxisCount: 2,
-          crossAxisSpacing: 14,
-          mainAxisSpacing: 14,
-          childAspectRatio: 1.35,
+          crossAxisSpacing: 10,
+          mainAxisSpacing: 10,
+          childAspectRatio: 1.55,
         ),
-
         itemBuilder: (context, index) {
-          final MapEntry<String, String?>
-              item = validItems[index];
+          final item = validItems[index];
 
           return Container(
-            padding: const EdgeInsets.all(14),
+            padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
-              color: kPrimaryColor
-                  .withOpacity(.055),
-              borderRadius:
-                  BorderRadius.circular(18),
+              color: const Color(0xFFF8F9FD),
+              borderRadius: BorderRadius.circular(16),
               border: Border.all(
-                color: kPrimaryColor
-                    .withOpacity(.10),
+                color: kPrimaryColor.withOpacity(.08),
               ),
             ),
             child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisAlignment:
-                  MainAxisAlignment.center,
-              crossAxisAlignment:
-                  CrossAxisAlignment.start,
+                  MainAxisAlignment.spaceBetween,
               children: [
+
                 Container(
                   width: 34,
                   height: 34,
                   decoration: BoxDecoration(
                     gradient: kPrimaryGradient,
                     borderRadius:
-                        BorderRadius.circular(11),
+                        BorderRadius.circular(10),
                   ),
                   child: const Icon(
-                    Icons
-                        .check_circle_outline_rounded,
+                    Icons.auto_awesome_rounded,
                     color: Colors.white,
                     size: 18,
                   ),
                 ),
 
-                const SizedBox(height: 10),
-
                 Text(
                   item.key,
                   maxLines: 1,
-                  overflow:
-                      TextOverflow.ellipsis,
+                  overflow: TextOverflow.ellipsis,
                   style: const TextStyle(
-                    color: kMediumText,
                     fontSize: 11,
-                    fontWeight:
-                        FontWeight.w600,
+                    color: kMediumText,
+                    fontWeight: FontWeight.w600,
                   ),
                 ),
 
-                const SizedBox(height: 4),
-
                 Text(
-                  item.value!.trim(),
+                  item.value!,
                   maxLines: 2,
-                  overflow:
-                      TextOverflow.ellipsis,
+                  overflow: TextOverflow.ellipsis,
                   style: const TextStyle(
+                    fontSize: 15,
+                    fontWeight: FontWeight.w800,
                     color: kDarkText,
-                    fontSize: 14,
-                    fontWeight:
-                        FontWeight.w800,
                   ),
                 ),
               ],
@@ -1319,34 +1277,75 @@ Widget _buildSeekingHeroSection(
 
           /// NAME + VERIFIED
           Positioned(
-            left: 24,
-            right: 24,
-            bottom: 26,
-            child: Row(
-              children: [
+  left: 20,
+  right: 20,
+  bottom: 24,
+  child: Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
 
-                Expanded(
-                  child: Text(
-                    (profile.userProfile.name?.trim().isNotEmpty == true)
-    ? profile.userProfile.name!
-        .trim()
-        .split(RegExp(r'\s+'))
-        .first
-    : "",
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 30,
-                      fontWeight: FontWeight.w800,
-                    ),
-                  ),
-                ),
+      Row(
+        children: [
 
-                _buildVerificationBadge(profile),
-              ],
+          Expanded(
+            child: Text(
+              (profile.userProfile.name?.trim().isNotEmpty == true)
+                  ? profile.userProfile.name!
+                      .trim()
+                      .split(RegExp(r'\s+'))
+                      .first
+                  : "",
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 30,
+                fontWeight: FontWeight.w900,
+              ),
             ),
           ),
+
+          _buildVerificationBadge(profile),
+        ],
+      ),
+
+      const SizedBox(height: 10),
+
+      Wrap(
+        spacing: 8,
+        runSpacing: 8,
+        children: [
+
+          if (profile.locationName != null &&
+              profile.locationName!.isNotEmpty)
+            _heroChip(
+              Icons.location_on,
+              profile.locationName!,
+            ),
+
+          if (profile.budgetMin != null ||
+              profile.budgetMax != null)
+            _heroChip(
+              Icons.currency_rupee,
+              "₹${profile.budgetMin ?? "-"} - ₹${profile.budgetMax ?? "-"}",
+            ),
+
+          if (profile.preferredFlatType != null)
+            _heroChip(
+              Icons.apartment,
+              profile.preferredFlatType!,
+            ),
+
+          if (profile.preferredRoomType != null)
+            _heroChip(
+              Icons.bed,
+              profile.preferredRoomType!,
+            ),
+        ],
+      ),
+    ],
+  ),
+),
         ],
       ),
     ),
@@ -1371,152 +1370,155 @@ Widget _buildPreferenceGrid(
   String title,
   List<String>? preferences,
 ) {
-  // ============================================================
-  // CLEAN PREFERENCE VALUES
-  // ============================================================
-
   final List<String> validPreferences =
       preferences
-          ?.where((item) {
-            final String value = item.trim();
+              ?.where((e) {
+                final value = e.trim();
 
-            if (value.isEmpty) {
-              return false;
-            }
+                if (value.isEmpty) return false;
 
-            final String normalized =
-                value.toLowerCase();
+                final normalized = value.toLowerCase();
 
-            return normalized != 'n/a' &&
-                normalized != 'null' &&
-                normalized != 'none' &&
-                normalized != 'not specified';
-          })
-          .toList() ??
-      [];
-
-  // ============================================================
-  // NOTHING FILLED → HIDE COMPLETE SECTION
-  // ============================================================
+                return normalized != 'n/a' &&
+                    normalized != 'null' &&
+                    normalized != 'none' &&
+                    normalized != 'not specified';
+              })
+              .toList() ??
+          [];
 
   if (validPreferences.isEmpty) {
     return const SizedBox.shrink();
   }
 
-  // ============================================================
-  // SHOW SECTION
-  // ============================================================
-
   return _buildSection(
     title: title,
     children: [
-      GridView.builder(
-        shrinkWrap: true,
-        physics:
-            const NeverScrollableScrollPhysics(),
 
-        itemCount: validPreferences.length,
-
-        gridDelegate:
-            const SliverGridDelegateWithFixedCrossAxisCount(
-          crossAxisCount: 2,
-          crossAxisSpacing: 14,
-          mainAxisSpacing: 14,
-          childAspectRatio: 1.0,
-        ),
-
-        itemBuilder: (context, index) {
-          final String preference =
-              validPreferences[index];
+      Wrap(
+        spacing: 10,
+        runSpacing: 10,
+        children: validPreferences.map((item) {
 
           return Container(
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: kPrimaryColor
-                  .withOpacity(.055),
-              borderRadius:
-                  BorderRadius.circular(20),
-              border: Border.all(
-                color: kPrimaryColor
-                    .withOpacity(.10),
-              ),
+            padding: const EdgeInsets.symmetric(
+              horizontal: 14,
+              vertical: 10,
             ),
-            child: Column(
-              mainAxisAlignment:
-                  MainAxisAlignment.center,
+            decoration: BoxDecoration(
+              gradient: kPrimaryGradient,
+              borderRadius: BorderRadius.circular(30),
+              boxShadow: [
+                BoxShadow(
+                  color: kPrimaryColor.withOpacity(.18),
+                  blurRadius: 10,
+                  offset: const Offset(0, 5),
+                ),
+              ],
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
               children: [
-                Container(
-                  width: 48,
-                  height: 48,
-                  decoration: BoxDecoration(
-                    gradient: kPrimaryGradient,
-                    borderRadius:
-                        BorderRadius.circular(16),
-                    boxShadow: [
-                      BoxShadow(
-                        color: kPrimaryColor
-                            .withOpacity(.18),
-                        blurRadius: 12,
-                        offset:
-                            const Offset(0, 6),
-                      ),
-                    ],
-                  ),
-                  child: const Icon(
-                    Icons.favorite_rounded,
-                    color: Colors.white,
-                    size: 24,
-                  ),
+
+                const Icon(
+                  Icons.check_circle_rounded,
+                  color: Colors.white,
+                  size: 18,
                 ),
 
-                const SizedBox(height: 12),
+                const SizedBox(width: 8),
 
                 Text(
-                  preference,
-                  textAlign: TextAlign.center,
-                  maxLines: 2,
-                  overflow:
-                      TextOverflow.ellipsis,
+                  item,
                   style: const TextStyle(
-                    color: kDarkText,
+                    color: Colors.white,
+                    fontWeight: FontWeight.w700,
                     fontSize: 13,
-                    fontWeight:
-                        FontWeight.w700,
-                    height: 1.3,
                   ),
                 ),
               ],
             ),
           );
-        },
+
+        }).toList(),
       ),
 
-      const SizedBox(height: 14),
+      const SizedBox(height: 12),
 
       Align(
         alignment: Alignment.centerRight,
-        child: Container(
-          padding: const EdgeInsets.symmetric(
-            horizontal: 12,
-            vertical: 6,
-          ),
-          decoration: BoxDecoration(
-            color:
-                kPrimaryColor.withOpacity(.08),
-            borderRadius:
-                BorderRadius.circular(30),
-          ),
-          child: Text(
-            '${validPreferences.length} Selected',
-            style: const TextStyle(
-              color: kPrimaryColor,
-              fontWeight: FontWeight.w700,
-              fontSize: 12,
-            ),
+        child: Text(
+          "${validPreferences.length} Selected",
+          style: const TextStyle(
+            color: kMediumText,
+            fontSize: 12,
+            fontWeight: FontWeight.w600,
           ),
         ),
       ),
     ],
+  );
+}
+Widget _buildQuickOverview(List<MapEntry<String, String?>> items) {
+  final validItems = items.where((e) {
+    final value = e.value?.trim() ?? "";
+
+    if (value.isEmpty) return false;
+
+    final normalized = value.toLowerCase();
+
+    return normalized != "n/a" &&
+        normalized != "null" &&
+        normalized != "none" &&
+        normalized != "not specified";
+  }).toList();
+
+  if (validItems.isEmpty) {
+    return const SizedBox.shrink();
+  }
+
+  return Container(
+    margin: const EdgeInsets.fromLTRB(16, 14, 16, 8),
+    child: Wrap(
+      spacing: 10,
+      runSpacing: 10,
+      children: validItems.map((item) {
+        return Container(
+          padding: const EdgeInsets.symmetric(
+            horizontal: 14,
+            vertical: 10,
+          ),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(30),
+            border: Border.all(
+              color: kBorderColor,
+            ),
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+
+              const Icon(
+                Icons.check_circle,
+                size: 16,
+                color: kPrimaryColor,
+              ),
+
+              const SizedBox(width: 8),
+
+              Text(
+                "${item.key}: ${item.value}",
+                style: const TextStyle(
+                  fontWeight: FontWeight.w600,
+                  fontSize: 13,
+                ),
+              ),
+            ],
+          ),
+        );
+      }).toList(),
+    ),
   );
 }
 // Helper to convert List<String> to List<MapEntry<String, String?>> for grid display
@@ -1592,44 +1594,37 @@ _buildSection(
     ),
   ],
 ),
-                        _buildSection(
-                          title: '👤 About Me',
-                          children: [
-                            _buildProfileField(
-                              'Gender',
-                              profile.userProfile.gender,
-                              icon: Icons.person_outline,
-                            ),
-                            _buildProfileField(
-                              'Age',
-                              profile.userProfile.age?.toString(),
-                              icon: Icons.cake_outlined,
-                            ),
-                            _buildProfileField(
-                              'Occupation',
-                              profile.userProfile.occupation,
-                              icon: Icons.work_outline,
-                            ),
-                            _buildProfileField(
-                              'Religion',
-                              profile.userProfile.religion,
-                              icon: Icons.temple_hindu_outlined,
-                            ),
-                            _buildProfileField(
-                              'Current Location',
-                              profile.userProfile.city,
-                              icon: Icons.location_on_outlined,
-                            ),
-                            _buildProfileField(
-                              'Move-in Date',
-                              profile.moveInDate != null
-                                  ? DateFormat('dd/MM/yyyy')
-                                      .format(profile.moveInDate!)
-                                  : null,
-                              icon: Icons.calendar_month_outlined,
-                            ),
-                          ],
-                        ),
+                        _buildCharacteristicGrid(
+  '👤 About Me',
+  [
+    MapEntry(
+      'Gender',
+      profile.userProfile.gender,
+    ),
+    MapEntry(
+      'Age',
+      profile.userProfile.age?.toString(),
+    ),
+    MapEntry(
+      'Occupation',
+      profile.userProfile.occupation,
+    ),
+    MapEntry(
+      'Religion',
+      profile.userProfile.religion,
+    ),
+    MapEntry(
+      'Current Location',
+      profile.userProfile.city,
+    ),
+    MapEntry(
+      'Move-in Date',
+      profile.moveInDate != null
+          ? DateFormat('dd MMM yyyy').format(profile.moveInDate!)
+          : null,
+    ),
+  ],
+),
 
                         /// 📝 BIO
                         if (profile.userProfile.bio != null &&
@@ -1657,37 +1652,33 @@ _buildSection(
                           ),
 
                         /// 🏠 HOUSING PREFERENCES
-                        _buildSection(
-                          title: '🏠 My Home Preferences',
-                          children: [
-                            _buildProfileField(
-                              'Budget',
-                              '₹${profile.budgetMin ?? 'N/A'} - ₹${profile.budgetMax ?? 'N/A'}',
-                              icon: Icons.currency_rupee,
-                            ),
-                            _buildProfileField(
-                              'Desired City',
-                              profile.userProfile.city,
-                              icon: Icons.location_city,
-                            ),
-                            _buildProfileField(
-                              'Flat Type',
-                              profile.preferredFlatType,
-                              icon: Icons.apartment,
-                            ),
-                            _buildProfileField(
-                              'Room Type',
-                              profile.preferredRoomType,
-                              icon: Icons.bed_outlined,
-                            ),
-                            _buildProfileField(
-                              'Furnished',
-                              profile.preferredFurnishedStatus,
-                              icon: Icons.chair_outlined,
-                            ),
-                          ],
-                        ),
-
+        _buildCharacteristicGrid(
+  '🏠 My Home Preferences',
+  [
+    MapEntry(
+      'Budget',
+      profile.budgetMin != null || profile.budgetMax != null
+          ? '₹${profile.budgetMin ?? 'N/A'} - ₹${profile.budgetMax ?? 'N/A'}'
+          : null,
+    ),
+    MapEntry(
+      'Desired City',
+      profile.userProfile.city,
+    ),
+    MapEntry(
+      'Flat Type',
+      profile.preferredFlatType,
+    ),
+    MapEntry(
+      'Room Type',
+      profile.preferredRoomType,
+    ),
+    MapEntry(
+      'Furnished',
+      profile.preferredFurnishedStatus,
+    ),
+  ],
+),
                         /// ✨ LIFESTYLE
                         _buildProfileListField(
                           '🌿 My Lifestyle',
@@ -1830,6 +1821,7 @@ class _FlatListingProfileDisplayState
             profile,
             _pageController,
           ),
+          
 _buildSection(
   title: '📍 Location',
   children: [
