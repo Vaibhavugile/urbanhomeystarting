@@ -31,6 +31,7 @@ class FlatListingProfile {
   int? rentPrice;
   int? depositAmount;
   String bathroomType;
+  DateTime? createdAt;
   // String balconyAvailability;
   // String parkingAvailability;
   List<String> amenities;
@@ -68,6 +69,7 @@ String? currentOccupants;
     this.availableFor = '',
     this.availabilityDate,
     this.rentPrice,
+    this.createdAt,
     this.depositAmount,
     this.bathroomType = '',
     this.leaseDuration = '',
@@ -76,6 +78,7 @@ String? currentOccupants;
 this.locationName = '',
 this.placeId = '',
 this.latitude,
+
 this.longitude,
     this.flatDescription = '',
     this.preferredGender = '',
@@ -94,7 +97,8 @@ this.longitude,
   factory FlatListingProfile.fromMap(Map<String, dynamic> data, String documentId) {
     // Add this print statement to see the raw data being processed
     print('Document ID: $documentId, Raw Data: $data');
-
+createdAt:
+    (data['createdAt'] as Timestamp?)?.toDate();
     Map<String, dynamic> flatmatePreferences = {
   'preferredFlatmateGender': data['preferredFlatmateGender'],
   'preferredFlatmateAge': data['preferredFlatmateAge'],
@@ -103,6 +107,7 @@ this.longitude,
   'idealQualities': data['idealQualities'],
   'dealBreakers': data['dealBreakers'],
 };
+
     final Map<String, dynamic>? userProfileData = data['userProfile'] as Map<String, dynamic>?;
 
     // Add this print statement to see the userProfileData specifically
@@ -122,6 +127,8 @@ roomType: data['roomType'] ?? '',
 furnishedStatus: data['furnishedStatus'] ?? '',
 availableFor: data['availableFor'] ?? '',
 currentOccupants: data['currentOccupants'] ?? '',
+createdAt: (data['createdAt'] as Timestamp?)?.toDate(),
+
 leaseDuration:
     data['leaseDuration'],
 availabilityDate: data['availabilityDate'] is Timestamp
@@ -187,6 +194,9 @@ flatDescription: data['flatDescription'] ?? '',
       'roomType': roomType,
       'furnishedStatus': furnishedStatus,
       'availableFor': availableFor,
+      'createdAt': createdAt != null
+    ? Timestamp.fromDate(createdAt!)
+    : FieldValue.serverTimestamp(),
       'leaseDuration':
     leaseDuration,
       'availabilityDate': availabilityDate != null ? Timestamp.fromDate(availabilityDate!) : null,
@@ -3596,10 +3606,7 @@ _buildFlatImagesQuestion(),
         keyboardType: TextInputType.number,
         inputFormatters: [FilteringTextInputFormatter.digitsOnly],
         controller: _rentPriceController,
-        prefixIcon: const Padding(
-          padding: EdgeInsets.symmetric(horizontal: 18.0),
-          child: Text('₹', style: TextStyle(fontSize: 16, color: Colors.grey)),
-        ),
+        
       ),
 
       // Page 26: Deposit Amount
@@ -3610,10 +3617,7 @@ _buildFlatImagesQuestion(),
         keyboardType: TextInputType.number,
         inputFormatters: [FilteringTextInputFormatter.digitsOnly],
         controller: _depositAmountController,
-        prefixIcon: const Padding(
-          padding: EdgeInsets.symmetric(horizontal: 16.0),
-          child: Text('₹', style: TextStyle(fontSize: 16, color: Colors.grey)),
-        ),
+        
       ),
 
       // Page 27: Bathroom Type

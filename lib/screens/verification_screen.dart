@@ -157,7 +157,9 @@ class _VerificationScreenState extends State<VerificationScreen> {
       final bool verified = data['isVerified'] == true;
 
       final String firestoreStatus =
-          data['verificationStatus']?.toString().toLowerCase() ?? '';
+    (data['verification']?['verificationStatus'] ?? 'not_verified')
+        .toString()
+        .toLowerCase();
 
       final dynamic verificationData = data['verification'];
 
@@ -177,25 +179,25 @@ class _VerificationScreenState extends State<VerificationScreen> {
             verificationData['documentType']?.toString();
       }
 
-      String resolvedStatus;
+String resolvedStatus;
 
-      if (verified) {
-        resolvedStatus = 'Verified';
-      } else {
-        switch (firestoreStatus) {
-          case 'pending':
-            resolvedStatus = 'Pending Review';
-            break;
+switch (firestoreStatus) {
+  case 'approved':
+    resolvedStatus = 'Verified';
+    break;
 
-          case 'rejected':
-            resolvedStatus = 'Rejected';
-            break;
+  case 'pending':
+    resolvedStatus = 'Pending Review';
+    break;
 
-          default:
-            resolvedStatus = 'Not Verified';
-        }
-      }
+  case 'rejected':
+    resolvedStatus = 'Rejected';
+    break;
 
+  default:
+    resolvedStatus = 'Not Verified';
+}
+      
       setState(() {
         isVerified = verified;
 

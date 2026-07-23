@@ -22,7 +22,7 @@ class SeekingFlatmateProfile {
   DateTime? moveInDate;
   int? budgetMin;
   int? budgetMax;
-
+DateTime? createdAt;
   // Flat Requirements
   String preferredFlatType;
   String preferredRoomType;
@@ -59,6 +59,7 @@ double? longitude;
     this.preferredFlatmateGender = '',
     this.preferredFlatmateAge = '',
     this.preferredOccupation = '',
+     this.createdAt,
     this.city = '',
 this.locationName = '',
 this.placeId = '',
@@ -115,7 +116,7 @@ this.longitude,
       dealBreakers: List<String>.from(flatmatePreferencesData['dealBreakers'] as List? ?? []),
       imageUrls: (data['imageUrls'] as List<dynamic>?)?.map((e) => e.toString()).toList(),
       city: data['city'] ?? '',
-
+createdAt: (data['createdAt'] as Timestamp?)?.toDate(),
 locationName:
     data['locationName'] ?? '',
 
@@ -142,6 +143,9 @@ longitude:
       'budgetMin': budgetMin,
       'budgetMax': budgetMax,
       'city': city,
+      'createdAt': createdAt != null
+    ? Timestamp.fromDate(createdAt!)
+    : FieldValue.serverTimestamp(),
 
 'locationName': locationName,
 

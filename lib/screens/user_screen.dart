@@ -117,17 +117,27 @@ void dispose() {
 
     _isVerified = data['isVerified'] == true;
 
-    final status = data['verificationStatus'];
+final status =
+    (data['verification']?['verificationStatus'] ?? 'not_verified')
+        .toString()
+        .toLowerCase();
 
-    if (_isVerified) {
-      _verificationStatus = 'Verified';
-    } else if (status == 'pending') {
-      _verificationStatus = 'Pending Review';
-    } else if (status == 'rejected') {
-      _verificationStatus = 'Rejected';
-    } else {
-      _verificationStatus = 'Not Verified';
-    }
+switch (status) {
+  case 'approved':
+    _verificationStatus = 'Verified';
+    break;
+
+  case 'pending':
+    _verificationStatus = 'Pending Review';
+    break;
+
+  case 'rejected':
+    _verificationStatus = 'Rejected';
+    break;
+
+  default:
+    _verificationStatus = 'Not Verified';
+}
 
     _calculateCompletionPercentage();
 

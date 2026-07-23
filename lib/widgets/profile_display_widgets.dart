@@ -1870,26 +1870,36 @@ _buildSection(
 
           /// QUICK OVERVIEW
           _buildCharacteristicGrid(
-            '🏠 My Home',
-            [
-              MapEntry('Flat Type', profile.flatType),
-              MapEntry('Room Type', profile.roomType),
-              MapEntry('Bathroom', profile.bathroomType),
-              MapEntry('Furnished', profile.furnishedStatus),
+  '🏠 My Home',
+  [
+    MapEntry('Flat Type', profile.flatType),
+    MapEntry('Room Type', profile.roomType),
+    MapEntry('Bathroom', profile.bathroomType),
+    MapEntry('Furnished', profile.furnishedStatus),
 
-              MapEntry(
-                'Occupants',
-                profile.currentOccupants,
-              ),
+    MapEntry(
+      'Occupants',
+      profile.currentOccupants,
+    ),
 
-              MapEntry(
-                'Lease Pending',
-                profile.leaseDuration != null
-                    ? '${profile.leaseDuration}'
-                    : null,
-              ),
-            ],
-          ),
+    MapEntry(
+      'Hometown',
+      profile.userProfile.city,
+    ),
+
+    MapEntry(
+      'Lease Pending',
+      profile.leaseDuration,
+    ),
+
+    MapEntry(
+      'Posted On',
+      profile.createdAt != null
+          ? DateFormat('dd MMM yyyy').format(profile.createdAt!)
+          : null,
+    ),
+  ],
+),
 
           /// RENT DETAILS
           _buildCharacteristicGrid(
