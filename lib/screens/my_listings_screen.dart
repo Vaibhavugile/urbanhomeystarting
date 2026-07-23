@@ -2,7 +2,8 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:mytennat/screens/view_profile_screen.dart';
-
+import 'package:mytennat/screens/flat_with_flatmate_profile_screen.dart';
+import 'package:mytennat/screens/flatmate_profile_screen.dart';
 class MyListingsScreen extends StatefulWidget {
   const MyListingsScreen({super.key});
 
@@ -207,12 +208,22 @@ class _MyListingsScreenState
                   const SizedBox(
                       height: 20),
 
-                  if (_flatListings
-                      .isEmpty)
-                    _emptyCard(
-                      "No Flat Listings Yet",
-                      Icons.home_work_rounded,
-                    ),
+                 if (_flatListings.isEmpty)
+  _emptyCard(
+    title: "No Flat Listings Yet",
+    subtitle:
+        "Create your first flat listing and start receiving interested flatmates.",
+    icon: Icons.home_work_rounded,
+    buttonText: "Add Flat Listing",
+    onPressed: () {
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (_) => const FlatmateProfileScreen(),
+        ),
+      ).then((_) => _fetchListings());
+    },
+  ),
 
                  ..._flatListings.map((doc) {
   final data =
@@ -546,7 +557,40 @@ class _MyListingsScreenState
               Expanded(
                 child:
                     ElevatedButton.icon(
-                  onPressed: () {},
+                onPressed: () {
+  debugPrint("");
+  debugPrint("========================================");
+  debugPrint("🟣 EDIT BUTTON CLICKED");
+  debugPrint("Firestore Document ID : ${doc.id}");
+  debugPrint("Firestore UID         : ${data['uid']}");
+  debugPrint("========================================");
+
+  final profile = FlatListingProfile.fromMap(
+    data,
+    doc.id,
+  );
+
+  debugPrint("🟢 FlatListingProfile Created");
+  debugPrint("documentId : ${profile.documentId}");
+  debugPrint("uid        : ${profile.uid}");
+  debugPrint("rentPrice  : ${profile.rentPrice}");
+  debugPrint("flatType   : ${profile.flatType}");
+  debugPrint("roomType   : ${profile.roomType}");
+  debugPrint("location   : ${profile.locationName}");
+  debugPrint("========================================");
+
+  Navigator.push(
+    context,
+    MaterialPageRoute(
+      builder: (_) => FlatmateProfileScreen(
+        existingProfile: profile,
+      ),
+    ),
+  ).then((_) {
+    debugPrint("🔄 Returned from Edit Screen");
+    _fetchListings();
+  });
+},
                   icon: const Icon(
                     Icons.edit_rounded,
                     size: 18,
@@ -615,12 +659,22 @@ class _MyListingsScreenState
                   const SizedBox(
                       height: 20),
 
-                  if (_flatmateProfiles
-                      .isEmpty)
-                    _emptyCard(
-                      "No Flatmate Profiles Yet",
-                      Icons.groups_rounded,
-                    ),
+                  if (_flatmateProfiles.isEmpty)
+  _emptyCard(
+    title: "No Flatmate Profile Yet",
+    subtitle:
+        "Create your profile so landlords and roommates can discover you.",
+    icon: Icons.groups_rounded,
+    buttonText: "Create Profile",
+    onPressed: () {
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (_) => const FlatWithFlatmateProfileScreen(),
+        ),
+      ).then((_) => _fetchListings());
+    },
+  ),
 
 ..._flatmateProfiles.map((doc) {
   final data =
@@ -909,7 +963,23 @@ class _MyListingsScreenState
 
               Expanded(
                 child: ElevatedButton.icon(
-                  onPressed: () {},
+                  onPressed: () {
+  final profile = SeekingFlatmateProfile.fromMap(
+    data,
+    doc.id,
+  );
+
+  Navigator.push(
+    context,
+    MaterialPageRoute(
+      builder: (_) => FlatWithFlatmateProfileScreen(
+        existingProfile: profile,
+      ),
+    ),
+  ).then((_) {
+    _fetchListings();
+  });
+},
                   icon: const Icon(
                     Icons.edit_rounded,
                     size: 18,
@@ -954,55 +1024,78 @@ class _MyListingsScreenState
     );
   }
 
-  Widget _emptyCard(
-    String title,
-    IconData icon,
-  ) {
-    return Container(
-      padding:
-          const EdgeInsets.all(24),
-      margin:
-          const EdgeInsets.only(
-        bottom: 20,
-      ),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius:
-            BorderRadius.circular(
-                24),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black
-                .withOpacity(.04),
-            blurRadius: 20,
-            offset:
-                const Offset(0, 8),
+ Widget _emptyCard({
+  required String title,
+  required String subtitle,
+  required IconData icon,
+  required String buttonText,
+  required VoidCallback onPressed,
+}) {
+  return Container(
+    padding: const EdgeInsets.all(28),
+    margin: const EdgeInsets.only(bottom: 20),
+    decoration: BoxDecoration(
+      color: Colors.white,
+      borderRadius: BorderRadius.circular(24),
+      boxShadow: [
+        BoxShadow(
+          color: Colors.black.withOpacity(.05),
+          blurRadius: 20,
+          offset: const Offset(0, 8),
+        ),
+      ],
+    ),
+    child: Column(
+      children: [
+        Icon(
+          icon,
+          size: 60,
+          color: const Color(0xFF7C3AED),
+        ),
+        const SizedBox(height: 18),
+
+        Text(
+          title,
+          textAlign: TextAlign.center,
+          style: const TextStyle(
+            fontSize: 18,
+            fontWeight: FontWeight.bold,
           ),
-        ],
-      ),
-      child: Column(
-        children: [
-          Icon(
-            icon,
-            size: 50,
-            color:
-                const Color(0xFF7C3AED),
+        ),
+
+        const SizedBox(height: 8),
+
+        Text(
+          subtitle,
+          textAlign: TextAlign.center,
+          style: const TextStyle(
+            color: Colors.grey,
+            height: 1.4,
           ),
-          const SizedBox(
-              height: 12),
-          Text(
-            title,
-            style:
-                const TextStyle(
-              fontSize: 16,
-              fontWeight:
-                  FontWeight.w700,
+        ),
+
+        const SizedBox(height: 22),
+
+        SizedBox(
+          width: double.infinity,
+          child: ElevatedButton.icon(
+            onPressed: onPressed,
+            icon: const Icon(Icons.add_rounded),
+            label: Text(buttonText),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFF7C3AED),
+              foregroundColor: Colors.white,
+              padding: const EdgeInsets.symmetric(vertical: 15),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16),
+              ),
             ),
           ),
-        ],
-      ),
-    );
-  }
+        ),
+      ],
+    ),
+  );
+}
   Widget _listingChip(
   String text,
 ) {

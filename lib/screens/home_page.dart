@@ -1499,52 +1499,11 @@ Container(
   ),
 ),
 
-const SizedBox(height: 32),
+const SizedBox(height: 20),
 
             
               // New ElevatedButton for the profile switch button
-              if (_userProfileType != null)
-                Center(
-                  child: Container(
-  padding: const EdgeInsets.symmetric(
-    horizontal: 18,
-    vertical: 12,
-  ),
-  decoration: BoxDecoration(
-    color: Colors.white,
-    borderRadius: BorderRadius.circular(18),
-    boxShadow: [
-      BoxShadow(
-        color: Colors.black.withOpacity(.06),
-        blurRadius: 15,
-      ),
-    ],
-  ),
-  child: InkWell(
-    onTap: _switchProfileTypeWithAnimation,
-    child: Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        const Icon(
-          Icons.swap_horiz,
-          color: Color(0xFF7C3AED),
-        ),
-        const SizedBox(width: 8),
-        Text(
-          _userProfileType == 'flat_listing'
-              ? 'Switch to Flatmate'
-              : 'Switch to Flat',
-          style: const TextStyle(
-            fontWeight: FontWeight.w700,
-            color: Color(0xFF111827),
-          ),
-        ),
-      ],
-    ),
-  ),
-),
-                ),
-              const SizedBox(height: 20),
+             
                   ], // closes NEW Column
   ),  // closes NEW Column
 

@@ -1075,12 +1075,20 @@ else
 
 class FlatmateProfileScreen extends StatefulWidget {
   final String? initialPhoneNumber;
-  const FlatmateProfileScreen({super.key,this.initialPhoneNumber});
+
+  // NEW
+  final FlatListingProfile? existingProfile;
+
+  const FlatmateProfileScreen({
+    super.key,
+    this.initialPhoneNumber,
+    this.existingProfile,
+  });
 
   @override
-  State<FlatmateProfileScreen> createState() => _FlatmateProfileScreenState();
+  State<FlatmateProfileScreen> createState() =>
+      _FlatmateProfileScreenState();
 }
-
 class _FlatmateProfileScreenState extends State<FlatmateProfileScreen> {
 
   final PageController _pageController = PageController();
@@ -1259,67 +1267,87 @@ IconData _getCurrentSectionIcon() {
 
 
   @override
-  void initState() {
-    super.initState();
-    final String? currentUserUid = FirebaseAuth.instance.currentUser?.uid;
-    _flatListingProfile = FlatListingProfile(
-      userProfile: UserProfile(uid: currentUserUid!),
+void initState() {
+  super.initState();
+
+  final String? currentUserUid =
+      FirebaseAuth.instance.currentUser?.uid;
+
+  debugPrint("");
+  debugPrint("========================================");
+  debugPrint("🚀 FlatmateProfileScreen initState()");
+  debugPrint("Current User UID : $currentUserUid");
+  debugPrint(
+    "existingProfile is NULL : ${widget.existingProfile == null}",
+  );
+
+  _flatListingProfile =
+      widget.existingProfile ??
+      FlatListingProfile(
+        userProfile: UserProfile(uid: currentUserUid!),
+      );
+
+  debugPrint("----------------------------------------");
+  debugPrint("FlatListingProfile Loaded");
+  debugPrint("documentId     : ${_flatListingProfile.documentId}");
+  debugPrint("uid            : ${_flatListingProfile.uid}");
+  debugPrint("flatType       : ${_flatListingProfile.flatType}");
+  debugPrint("roomType       : ${_flatListingProfile.roomType}");
+  debugPrint("rentPrice      : ${_flatListingProfile.rentPrice}");
+  debugPrint("depositAmount  : ${_flatListingProfile.depositAmount}");
+  debugPrint("locationName   : ${_flatListingProfile.locationName}");
+  debugPrint("imageUrls      : ${_flatListingProfile.imageUrls?.length ?? 0}");
+  debugPrint("========================================");
+
+  // Initialize controllers
+  _rentPriceController = TextEditingController(
+    text: _flatListingProfile.rentPrice?.toString() ?? '',
+  );
+
+  _depositAmountController = TextEditingController(
+    text: _flatListingProfile.depositAmount?.toString() ?? '',
+  );
+
+  _flatDescriptionController = TextEditingController(
+    text: _flatListingProfile.flatDescription,
+  );
+
+  _rentPriceController.addListener(() {
+    _flatListingProfile.rentPrice =
+        int.tryParse(_rentPriceController.text);
+
+    debugPrint(
+      "Rent Changed -> ${_flatListingProfile.rentPrice}",
     );
-    // Initialize controllers
-    // with current profile values
-    // if (widget.initialPhoneNumber != null) {
-    //   _flatListingProfile.ownerPhonenumber = widget.initialPhoneNumber; // ADD THIS LINE
-    // }
-    // _ownerNameController = TextEditingController(text: _flatListingProfile.ownerName);
-    //_ownerAgeController = TextEditingController(text: _flatListingProfile.ownerAge?.toString() ?? '');
-    // _ownerOccupationController = TextEditingController(text: _flatListingProfile.ownerOccupation);
-    // _ownerBioController = TextEditingController(text: _flatListingProfile.ownerBio);
-    // _desiredCityController = TextEditingController(text: _flatListingProfile.desiredCity);
-    // _areaPreferenceController = TextEditingController(text: _flatListingProfile.areaPreference);
-    _rentPriceController = TextEditingController(text: _flatListingProfile.rentPrice?.toString() ?? '');
-    _depositAmountController = TextEditingController(text: _flatListingProfile.depositAmount?.toString() ?? '');
-    _flatDescriptionController = TextEditingController(text: _flatListingProfile.flatDescription);
 
+    setState(() {});
+  });
 
-    // Add listeners to update the profile model as text changes
-    // _ownerNameController.addListener(() {
-    //   _flatListingProfile.ownerName = _ownerNameController.text;
-    //   setState(() {}); // Trigger rebuild to update button state
-    // });
-    // _ownerAgeController.addListener(() {
-    //  // _flatListingProfile.ownerAge = int.tryParse(_ownerAgeController.text);
-    //   setState(() {}); // Trigger rebuild to update button state
-    // });
-    // _ownerOccupationController.addListener(() {
-    //   _flatListingProfile.ownerOccupation = _ownerOccupationController.text;
-    //   setState(() {});
-    // });
-    // _ownerBioController.addListener(() {
-    //   _flatListingProfile.ownerBio = _ownerBioController.text;
-    //   setState(() {});
-    // });
-    // _desiredCityController.addListener(() {
-    //   _flatListingProfile.desiredCity = _desiredCityController.text;
-    //   setState(() {});
-    // });
-    // _areaPreferenceController.addListener(() {
-    //   _flatListingProfile.areaPreference = _areaPreferenceController.text;
-    //   setState(() {});
-    // });
-    _rentPriceController.addListener(() {
-      _flatListingProfile.rentPrice = int.tryParse(_rentPriceController.text);
-      setState(() {});
-    });
-    _depositAmountController.addListener(() {
-      _flatListingProfile.depositAmount = int.tryParse(_depositAmountController.text);
-      setState(() {});
-    });
-    _flatDescriptionController.addListener(() {
-      _flatListingProfile.flatDescription = _flatDescriptionController.text;
-      setState(() {});
-    });
-  }
+  _depositAmountController.addListener(() {
+    _flatListingProfile.depositAmount =
+        int.tryParse(_depositAmountController.text);
 
+    debugPrint(
+      "Deposit Changed -> ${_flatListingProfile.depositAmount}",
+    );
+
+    setState(() {});
+  });
+
+  _flatDescriptionController.addListener(() {
+    _flatListingProfile.flatDescription =
+        _flatDescriptionController.text;
+
+    debugPrint(
+      "Description Changed -> ${_flatListingProfile.flatDescription.length} chars",
+    );
+
+    setState(() {});
+  });
+
+  debugPrint("✅ initState Finished");
+  debugPrint("========================================");
+}
   @override
   void dispose() {
     // Dispose all controllers
@@ -3569,7 +3597,7 @@ _buildFlatImagesQuestion(),
         inputFormatters: [FilteringTextInputFormatter.digitsOnly],
         controller: _rentPriceController,
         prefixIcon: const Padding(
-          padding: EdgeInsets.symmetric(horizontal: 16.0),
+          padding: EdgeInsets.symmetric(horizontal: 18.0),
           child: Text('₹', style: TextStyle(fontSize: 16, color: Colors.grey)),
         ),
       ),
@@ -4186,65 +4214,79 @@ final List<String> uploadedImageUrls =
     // ============================================================
 
     final FlatListingProfile flatListingProfile =
-        FlatListingProfile(
-      uid: user.uid,
-      userProfile: userProfile,
+    _flatListingProfile;
 
-      rentPrice:
-          int.tryParse(_rentPriceController.text.trim()),
+// Keep the existing document ID for updates
+flatListingProfile.uid = user.uid;
+flatListingProfile.userProfile = userProfile;
 
-      depositAmount:
-          int.tryParse(
-            _depositAmountController.text.trim(),
-          ),
+flatListingProfile.rentPrice =
+    int.tryParse(_rentPriceController.text.trim());
 
-      city: _flatListingProfile.city,
-      locationName: _flatListingProfile.locationName,
-      placeId: _flatListingProfile.placeId,
-      latitude: _flatListingProfile.latitude,
-      longitude: _flatListingProfile.longitude,
-
-      flatDescription:
-          _flatDescriptionController.text.trim(),
-
-      flatType: _flatListingProfile.flatType,
-      roomType: _flatListingProfile.roomType,
-
-      imageUrls: uploadedImageUrls,
-
-      currentOccupants:
-          _flatListingProfile.currentOccupants,
-
-      leaseDuration:
-          _flatListingProfile.leaseDuration,
-
-      bathroomType:
-          _flatListingProfile.bathroomType,
-
-      furnishedStatus:
-          _flatListingProfile.furnishedStatus,
-
-      availableFor:
-          _flatListingProfile.availableFor,
-
-      preferredGender:
-          _flatListingProfile.preferredGender,
-
-      preferredAgeGroup:
-          _flatListingProfile.preferredAgeGroup,
-
-      preferredOccupation:
-          _flatListingProfile.preferredOccupation,
-
-      amenities:
-          _flatListingProfile.amenities,
-
-      flatmateIdealQualities:
-          _flatListingProfile.flatmateIdealQualities,
-
-      flatmateDealBreakers:
-          _flatListingProfile.flatmateDealBreakers,
+flatListingProfile.depositAmount =
+    int.tryParse(
+      _depositAmountController.text.trim(),
     );
+
+flatListingProfile.city =
+    _flatListingProfile.city;
+
+flatListingProfile.locationName =
+    _flatListingProfile.locationName;
+
+flatListingProfile.placeId =
+    _flatListingProfile.placeId;
+
+flatListingProfile.latitude =
+    _flatListingProfile.latitude;
+
+flatListingProfile.longitude =
+    _flatListingProfile.longitude;
+
+flatListingProfile.flatDescription =
+    _flatDescriptionController.text.trim();
+
+flatListingProfile.flatType =
+    _flatListingProfile.flatType;
+
+flatListingProfile.roomType =
+    _flatListingProfile.roomType;
+
+flatListingProfile.imageUrls =
+    uploadedImageUrls;
+
+flatListingProfile.currentOccupants =
+    _flatListingProfile.currentOccupants;
+
+flatListingProfile.leaseDuration =
+    _flatListingProfile.leaseDuration;
+
+flatListingProfile.bathroomType =
+    _flatListingProfile.bathroomType;
+
+flatListingProfile.furnishedStatus =
+    _flatListingProfile.furnishedStatus;
+
+flatListingProfile.availableFor =
+    _flatListingProfile.availableFor;
+
+flatListingProfile.preferredGender =
+    _flatListingProfile.preferredGender;
+
+flatListingProfile.preferredAgeGroup =
+    _flatListingProfile.preferredAgeGroup;
+
+flatListingProfile.preferredOccupation =
+    _flatListingProfile.preferredOccupation;
+
+flatListingProfile.amenities =
+    _flatListingProfile.amenities;
+
+flatListingProfile.flatmateIdealQualities =
+    _flatListingProfile.flatmateIdealQualities;
+
+flatListingProfile.flatmateDealBreakers =
+    _flatListingProfile.flatmateDealBreakers;
 
     // ============================================================
     // 5. CONVERT PROFILE TO FIRESTORE MAP

@@ -966,22 +966,7 @@ if (_isMarkingRead) return;
             : null,
       ),
 
-      Positioned(
-        right: 2,
-        bottom: 2,
-        child: Container(
-          width: 12,
-          height: 12,
-          decoration: BoxDecoration(
-            color: kOnlineColor,
-            borderRadius: BorderRadius.circular(100),
-            border: Border.all(
-              color: Colors.white,
-              width: 2,
-            ),
-          ),
-        ),
-      ),
+     
     ],
   ),
 ),
@@ -1007,15 +992,7 @@ if (_isMarkingRead) return;
           ),
         ),
 
-        const SizedBox(height: 2),
-
-        const Text(
-          "Active now",
-          style: TextStyle(
-            color: Colors.white70,
-            fontSize: 12,
-          ),
-        ),
+       
       ],
     ),
   ),

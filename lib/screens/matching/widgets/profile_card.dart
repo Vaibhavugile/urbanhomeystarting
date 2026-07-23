@@ -906,7 +906,7 @@ Row(
           ),
 
           label: const Text(
-            'Pass',
+            'Dislike',
             style: TextStyle(
               fontSize: 13,
               fontWeight: FontWeight.w700,

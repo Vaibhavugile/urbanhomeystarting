@@ -1,86 +1,131 @@
-import {onDocumentWritten} from "firebase-functions/v2/firestore";
-export {createRazorpayOrder} from "./razorpay/createOrder";
-export {verifyRazorpayPayment} from "./razorpay/verifyPayment";
-export const forceTestOtp = onDocumentWritten(
-  "otp_verifications/{phoneNumber}",
-  async (event) => {
+import axios from "axios";
+import * as admin from "firebase-admin";
+import {onCall, HttpsError} from "firebase-functions/v2/https";
+import {defineSecret} from "firebase-functions/params";
+
+const MSG91_AUTH_KEY = defineSecret("MSG91_AUTH_KEY");
+
+admin.initializeApp();
+
+export const sendOtp = onCall(
+  {
+    secrets: [MSG91_AUTH_KEY],
+  },
+  async (request) => {
     try {
-      const phoneNumber =
-        event.params.phoneNumber;
+      console.log("========== SEND OTP ==========");
 
-      console.log(
-        "================================="
-      );
-      console.log(
-        "OTP DOC WRITTEN"
-      );
-      console.log(
-        "PHONE:",
-        phoneNumber
-      );
+      const phoneNumber = request.data.phoneNumber;
 
-      // Only test numbers
-      if (
-        !phoneNumber.startsWith(
-          "+9199999999"
-        )
-      ) {
-        console.log(
-          "NOT TEST USER"
+      console.log("Phone:", phoneNumber);
+
+      if (!phoneNumber) {
+        throw new HttpsError(
+          "invalid-argument",
+          "Phone number required"
         );
-        return;
       }
 
-      const afterSnapshot =
-        event.data?.after;
+      // Generate OTP
+      const otp = Math.floor(
+        100000 + Math.random() * 900000
+      ).toString();
 
-      if (!afterSnapshot) {
-        console.log(
-          "NO SNAPSHOT FOUND"
-        );
-        return;
-      }
+      console.log("Generated OTP:", otp);
 
-      const afterData =
-        afterSnapshot.data();
+      // Save OTP
+      await admin
+        .firestore()
+        .collection("otp_verifications")
+        .doc(phoneNumber)
+        .set({
+          otp,
+          createdAt: admin.firestore.FieldValue.serverTimestamp(),
+          expiresAt: Date.now() + 3 * 60 * 1000,
+          verified: false,
+        });
 
-      if (!afterData) {
-        console.log(
-          "NO DATA FOUND"
-        );
-        return;
-      }
+      console.log("OTP saved to Firestore");
+
+      const payload = {
+        integrated_number: "15554583071",
+        content_type: "template",
+        payload: {
+          messaging_product: "whatsapp",
+          type: "template",
+          template: {
+            name: "otpp_login",
+            language: {
+              code: "en",
+              policy: "deterministic",
+            },
+            namespace: null,
+            to_and_components: [
+              {
+                to: [phoneNumber],
+                components: {
+                  body_1: {
+                    type: "text",
+                    value: otp,
+                  },
+                  button_1: {
+                    type: "text",
+                    subtype: "url",
+                    value: otp,
+                  },
+                },
+              },
+            ],
+          },
+        },
+      };
 
       console.log(
-        "CURRENT OTP:",
-        afterData.otp
+        "Sending Payload:",
+        JSON.stringify(payload, null, 2)
       );
 
-      if (
-        afterData.otp ===
-        "123456"
-      ) {
-        console.log(
-          "OTP ALREADY 123456"
-        );
-        return;
-      }
-
-      await afterSnapshot.ref.update({
-        otp: "123456",
-      });
-
-      console.log(
-        "OTP UPDATED TO 123456"
+      const response = await axios.post(
+        "https://api.msg91.com/api/v5/whatsapp/whatsapp-outbound-message/bulk/",
+        payload,
+        {
+          headers: {
+            "authkey": MSG91_AUTH_KEY.value(),
+            "Content-Type": "application/json",
+          },
+        }
       );
 
       console.log(
-        "================================="
+        "MSG91 Response:",
+        JSON.stringify(response.data, null, 2)
       );
-    } catch (error) {
+
+      return {
+        success: true,
+        message: "OTP sent successfully",
+      };
+    } catch (error: unknown) {
+      const err = error as {
+        message?: string;
+        response?: {
+          data?: {
+            message?: string;
+            [key: string]: unknown;
+          };
+        };
+      };
+
+      console.error("========== SEND OTP ERROR ==========");
       console.error(
-        "FORCE OTP ERROR:",
-        error
+        JSON.stringify(err.response?.data ?? err, null, 2)
+      );
+
+      throw new HttpsError(
+        "internal",
+        err.response?.data?.message ??
+          err.message ??
+          "Failed to send OTP"
       );
     }
   }

@@ -287,7 +287,7 @@ class _CompleteUserProfileScreenState
       _petOwnership,
       _petTolerance,
       _guestsFrequency,
-      _bio,
+      
     ];
 
     int completedFields = 0;

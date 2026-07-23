@@ -912,8 +912,15 @@ else
 
 class FlatWithFlatmateProfileScreen extends StatefulWidget {
   final String? initialPhoneNumber;
-  const FlatWithFlatmateProfileScreen({super.key, this.initialPhoneNumber});
 
+  // NEW
+  final SeekingFlatmateProfile? existingProfile;
+
+  const FlatWithFlatmateProfileScreen({
+    super.key,
+    this.initialPhoneNumber,
+    this.existingProfile,
+  });
 
   @override
   State<FlatWithFlatmateProfileScreen> createState() =>
@@ -1006,9 +1013,15 @@ String _getCurrentStepText() {
   @override
   void initState() {
     super.initState();
-    final String? currentUserUid = FirebaseAuth.instance.currentUser?.uid;
-    _seekingFlatmateProfile = SeekingFlatmateProfile(
-      userProfile: UserProfile(uid: currentUserUid!),
+    final String? currentUserUid =
+    FirebaseAuth.instance.currentUser?.uid;
+
+_seekingFlatmateProfile =
+    widget.existingProfile ??
+    SeekingFlatmateProfile(
+      userProfile: UserProfile(
+        uid: currentUserUid!,
+      ),
     );
     // Initialize controllers with current profile values
     // if (widget.initialPhoneNumber != null) {

@@ -1594,34 +1594,48 @@ _buildSection(
     ),
   ],
 ),
-                        _buildCharacteristicGrid(
+                     _buildCharacteristicGrid(
   '👤 About Me',
   [
     MapEntry(
       'Gender',
       profile.userProfile.gender,
     ),
+
     MapEntry(
       'Age',
       profile.userProfile.age?.toString(),
     ),
+
     MapEntry(
       'Occupation',
       profile.userProfile.occupation,
     ),
+
     MapEntry(
       'Religion',
       profile.userProfile.religion,
     ),
+
     MapEntry(
-      'Current Location',
+      'Hometown',
       profile.userProfile.city,
     ),
+
+    MapEntry(
+      'Posted On',
+      profile.createdAt == null
+          ? null
+          : DateFormat('dd MMM yyyy')
+              .format(profile.createdAt!),
+    ),
+
     MapEntry(
       'Move-in Date',
-      profile.moveInDate != null
-          ? DateFormat('dd MMM yyyy').format(profile.moveInDate!)
-          : null,
+      profile.moveInDate == null
+          ? null
+          : DateFormat('dd MMM yyyy')
+              .format(profile.moveInDate!),
     ),
   ],
 ),
