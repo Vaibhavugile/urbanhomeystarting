@@ -26,6 +26,7 @@ class UserProfile {
 String verificationStatus;
 String? pendingProfilePhotoUrl;
 bool profileImageVerification;
+String profileImageVerificationStatus;
 
 
   UserProfile({
@@ -36,6 +37,7 @@ bool profileImageVerification;
    this.profilePhotoUrl,
 this.pendingProfilePhotoUrl,
 this.profileImageVerification = false,
+this.profileImageVerificationStatus = "pending",
     this.city = '',
     this.phoneNumber,
     this.occupation,
@@ -71,6 +73,9 @@ pendingProfilePhotoUrl:
 
 profileImageVerification:
     data['profileImageVerification'] ?? false,
+    profileImageVerificationStatus:
+    data['profileImageVerificationStatus']?.toString() ??
+    "pending",
       city: data['city'] as String? ?? '',
       phoneNumber: data['phoneNumber'] as String?,
       occupation: data['occupation'] as String?,
@@ -126,7 +131,8 @@ guestsFrequency: (data['guestsFrequency'] ??
       'profilePhotoUrl': profilePhotoUrl,
 'pendingProfilePhotoUrl': pendingProfilePhotoUrl,
 'profileImageVerification': profileImageVerification,
-
+'profileImageVerificationStatus':
+    profileImageVerificationStatus,
 'verification': {
   'verificationStatus': verificationStatus,
 },

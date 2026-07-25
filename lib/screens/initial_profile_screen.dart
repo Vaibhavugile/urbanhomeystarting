@@ -486,11 +486,21 @@ if (widget.isEditMode) {
     ),
   };
 
-  if (_profileImageFile != null &&
-      profileImageUrl != null) {
-    updates['profilePhotoUrl'] =
-        profileImageUrl;
-  }
+ if (_profileImageFile != null &&
+    profileImageUrl != null) {
+
+  // Send new image for admin approval
+  updates['pendingProfilePhotoUrl'] =
+      profileImageUrl;
+
+  // Keep old approved image until admin approves
+  updates['profileImageVerification'] =
+      false;
+
+  updates['profileImageVerificationStatus'] =
+      "pending";
+
+}
 
   await userReference.update(updates);
 } else {
@@ -510,6 +520,7 @@ if (widget.isEditMode) {
 pendingProfilePhotoUrl: profileImageUrl,
 
 profileImageVerification: false,
+profileImageVerificationStatus: "pending",
   );
 
   await userReference.set(
