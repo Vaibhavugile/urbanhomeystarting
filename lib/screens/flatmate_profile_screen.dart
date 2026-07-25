@@ -57,6 +57,10 @@ String? currentOccupants;
 
   // Added: List of image URLs for the flat
   List<String>? imageUrls;
+  List<String>? pendingImageUrls;   // Waiting for admin approval
+
+bool imageVerification;
+String imageVerificationStatus;
 
   FlatListingProfile({
     this.documentId = '',
@@ -88,11 +92,15 @@ this.longitude,
     List<String>? flatmateIdealQualities,
     List<String>? flatmateDealBreakers,
     List<String>? imageUrls,
+      List<String>? pendingImageUrls,
+  this.imageVerification = false,
+  this.imageVerificationStatus = "pending",
   })  : amenities = amenities ?? const [],
         preferredHabits = preferredHabits ?? const [],
         flatmateIdealQualities = flatmateIdealQualities ?? const [],
         flatmateDealBreakers = flatmateDealBreakers ?? const [],
-        imageUrls = imageUrls;
+        imageUrls = imageUrls,
+        pendingImageUrls = pendingImageUrls ?? [];
 
   factory FlatListingProfile.fromMap(Map<String, dynamic> data, String documentId) {
     // Add this print statement to see the raw data being processed
@@ -101,6 +109,7 @@ createdAt:
     (data['createdAt'] as Timestamp?)?.toDate();
     Map<String, dynamic> flatmatePreferences = {
   'preferredFlatmateGender': data['preferredFlatmateGender'],
+  
   'preferredFlatmateAge': data['preferredFlatmateAge'],
   'preferredOccupation': data['preferredOccupation'],
   'preferredHabits': data['preferredHabits'],
@@ -175,6 +184,16 @@ flatDescription: data['flatDescription'] ?? '',
       flatmateIdealQualities: List<String>.from(flatmatePreferences['idealQualities'] ?? []),
       flatmateDealBreakers: List<String>.from(flatmatePreferences['dealBreakers'] ?? []),
       imageUrls: (data['imageUrls'] as List<dynamic>?)?.map((e) => e.toString()).toList(),
+      pendingImageUrls:
+    (data['pendingImageUrls'] as List<dynamic>?)
+            ?.map((e) => e.toString())
+            .toList() ??
+        [],
+
+imageVerification:
+    data['imageVerification'] ?? false,
+    imageVerificationStatus:
+    data['imageVerificationStatus'] ?? 'pending',
     );
   }
 
@@ -213,6 +232,9 @@ flatDescription: data['flatDescription'] ?? '',
 'longitude': longitude,
       'flatDescription': flatDescription,
 'imageUrls': imageUrls,
+'pendingImageUrls': pendingImageUrls,
+'imageVerification': imageVerification,
+'imageVerificationStatus': imageVerificationStatus,
       // Flatmate preferences
       'preferredFlatmateGender': preferredGender,
       'preferredFlatmateAge': preferredAgeGroup,
@@ -4256,8 +4278,13 @@ flatListingProfile.flatType =
 flatListingProfile.roomType =
     _flatListingProfile.roomType;
 
-flatListingProfile.imageUrls =
+flatListingProfile.imageUrls = [];
+
+flatListingProfile.pendingImageUrls =
     uploadedImageUrls;
+
+flatListingProfile.imageVerification = false;
+flatListingProfile.imageVerificationStatus = "pending";
 
 flatListingProfile.currentOccupants =
     _flatListingProfile.currentOccupants;

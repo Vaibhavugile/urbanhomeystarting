@@ -206,9 +206,9 @@ _lastNameController.text =
     }
 
     _existingProfileImageUrl =
-        data['profilePhotoUrl']
-            ?.toString()
-            .trim();
+    (data['profilePhotoUrl']?.toString().trim().isNotEmpty ?? false)
+        ? data['profilePhotoUrl'].toString().trim()
+        : data['pendingProfilePhotoUrl']?.toString().trim();
 
     if (_existingProfileImageUrl?.isEmpty ??
         true) {
@@ -395,9 +395,19 @@ _lastNameController.text =
   Future<void> _saveInitialProfile() async {
     if (_isLoading) return;
 
-    if (!(_formKey.currentState?.validate() ?? false)) {
-      return;
-    }
+   if (!widget.isEditMode &&
+    _profileImageFile == null &&
+    _existingProfileImageUrl == null) {
+  ScaffoldMessenger.of(context).showSnackBar(
+    const SnackBar(
+      behavior: SnackBarBehavior.floating,
+      content: Text(
+        'Please upload your profile photo.',
+      ),
+    ),
+  );
+  return;
+}
 
     final User? user =
         FirebaseAuth.instance.currentUser;
@@ -495,7 +505,11 @@ if (widget.isEditMode) {
     city: _formatWords(
       _cityController.text,
     ),
-    profilePhotoUrl: profileImageUrl,
+   profilePhotoUrl: "",
+
+pendingProfilePhotoUrl: profileImageUrl,
+
+profileImageVerification: false,
   );
 
   await userReference.set(

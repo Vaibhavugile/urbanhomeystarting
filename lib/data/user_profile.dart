@@ -24,6 +24,8 @@ class UserProfile {
   String? guestsFrequency;
   bool isVerified;
 String verificationStatus;
+String? pendingProfilePhotoUrl;
+bool profileImageVerification;
 
 
   UserProfile({
@@ -31,7 +33,9 @@ String verificationStatus;
     this.name = '',
     this.age,
     this.gender = '',
-    this.profilePhotoUrl,
+   this.profilePhotoUrl,
+this.pendingProfilePhotoUrl,
+this.profileImageVerification = false,
     this.city = '',
     this.phoneNumber,
     this.occupation,
@@ -59,7 +63,14 @@ String verificationStatus;
       name: data['name'] as String? ?? '',
       age: data['age'] is int ? data['age'] : (data['age'] is String ? int.tryParse(data['age']) : null),
       gender: data['gender'] as String? ?? '',
-      profilePhotoUrl: data['profilePhotoUrl'] as String?,
+     profilePhotoUrl:
+    data['profilePhotoUrl']?.toString(),
+
+pendingProfilePhotoUrl:
+    data['pendingProfilePhotoUrl']?.toString(),
+
+profileImageVerification:
+    data['profileImageVerification'] ?? false,
       city: data['city'] as String? ?? '',
       phoneNumber: data['phoneNumber'] as String?,
       occupation: data['occupation'] as String?,
@@ -105,7 +116,6 @@ guestsFrequency: (data['guestsFrequency'] ??
       'name': name,
       'age': age,
       'gender': gender,
-      'profilePhotoUrl': profilePhotoUrl,
       'city': city,
       'phoneNumber': phoneNumber,
       'occupation': occupation,
@@ -113,6 +123,9 @@ guestsFrequency: (data['guestsFrequency'] ??
       'bio': bio,
       'imageUrls': imageUrls, // Potentially redundant
       'isVerified': isVerified,
+      'profilePhotoUrl': profilePhotoUrl,
+'pendingProfilePhotoUrl': pendingProfilePhotoUrl,
+'profileImageVerification': profileImageVerification,
 
 'verification': {
   'verificationStatus': verificationStatus,
