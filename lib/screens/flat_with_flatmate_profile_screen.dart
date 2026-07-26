@@ -3939,13 +3939,19 @@ Widget build(BuildContext context) {
 
   return PopScope(
   canPop: false,
-  onPopInvoked: (didPop) async {
+  onPopInvokedWithResult: (didPop, result) async {
     if (didPop) return;
 
     final shouldExit = await _showExitDialog();
 
-    if (shouldExit && mounted) {
-      Navigator.of(context).pop();
+    if (!mounted) return;
+
+    if (shouldExit) {
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(
+          builder: (_) => const HomePage(),
+        ),
+      );
     }
   },
   child: Scaffold(

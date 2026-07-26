@@ -16,6 +16,7 @@ import 'package:flutter_image_compress/flutter_image_compress.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:mytennat/widgets/premium_snackbar.dart';
 
+
 // Data model to hold all the answers for the user listing a flat
 class FlatListingProfile {
   String documentId; // Added: To store the Firestore document ID
@@ -4628,15 +4629,21 @@ Widget build(BuildContext context) {
     }
   }
 
-  return PopScope(
+return PopScope(
   canPop: false,
-  onPopInvoked: (didPop) async {
+  onPopInvokedWithResult: (didPop, result) async {
     if (didPop) return;
 
     final shouldExit = await _showExitDialog();
 
-    if (shouldExit && mounted) {
-      Navigator.of(context).pop();
+    if (!mounted) return;
+
+    if (shouldExit) {
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(
+          builder: (_) => const HomePage(),
+        ),
+      );
     }
   },
   child: Scaffold(

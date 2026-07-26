@@ -9,6 +9,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_image_compress/flutter_image_compress.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:mytennat/screens/home_page.dart';
 
 // ============================================================
 // COLORS
@@ -810,14 +811,17 @@ if (image == null) {
       );
 
       await Future<void>.delayed(
-        const Duration(milliseconds: 700),
-      );
+  const Duration(milliseconds: 700),
+);
 
-      if (!mounted) return;
+if (!mounted) return;
 
-      // Return to UserScreen.
-      // UserScreen refreshes Firestore status after Navigator.push returns.
-      Navigator.pop(context, true);
+Navigator.of(context).pushAndRemoveUntil(
+  MaterialPageRoute(
+    builder: (_) => const HomePage(),
+  ),
+  (route) => false,
+);
     } catch (e, stackTrace) {
       debugPrint(
         'Verification submission failed: $e',
@@ -1740,68 +1744,83 @@ if (image == null) {
             : [],
       ),
       child: ElevatedButton(
-        onPressed: _canSubmit
-            ? _submitVerification
-            : null,
-        style: ElevatedButton.styleFrom(
-          backgroundColor: Colors.transparent,
-          disabledBackgroundColor: Colors.transparent,
-          shadowColor: Colors.transparent,
-          disabledForegroundColor: Colors.white,
-          minimumSize: const Size(
-            double.infinity,
-            62,
-          ),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(20),
-          ),
-        ),
-        child: isSubmitting
-            ? const Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  SizedBox(
-                    width: 22,
-                    height: 22,
-                    child: CircularProgressIndicator(
-                      color: Colors.white,
-                      strokeWidth: 2.2,
-                    ),
-                  ),
-                  SizedBox(width: 12),
-                  Text(
-                    'Submitting...',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 17,
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
-                ],
-              )
-            : Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(
-                    buttonIcon,
-                    color: Colors.white,
-                    size: 22,
-                  ),
-                  const SizedBox(width: 10),
-                  Flexible(
-                    child: Text(
-                      buttonText,
-                      textAlign: TextAlign.center,
-                      style: const TextStyle(
-                        fontSize: 17,
-                        fontWeight: FontWeight.w700,
-                        color: Colors.white,
-                      ),
-                    ),
-                  ),
-                ],
+  onPressed: _canSubmit ? _submitVerification : null,
+  style: ElevatedButton.styleFrom(
+    backgroundColor: Colors.transparent,
+    disabledBackgroundColor: Colors.transparent,
+    shadowColor: Colors.transparent,
+    disabledForegroundColor: Colors.white,
+    minimumSize: const Size(
+      double.infinity,
+      64,
+    ),
+    padding: const EdgeInsets.symmetric(
+      horizontal: 20,
+      vertical: 16,
+    ),
+    shape: RoundedRectangleBorder(
+      borderRadius: BorderRadius.circular(22),
+    ),
+  ),
+  child: AnimatedSwitcher(
+    duration: const Duration(milliseconds: 250),
+    transitionBuilder: (child, animation) {
+      return FadeTransition(
+        opacity: animation,
+        child: child,
+      );
+    },
+    child: isSubmitting
+        ? Row(
+            key: const ValueKey("loading"),
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: const [
+              SizedBox(
+                width: 22,
+                height: 22,
+                child: CircularProgressIndicator(
+                  color: Colors.white,
+                  strokeWidth: 2.4,
+                ),
               ),
-      ),
+              SizedBox(width: 14),
+              Text(
+                'Submitting...',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 18,
+                  fontWeight: FontWeight.w800,
+                  letterSpacing: .3,
+                ),
+              ),
+            ],
+          )
+        : Row(
+            key: const ValueKey("button"),
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(
+                buttonIcon,
+                color: Colors.white,
+                size: 24,
+              ),
+              const SizedBox(width: 12),
+              Flexible(
+                child: Text(
+                  buttonText,
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 18,
+                    fontWeight: FontWeight.w800,
+                    letterSpacing: .3,
+                  ),
+                ),
+              ),
+            ],
+          ),
+  ),
+),
     );
   }
 
