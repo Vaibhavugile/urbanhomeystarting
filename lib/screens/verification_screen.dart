@@ -1726,22 +1726,34 @@ Navigator.of(context).pushAndRemoveUntil(
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(20),
         gradient: _canSubmit
-            ? kPrimaryGradient
-            : const LinearGradient(
-                colors: [
-                  Color(0xFFCBD5E1),
-                  Color(0xFF94A3B8),
-                ],
-              ),
-        boxShadow: _canSubmit
-            ? [
-                BoxShadow(
-                  color: kPrimaryColor.withOpacity(.35),
-                  blurRadius: 20,
-                  offset: const Offset(0, 10),
-                ),
-              ]
-            : [],
+    ? const LinearGradient(
+        begin: Alignment.topLeft,
+        end: Alignment.bottomRight,
+        colors: [
+          Color(0xFF312E81), // Deep Indigo
+          Color(0xFF5B21B6), // Premium Purple
+          Color(0xFF7C3AED), // UrbanHomey Purple
+        ],
+      )
+    : const LinearGradient(
+        begin: Alignment.topLeft,
+        end: Alignment.bottomRight,
+        colors: [
+          Color(0xFFD1D5DB),
+          Color(0xFF9CA3AF),
+        ],
+      ),
+
+boxShadow: _canSubmit
+    ? [
+        BoxShadow(
+          color: const Color(0xFF5B21B6).withOpacity(.45),
+          blurRadius: 30,
+          spreadRadius: 3,
+          offset: const Offset(0, 14),
+        ),
+      ]
+    : [],
       ),
       child: ElevatedButton(
   onPressed: _canSubmit ? _submitVerification : null,
