@@ -161,40 +161,52 @@ switch (status) {
 }
 
   void _calculateCompletionPercentage() {
-    if (_userProfile == null) return;
+  if (_userProfile == null) return;
 
-    final List<dynamic?> allProfileFields = [
-      _userProfile!.name,
-      _userProfile!.age,
-      _userProfile!.gender,
-      _userProfile!.city,
-      _userProfile!.profilePhotoUrl,
-      _userProfile!.occupation,
-      _userProfile!.religion,
-      _userProfile!.bio,
-      _userProfile!.smokingHabit,
-      _userProfile!.drinkingHabit,
-      _userProfile!.foodPreference,
-      _userProfile!.cleanlinessLevel,
-      _userProfile!.socialPreferences,
-      _userProfile!.petOwnership,
-      _userProfile!.petTolerance,
-      _userProfile!.guestsFrequency,
-    ];
+  const double initialPercentage = 25.0;
+  const double maxPercentage = 90.0;
 
-    final double totalFields = allProfileFields.length.toDouble();
-    int completedFields = 0;
+  final List<dynamic?> completeProfileFields = [
+    _userProfile!.occupation,
+    _userProfile!.religion,
+    _userProfile!.smokingHabit,
+    _userProfile!.drinkingHabit,
+    _userProfile!.foodPreference,
+    _userProfile!.cleanlinessLevel,
+    _userProfile!.socialPreferences,
+    _userProfile!.petOwnership,
+    _userProfile!.petTolerance,
+    _userProfile!.guestsFrequency,
+  ];
 
-    for (var field in allProfileFields) {
-      if (field != null && field.toString().isNotEmpty) {
-        completedFields++;
-      }
+  int completedFields = 0;
+
+  for (final field in completeProfileFields) {
+    if (field != null && field.toString().trim().isNotEmpty) {
+      completedFields++;
     }
-
-    setState(() {
-      _completionPercentage = (completedFields / totalFields) * 100;
-    });
   }
+
+  final double percentageIncrease =
+      maxPercentage - initialPercentage;
+
+  final double percentagePerField =
+      percentageIncrease / completeProfileFields.length;
+
+  double percentage =
+      initialPercentage +
+      (completedFields * percentagePerField);
+
+  // Verified users always show 100%
+  if (_isVerified ||
+    _verificationStatus == 'Pending Review') {
+  percentage = 100.0;
+}
+
+  setState(() {
+    _completionPercentage = percentage;
+  });
+}
   Future<void> _navigateToInitialProfile() async {
   await Navigator.push(
     context,
@@ -214,7 +226,7 @@ switch (status) {
   await _fetchUserProfile();
 }
 Future<void> _openWhatsAppSupport() async {
-  const String phoneNumber = '919096457700';
+  const String phoneNumber = '918793744117';
 
   final String message = Uri.encodeComponent(
     'Hi UrbanHomey Support,\n\n'

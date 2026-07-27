@@ -88,7 +88,7 @@ bool _isLoadingProfile = false;
   File? _profileImageFile;
 
   bool _isLoading = false;
-
+String _profileImageVerificationStatus = "approved";
   // ============================================================
   // IMAGE PICKER
   // ============================================================
@@ -209,6 +209,9 @@ _lastNameController.text =
     (data['profilePhotoUrl']?.toString().trim().isNotEmpty ?? false)
         ? data['profilePhotoUrl'].toString().trim()
         : data['pendingProfilePhotoUrl']?.toString().trim();
+        _profileImageVerificationStatus =
+    data['profileImageVerificationStatus']?.toString() ??
+        "approved";
 
     if (_existingProfileImageUrl?.isEmpty ??
         true) {
@@ -691,14 +694,7 @@ await _showProfileCompletionDialog();
     final User? user =
         FirebaseAuth.instance.currentUser;
 
-    double completionPercentage = 25;
-
-    if (user != null) {
-      completionPercentage =
-          await _calculateProfileCompletionPercentage(
-        user.uid,
-      );
-    }
+    const double completionPercentage = 25.0;
 
     if (!mounted) return;
 
@@ -1442,6 +1438,53 @@ await _showProfileCompletionDialog();
                 ),
               ),
             ),
+            if (_profileImageVerificationStatus == "pending" &&
+    _existingProfileImageUrl != null)
+  Positioned(
+    top: -8,
+    right: -8,
+    child: Container(
+      padding: const EdgeInsets.symmetric(
+        horizontal: 12,
+        vertical: 6,
+      ),
+      decoration: BoxDecoration(
+        color: const Color(0xFFFFF7ED),
+        borderRadius: BorderRadius.circular(30),
+        border: Border.all(
+          color: const Color(0xFFF59E0B),
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.orange.withOpacity(.15),
+            blurRadius: 10,
+          ),
+        ],
+      ),
+      child: const Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          SizedBox(
+            width: 14,
+            height: 14,
+            child: CircularProgressIndicator(
+              strokeWidth: 2,
+              color: Color(0xFFF59E0B),
+            ),
+          ),
+          SizedBox(width: 6),
+          Text(
+            "Under Review",
+            style: TextStyle(
+              color: Color(0xFF92400E),
+              fontWeight: FontWeight.w700,
+              fontSize: 11,
+            ),
+          ),
+        ],
+      ),
+    ),
+  ),
 
             Positioned(
               bottom: 3,

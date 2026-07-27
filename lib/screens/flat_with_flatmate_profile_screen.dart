@@ -4028,87 +4028,51 @@ Widget build(BuildContext context) {
                                 // LEFT BUTTON
 
                                 AnimatedSwitcher(
-                                  duration: const Duration(
-                                    milliseconds: 200,
-                                  ),
-                                  child: !isFirstPage
-                                      ? Material(
-                                          key: const ValueKey(
-                                            'back_button',
-                                          ),
-                                          color:
-                                              Colors.transparent,
-                                          child: InkWell(
-                                            onTap:
-                                                _previousPage,
-                                            borderRadius:
-                                                BorderRadius
-                                                    .circular(
-                                              13,
-                                            ),
-                                            child: Container(
-                                              width: 42,
-                                              height: 42,
-                                              decoration:
-                                                  BoxDecoration(
-                                                color: Colors
-                                                    .white
-                                                    .withOpacity(
-                                                  .14,
-                                                ),
-                                                borderRadius:
-                                                    BorderRadius
-                                                        .circular(
-                                                  13,
-                                                ),
-                                                border:
-                                                    Border.all(
-                                                  color: Colors
-                                                      .white
-                                                      .withOpacity(
-                                                    .14,
-                                                  ),
-                                                ),
-                                              ),
-                                              child:
-                                                  const Icon(
-                                                Icons
-                                                    .arrow_back_ios_new_rounded,
-                                                color:
-                                                    Colors.white,
-                                                size: 17,
-                                              ),
-                                            ),
-                                          ),
-                                        )
-                                      : Container(
-                                          key: const ValueKey(
-                                            'home_icon',
-                                          ),
-                                          width: 42,
-                                          height: 42,
-                                          decoration:
-                                              BoxDecoration(
-                                            color: Colors.white
-                                                .withOpacity(
-                                              .14,
-                                            ),
-                                            borderRadius:
-                                                BorderRadius
-                                                    .circular(
-                                              13,
-                                            ),
-                                          ),
-                                          child:
-                                              const Icon(
-                                            Icons
-                                                .person_search_rounded,
-                                            color:
-                                                Colors.white,
-                                            size: 21,
-                                          ),
-                                        ),
-                                ),
+  duration: const Duration(milliseconds: 200),
+  child: Material(
+    key: ValueKey(isFirstPage ? 'exit_button' : 'back_button'),
+    color: Colors.transparent,
+    child: InkWell(
+      borderRadius: BorderRadius.circular(13),
+      onTap: () async {
+        if (isFirstPage) {
+          final shouldExit = await _showExitDialog();
+
+          if (!mounted) return;
+
+          if (shouldExit) {
+            Navigator.of(context).pushAndRemoveUntil(
+              MaterialPageRoute(
+                builder: (_) => const HomePage(),
+              ),
+              (route) => false,
+            );
+          }
+        } else {
+          _previousPage();
+        }
+      },
+      child: Container(
+        width: 42,
+        height: 42,
+        decoration: BoxDecoration(
+          color: Colors.white.withOpacity(.14),
+          borderRadius: BorderRadius.circular(13),
+          border: Border.all(
+            color: Colors.white.withOpacity(.14),
+          ),
+        ),
+        child: Icon(
+          isFirstPage
+              ? Icons.close_rounded
+              : Icons.arrow_back_ios_new_rounded,
+          color: Colors.white,
+          size: 20,
+        ),
+      ),
+    ),
+  ),
+),
 
                                 const SizedBox(width: 10),
 

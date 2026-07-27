@@ -48,18 +48,18 @@ export const sendOtp = onCall(
       console.log("OTP saved to Firestore");
 
       const payload = {
-        integrated_number: "15554583071",
+        integrated_number: "918793744117",
         content_type: "template",
         payload: {
           messaging_product: "whatsapp",
           type: "template",
           template: {
-            name: "otpp_login",
+            name: "otppp_login",
             language: {
               code: "en",
               policy: "deterministic",
             },
-            namespace: null,
+            namespace: "966353f8_de57_41d3_b22b_286d3ad61238",
             to_and_components: [
               {
                 to: [phoneNumber],

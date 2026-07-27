@@ -761,19 +761,21 @@ if (image == null) {
       }
 
       await FirebaseFirestore.instance
-          .collection('users')
-          .doc(user.uid)
-          .update({
-        'verificationStatus': 'pending',
-        'isVerified': false,
-        'verification': {
-          'selfieUrl': selfieUrl,
-          'governmentIdUrl': governmentIdUrl,
-          'documentType': selectedDocumentType,
-          'submittedAt': FieldValue.serverTimestamp(),
-        },
-      });
+    .collection('users')
+    .doc(user.uid)
+    .update({
+  'isVerified': false,
 
+  'verification': {
+    'verificationStatus': 'pending',
+    'selfieUrl': selfieUrl,
+    'governmentIdUrl': governmentIdUrl,
+    'documentType': selectedDocumentType,
+    'submittedAt': FieldValue.serverTimestamp(),
+    'reviewedAt': null,
+    'rejectedReason': "",
+  },
+});
       if (!mounted) return;
 
       setState(() {
