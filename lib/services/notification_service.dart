@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -45,39 +46,70 @@ class NotificationService {
   }
 
   static Future<void> saveFcmToken() async {
-    final user =
-        FirebaseAuth.instance.currentUser;
+  if (!Platform.isIOS) return;
 
-    if (user == null) return;
+  final user = FirebaseAuth.instance.currentUser;
+  if (user == null) return;
 
-    final apnsToken =
-    await FirebaseMessaging.instance
-        .getAPNSToken();
+  final messaging = FirebaseMessaging.instance;
 
-final token =
-    await FirebaseMessaging.instance
-        .getToken();
+  final settings = await messaging.requestPermission(
+    alert: true,
+    badge: true,
+    sound: true,
+    provisional: false,
+  );
 
-await FirebaseFirestore.instance
-    .collection("debug")
-    .doc("ios")
-    .set({
+  // Wait for APNs registration
+  await Future.delayed(const Duration(seconds: 5));
 
-  "apnsToken": apnsToken,
+  String? apnsToken;
+  String? fcmToken;
 
-  "fcmToken": token,
+  try {
+    apnsToken = await messaging.getAPNSToken();
+  } catch (e) {
+    print("APNS ERROR: $e");
+  }
 
-  "time": FieldValue.serverTimestamp(),
+  try {
+    fcmToken = await messaging.getToken();
+  } catch (e) {
+    print("FCM ERROR: $e");
+  }
 
-});
+  print("================================");
+  print("Permission : ${settings.authorizationStatus}");
+  print("Alert      : ${settings.alert}");
+  print("Badge      : ${settings.badge}");
+  print("Sound      : ${settings.sound}");
+  print("APNS Token : $apnsToken");
+  print("FCM Token  : $fcmToken");
+  print("================================");
 
+  await FirebaseFirestore.instance
+      .collection("debug")
+      .doc("ios")
+      .set({
+    "uid": user.uid,
+    "permission": settings.authorizationStatus.name,
+    "alert": settings.alert.name,
+    "badge": settings.badge.name,
+    "sound": settings.sound.name,
+    "apnsToken": apnsToken,
+    "fcmToken": fcmToken,
+    "platform": Platform.operatingSystem,
+    "time": FieldValue.serverTimestamp(),
+  }, SetOptions(merge: true));
+
+  if (fcmToken != null && fcmToken.isNotEmpty) {
     await FirebaseFirestore.instance
-        .collection('users')
+        .collection("users")
         .doc(user.uid)
         .set({
-      'fcmToken': token,
-      'tokenUpdatedAt':
-          FieldValue.serverTimestamp(),
+      "fcmToken": fcmToken,
+      "tokenUpdatedAt": FieldValue.serverTimestamp(),
     }, SetOptions(merge: true));
   }
+}
 }
