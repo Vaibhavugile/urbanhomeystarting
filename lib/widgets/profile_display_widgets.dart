@@ -1677,7 +1677,7 @@ _buildSection(
     ),
     MapEntry(
       'Desired City',
-      profile.userProfile.city,
+      profile.city,
     ),
     MapEntry(
       'Flat Type',
@@ -1878,14 +1878,11 @@ _buildSection(
     MapEntry('Furnished', profile.furnishedStatus),
 
     MapEntry(
-      'Occupants',
+      ' Current Occupants',
       profile.currentOccupants,
     ),
 
-    MapEntry(
-      'Hometown',
-      profile.userProfile.city,
-    ),
+ 
 
     MapEntry(
       'Lease Pending',
@@ -1979,6 +1976,10 @@ _buildSection(
                 'Religion',
                 profile.userProfile.religion,
               ),
+                 MapEntry(
+      'Hometown',
+      profile.userProfile.city,
+    ),
             ],
           ),
 

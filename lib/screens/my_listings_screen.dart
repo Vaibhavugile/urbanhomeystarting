@@ -682,6 +682,11 @@ class _MyListingsScreenState
 
   final userProfile =
       data['userProfile'] ?? {};
+  final flatRequirements =
+    data['flatRequirements'] as Map<String, dynamic>? ?? {};
+
+final flatmatePreferences =
+    data['flatmatePreferences'] as Map<String, dynamic>? ?? {};
 
   return Container(
     margin: const EdgeInsets.only(
@@ -852,27 +857,40 @@ class _MyListingsScreenState
           const SizedBox(height: 18),
 
           /// BADGES
-          Wrap(
-            spacing: 8,
-            runSpacing: 8,
-            children: [
-              _listingChip(
-                data[
-                        'preferredFlatmateGender'] ??
-                    '',
-              ),
-              _listingChip(
-                data[
-                        'preferredOccupation'] ??
-                    '',
-              ),
-              _listingChip(
-                userProfile[
-                        'occupation'] ??
-                    '',
-              ),
-            ],
-          ),
+         Wrap(
+  spacing: 8,
+  runSpacing: 8,
+  children: [
+
+    if ((flatRequirements['preferredFlatType'] ?? '')
+        .toString()
+        .isNotEmpty)
+      _listingChip(
+        flatRequirements['preferredFlatType'],
+      ),
+
+    if ((flatRequirements['preferredRoomType'] ?? '')
+        .toString()
+        .isNotEmpty)
+      _listingChip(
+        flatRequirements['preferredRoomType'],
+      ),
+
+    if ((flatmatePreferences['preferredOccupation'] ?? '')
+        .toString()
+        .isNotEmpty)
+      _listingChip(
+        flatmatePreferences['preferredOccupation'],
+      ),
+
+    if ((flatmatePreferences['preferredFlatmateGender'] ?? '')
+        .toString()
+        .isNotEmpty)
+      _listingChip(
+        flatmatePreferences['preferredFlatmateGender'],
+      ),
+  ],
+),
 
           const SizedBox(height: 18),
 
@@ -897,8 +915,8 @@ class _MyListingsScreenState
                 const SizedBox(width: 8),
                 Expanded(
                   child: Text(
-                    "${data['preferredFlatType'] ?? ''} • ${data['preferredRoomType'] ?? ''}",
-                    style:
+                          "${flatRequirements['preferredFlatType'] ?? ''} • ${flatRequirements['preferredRoomType'] ?? ''}" ,
+                                             style:
                         const TextStyle(
                       color:
                           Colors.white,

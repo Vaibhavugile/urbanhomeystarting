@@ -3628,6 +3628,23 @@ void _nextPage() {
       occupation: mainUserData['occupation'],
       religion: mainUserData['religion'],
       bio: mainUserData['bio'],
+ isVerified:
+      mainUserData['isVerified'] ?? false,
+
+  verificationStatus:
+      (mainUserData['verification']
+          ?['verificationStatus'] as String?) ??
+      'not_verified',
+
+  pendingProfilePhotoUrl:
+      mainUserData['pendingProfilePhotoUrl'],
+
+  profileImageVerification:
+      mainUserData['profileImageVerification'] ?? false,
+
+  profileImageVerificationStatus:
+      mainUserData['profileImageVerificationStatus'] ??
+      'pending',
 
       imageUrls:
           (mainUserData['imageUrls'] as List<dynamic>?)
@@ -3651,6 +3668,17 @@ void _nextPage() {
 
     _seekingFlatmateProfile.userProfile = userProfile;
     _seekingFlatmateProfile.uid = user.uid;
+    _seekingFlatmateProfile.imageUrls =
+    List<String>.from(userProfile.imageUrls ?? []);
+
+// Fallback to profilePhotoUrl if imageUrls is empty
+if (_seekingFlatmateProfile.imageUrls!.isEmpty &&
+    userProfile.profilePhotoUrl != null &&
+    userProfile.profilePhotoUrl!.isNotEmpty) {
+  _seekingFlatmateProfile.imageUrls = [
+    userProfile.profilePhotoUrl!,
+  ];
+}
 
     // ============================================================
     // 4. CONVERT TO FIRESTORE MAP

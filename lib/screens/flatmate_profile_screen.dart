@@ -3357,7 +3357,7 @@ Widget _buildFlatmatePreferencesPage() {
 
               MultiChoiceQuestionWidget(
                 title:
-                    "Prederred Habits",
+                    "Preferred Habits",
                 subtitle:
                     "Select all that apply.",
                 options: const [
@@ -4171,6 +4171,24 @@ Future<void> _submitProfileToFirebase() async {
       occupation: mainUserData['occupation'],
       religion: mainUserData['religion'],
       bio: mainUserData['bio'],
+       isVerified:
+      mainUserData['isVerified'] ?? false,
+
+  verificationStatus:
+      (mainUserData['verification']
+          ?['verificationStatus'] as String?) ??
+      'not_verified',
+
+  pendingProfilePhotoUrl:
+      mainUserData['pendingProfilePhotoUrl'],
+
+  profileImageVerification:
+      mainUserData['profileImageVerification'] ?? false,
+
+  profileImageVerificationStatus:
+      mainUserData['profileImageVerificationStatus'] ??
+      'pending',
+
       imageUrls:
           (mainUserData['imageUrls'] as List<dynamic>?)
               ?.map((e) => e.toString())
