@@ -226,41 +226,40 @@ Widget _actionCard({
 
                            
 
-                            const Spacer(),
 
                             //----------------------------------
                             // Floating Icon
                             //----------------------------------
 
-                            Hero(
-  tag: "${title}_icon",
-  child: Container(
-    width: 56,
-    height: 56,
-    decoration: BoxDecoration(
-      shape: BoxShape.circle,
-      color: Colors.white,
-      boxShadow: [
-        BoxShadow(
-          color: Colors.black.withOpacity(.08),
-          blurRadius: 20,
-          offset: const Offset(0, 8),
-        ),
-      ],
-    ),
-    padding: const EdgeInsets.all(10),
-    child: Image.asset(
-      title == "List Your Flat"
-          ? "assets/images/cards/list_icon.png"
-          : "assets/images/cards/search_icon.png",
-      fit: BoxFit.contain,
-    ),
-  ),
-),
+//                             Hero(
+//   tag: "${title}_icon",
+//   child: Container(
+//     width: 56,
+//     height: 56,
+//     decoration: BoxDecoration(
+//       shape: BoxShape.circle,
+//       color: Colors.white,
+//       boxShadow: [
+//         BoxShadow(
+//           color: Colors.black.withOpacity(.08),
+//           blurRadius: 20,
+//           offset: const Offset(0, 8),
+//         ),
+//       ],
+//     ),
+//     padding: const EdgeInsets.all(10),
+//     child: Image.asset(
+//       title == "List Your Flat"
+//           ? "assets/images/cards/list_icon.png"
+//           : "assets/images/cards/search_icon.png",
+//       fit: BoxFit.contain,
+//     ),
+//   ),
+// ),
                           ],
                         ),
 
-                        const SizedBox(height: 16),
+                        const SizedBox(height: 1),
 
                         //----------------------------------
                         // PART 1B
@@ -274,15 +273,15 @@ Widget _actionCard({
 //----------------------------------------------------
 
 SizedBox(
-  height: 115,
+  height: 180,
   child: Stack(
     alignment: Alignment.center,
     children: [
 
       // Soft Glow
       Container(
-        width: 150,
-        height: 150,
+        width: 190,
+        height: 190,
         decoration: BoxDecoration(
           shape: BoxShape.circle,
           color: Colors.white.withOpacity(.25),
@@ -304,8 +303,9 @@ SizedBox(
           title == "List Your Flat"
               ? "assets/images/cards/list_your_flat.png"
               : "assets/images/cards/looking_flat.png",
-          height: 175,
-          fit: BoxFit.contain,
+          width: 185,
+height: 185,
+fit: BoxFit.contain,
         ),
       ),
 
