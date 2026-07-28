@@ -73,6 +73,7 @@ String _getProfileDisplayName(
 
   return 'User';
 }
+
 String _getProfileTypeDisplay(
   dynamic profile,
 ) {
@@ -87,6 +88,7 @@ String _getProfileTypeDisplay(
 
   return '';
 }
+
   Future<void> _fetchUserProfile() async {
     setState(() {
       _isLoading = true;
@@ -243,6 +245,13 @@ if (mounted) {
 }
     
   }
+  bool get _isMyProfile {
+  final currentUser = FirebaseAuth.instance.currentUser;
+
+  return currentUser != null &&
+      (widget.userId == null ||
+          widget.userId == currentUser.uid);
+}
 
   void _switchProfile(String profileIdentifier) async {
     print('[_switchProfile] Attempting to switch to: $profileIdentifier');
@@ -1274,11 +1283,11 @@ return Scaffold(
 ),
 
     actions: [
-        if (widget.userId != null)
-    ProfileActionMenu(
-      userId: widget.userId!,
-      profileId: widget.profileDocumentId!,
-    ),
+      if (!_isMyProfile)
+  ProfileActionMenu(
+    userId: widget.userId!,
+    profileId: widget.profileDocumentId!,
+  ),
       if (widget.userId == null &&
           (_flatListingProfiles.isNotEmpty ||
               _seekingFlatmateProfiles.isNotEmpty))
@@ -1409,7 +1418,7 @@ return Scaffold(
     ],
   ),
   bottomNavigationBar:
-    widget.userId != null
+    !_isMyProfile
         ? SafeArea(
             child: Container(
               padding: const EdgeInsets.all(16),
