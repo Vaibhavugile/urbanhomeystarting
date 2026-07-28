@@ -1642,11 +1642,14 @@ Widget _buildDateQuestion({
                     ),
                   ),
                   todayBorder: const BorderSide(
-                    color: primary,
-                    width: 1.2,
-                  ),
-                  todayForegroundColor:
-                      const WidgetStatePropertyAll(primary),
+  color: Colors.white,
+  width: 1.5,
+),
+
+todayForegroundColor:
+    const WidgetStatePropertyAll(Colors.white),
+
+
                   cancelButtonStyle: TextButton.styleFrom(
                     foregroundColor: textSecondary,
                     textStyle: const TextStyle(
@@ -1841,37 +1844,36 @@ Widget _buildDateQuestion({
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         Text(
-                          hasSelectedDate
-                              ? 'Selected date'
-                              : 'Choose a date',
-                          style: TextStyle(
-                            fontSize: 12,
-                            height: 1.2,
-                            fontWeight: FontWeight.w600,
-                            color: hasSelectedDate
-                                ? primary
-                                : textSecondary,
-                          ),
-                        ),
+  hasSelectedDate
+      ? 'Selected Date'
+      : 'Choose a Date',
+  style: TextStyle(
+    fontSize: 12,
+    height: 1.2,
+    fontWeight: FontWeight.w600,
+    color: hasSelectedDate
+        ? Colors.white
+        : textSecondary,
+  ),
+),
 
-                        const SizedBox(height: 4),
+const SizedBox(height: 4),
 
-                        Text(
-                          hasSelectedDate
-                              ? DateFormat('dd MMM yyyy')
-                                  .format(selectedDate!)
-                              : 'Tap to open calendar',
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: TextStyle(
-                            fontSize: 16,
-                            height: 1.25,
-                            fontWeight: FontWeight.w700,
-                            color: hasSelectedDate
-                                ? textPrimary
-                                : const Color(0xFF94A3B8),
-                          ),
-                        ),
+Text(
+  hasSelectedDate
+      ? DateFormat('dd MMM yyyy').format(selectedDate!)
+      : 'Tap to open calendar',
+  maxLines: 1,
+  overflow: TextOverflow.ellipsis,
+  style: TextStyle(
+    fontSize: 16,
+    height: 1.25,
+    fontWeight: FontWeight.w700,
+    color: hasSelectedDate
+        ? Colors.white
+        : const Color(0xFF94A3B8),
+  ),
+),
                       ],
                     ),
                   ),

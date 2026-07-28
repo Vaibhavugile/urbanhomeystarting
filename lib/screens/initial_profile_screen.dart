@@ -493,8 +493,10 @@ if (widget.isEditMode) {
     profileImageUrl != null) {
 
   // Send new image for admin approval
-  updates['pendingProfilePhotoUrl'] =
-      profileImageUrl;
+  updates['pendingProfilePhotoUrl'] = profileImageUrl;
+updates['imageUrls'] = profileImageUrl != null
+    ? [profileImageUrl]
+    : [];
 
   // Keep old approved image until admin approves
   updates['profileImageVerification'] =
@@ -521,6 +523,9 @@ if (widget.isEditMode) {
    profilePhotoUrl: "",
 
 pendingProfilePhotoUrl: profileImageUrl,
+  imageUrls: profileImageUrl != null
+      ? [profileImageUrl]
+      : [],
 
 profileImageVerification: false,
 profileImageVerificationStatus: "pending",

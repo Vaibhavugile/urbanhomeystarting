@@ -22,30 +22,30 @@ Row(
 children: [
   Expanded(
 child: _actionCard(
-title: "List Your Flat",
-subtitle: "",
-icon: Icons.groups_rounded,
-gradient: const [
-Color(0xFFFCE7F3),
-Color(0xFFFDF2F8),
-],
-badge: "",
-onTap: onNeedFlatmate,
+  title: "List Your Flat",
+  subtitle: "Find verified flatmates\nquickly and easily.",
+  icon: Icons.groups_rounded,
+  gradient: const [
+    Color(0xFFFFEEF6),
+    Color(0xFFFFFAFD),
+  ],
+  badge: "POPULAR",
+  onTap: onNeedFlatmate,
 ),
 ),
         const SizedBox(height: 14),
 
 Expanded(
 child: _actionCard(
-title: "Looking for a Flat",
-subtitle: "",
-icon: Icons.apartment_rounded,
-gradient: const [
-Color(0xFFEDE9FE),
-Color(0xFFF5F3FF),
-],
-badge: "",
-onTap: onNeedRoom,
+  title: "Looking for a Flat",
+  subtitle: "Browse verified homes\nnear your location.",
+  icon: Icons.apartment_rounded,
+  gradient: const [
+    Color(0xFFF3EEFF),
+    Color(0xFFFAF8FF),
+  ],
+  badge: "NEW",
+  onTap: onNeedRoom,
 ),
 ),
 
@@ -94,155 +94,404 @@ onTap: onNeedRoom,
 
 
 Widget _actionCard({
-required String title,
-required String subtitle,
-required IconData icon,
-required List<Color> gradient,
-required String badge,
-required VoidCallback onTap,
+  required String title,
+  required String subtitle,
+  required IconData icon,
+  required List<Color> gradient,
+  required String badge,
+  required VoidCallback onTap,
 }) {
-return GestureDetector(
-onTap: onTap,
-child: AspectRatio(
-aspectRatio: 0.95,
-child: Container(
-padding: const EdgeInsets.all(16),
-decoration: BoxDecoration(
-borderRadius: BorderRadius.circular(28),
-gradient: LinearGradient(
-begin: Alignment.topLeft,
-end: Alignment.bottomRight,
-colors: gradient,
-),
-border: Border.all(
-color: Colors.white,
-width: 1.5,
-),
-boxShadow: [
-BoxShadow(
-color: Colors.black.withOpacity(.05),
-blurRadius: 15,
-offset: const Offset(0, 8),
-),
-],
-),
-child: Stack(
-children: [
-Positioned(
-right: -10,
-bottom: -10,
-child: Icon(
-icon,
-size: 90,
-color: Colors.black.withOpacity(.04),
-),
-),
-
-
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Container(
-              padding: const EdgeInsets.symmetric(
-                horizontal: 10,
-                vertical: 5,
-              ),
+  return TweenAnimationBuilder<double>(
+    duration: const Duration(milliseconds: 250),
+    tween: Tween(begin: 1, end: 1),
+    builder: (context, scale, child) {
+      return Transform.scale(
+        scale: scale,
+        child: GestureDetector(
+          onTap: onTap,
+          child: AspectRatio(
+            aspectRatio: .55,
+            child: Container(
+              clipBehavior: Clip.antiAlias,
               decoration: BoxDecoration(
-                color: Colors.white.withOpacity(.75),
-                borderRadius:
-                    BorderRadius.circular(50),
-              ),
-              child: Text(
-                badge,
-                style: const TextStyle(
-                  color: Color(0xFF374151),
-                  fontSize: 9,
-                  fontWeight: FontWeight.w700,
-                  letterSpacing: 1,
+                borderRadius: BorderRadius.circular(34),
+                gradient: LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: gradient,
                 ),
-              ),
-            ),
-
-            const Spacer(),
-
-            Container(
-              padding: const EdgeInsets.all(10),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius:
-                    BorderRadius.circular(14),
+                border: Border.all(
+                  color: Colors.white,
+                  width: 1.5,
+                ),
                 boxShadow: [
                   BoxShadow(
-                    color:
-                        Colors.black.withOpacity(.04),
-                    blurRadius: 8,
+                    color: gradient.first.withOpacity(.22),
+                    blurRadius: 35,
+                    offset: const Offset(0, 18),
+                  ),
+                  BoxShadow(
+                    color: Colors.black.withOpacity(.03),
+                    blurRadius: 12,
+                    offset: const Offset(0, 5),
                   ),
                 ],
               ),
-              child: Icon(
-                icon,
-                color: const Color(0xFF7C3AED),
-                size: 24,
-              ),
-            ),
+              child: Stack(
+                children: [
 
-            const SizedBox(height: 12),
+                  //----------------------------------
+                  // Decorative Background
+                  //----------------------------------
 
-            Text(
-              title,
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
-              style: const TextStyle(
-                color: Color(0xFF111827),
-                fontSize: 17,
-                fontWeight: FontWeight.w800,
-                height: 1.1,
-              ),
-            ),
-
-            const SizedBox(height: 6),
-
-            Text(
-              subtitle,
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
-              style: const TextStyle(
-                color: Color(0xFF6B7280),
-                fontSize: 12,
-                height: 1.4,
-              ),
-            ),
-
-            const SizedBox(height: 10),
-
-            Row(
-              mainAxisSize: MainAxisSize.min,
-              children: const [
-                Text(
-                  "Open",
-                  style: TextStyle(
-                    color: Color(0xFF7C3AED),
-                    fontSize: 12,
-                    fontWeight: FontWeight.w700,
+                  Positioned(
+                    top: -70,
+                    left: -60,
+                    child: Container(
+                      width: 170,
+                      height: 170,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: Colors.white.withOpacity(.18),
+                      ),
+                    ),
                   ),
-                ),
-                SizedBox(width: 4),
-                Icon(
-                  Icons.arrow_forward_rounded,
-                  color: Color(0xFF7C3AED),
-                  size: 14,
-                ),
-              ],
-            ),
-          ],
+
+                  Positioned(
+                    bottom: -80,
+                    right: -50,
+                    child: Container(
+                      width: 190,
+                      height: 190,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: Colors.white.withOpacity(.12),
+                      ),
+                    ),
+                  ),
+
+                  Positioned(
+                    top: 125,
+                    left: -40,
+                    child: Container(
+                      width: 120,
+                      height: 120,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: Colors.white.withOpacity(.10),
+                      ),
+                    ),
+                  ),
+
+                  //----------------------------------
+                  // Tiny Sparkles
+                  //----------------------------------
+
+                  const Positioned(
+                    top: 105,
+                    right: 90,
+                    child: Icon(
+                      Icons.auto_awesome,
+                      color: Colors.white,
+                      size: 14,
+                    ),
+                  ),
+
+                  Positioned(
+                    top: 145,
+                    right: 55,
+                    child: Icon(
+                      Icons.circle,
+                      size: 5,
+                      color: Colors.white.withOpacity(.8),
+                    ),
+                  ),
+
+                  //----------------------------------
+                  // Main Content
+                  //----------------------------------
+
+                  Padding(
+                    padding: const EdgeInsets.all(14),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+
+                        //----------------------------------
+                        // Badge
+                        //----------------------------------
+
+                        Row(
+                          children: [
+
+                           
+
+                            const Spacer(),
+
+                            //----------------------------------
+                            // Floating Icon
+                            //----------------------------------
+
+                            Hero(
+  tag: "${title}_icon",
+  child: Container(
+    width: 56,
+    height: 56,
+    decoration: BoxDecoration(
+      shape: BoxShape.circle,
+      color: Colors.white,
+      boxShadow: [
+        BoxShadow(
+          color: Colors.black.withOpacity(.08),
+          blurRadius: 20,
+          offset: const Offset(0, 8),
         ),
       ],
+    ),
+    padding: const EdgeInsets.all(10),
+    child: Image.asset(
+      title == "List Your Flat"
+          ? "assets/images/cards/list_icon.png"
+          : "assets/images/cards/search_icon.png",
+      fit: BoxFit.contain,
+    ),
+  ),
+),
+                          ],
+                        ),
+
+                        const SizedBox(height: 16),
+
+                        //----------------------------------
+                        // PART 1B
+                        //----------------------------------
+
+                        
+
+                        // We'll add the illustration here in Part 1B
+                        //----------------------------------------------------
+// Illustration
+//----------------------------------------------------
+
+SizedBox(
+  height: 115,
+  child: Stack(
+    alignment: Alignment.center,
+    children: [
+
+      // Soft Glow
+      Container(
+        width: 150,
+        height: 150,
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          color: Colors.white.withOpacity(.25),
+        ),
+      ),
+
+      // Floating Illustration
+      TweenAnimationBuilder<double>(
+        duration: const Duration(seconds: 3),
+        tween: Tween(begin: -6.0, end: 6.0),
+        curve: Curves.easeInOut,
+        builder: (context, value, child) {
+          return Transform.translate(
+            offset: Offset(0, value),
+            child: child,
+          );
+        },
+        child: Image.asset(
+          title == "List Your Flat"
+              ? "assets/images/cards/list_your_flat.png"
+              : "assets/images/cards/looking_flat.png",
+          height: 175,
+          fit: BoxFit.contain,
+        ),
+      ),
+
+      const Positioned(
+        top: 10,
+        left: 25,
+        child: Icon(
+          Icons.auto_awesome,
+          color: Colors.white,
+          size: 18,
+        ),
+      ),
+
+      Positioned(
+        bottom: 22,
+        right: 30,
+        child: Container(
+          width: 10,
+          height: 10,
+          decoration: BoxDecoration(
+            color: Colors.white.withOpacity(.85),
+            shape: BoxShape.circle,
+          ),
+        ),
+      ),
+    ],
+  ),
+),
+
+const SizedBox(height: 18),
+
+//----------------------------------------------------
+// Title
+//----------------------------------------------------
+
+Text(
+  title,
+  style: const TextStyle(
+    fontSize: 20,
+    fontWeight: FontWeight.w900,
+    color: Color(0xFF111827),
+    letterSpacing: -.6,
+    height: 1.1,
+  ),
+),
+
+const SizedBox(height: 10),
+
+//----------------------------------------------------
+// Subtitle
+//----------------------------------------------------
+
+Text(
+  subtitle,
+  style: const TextStyle(
+    fontSize: 14,
+    height: 1.45,
+    color: Color(0xFF6B7280),
+    fontWeight: FontWeight.w500,
+  ),
+),
+
+const SizedBox(height: 16),
+
+//----------------------------------------------------
+// CTA Button
+//----------------------------------------------------
+
+Container(
+  height: 40,
+  decoration: BoxDecoration(
+    borderRadius: BorderRadius.circular(18),
+    gradient: LinearGradient(
+      colors: badge == "NEW"
+          ? const [
+              Color(0xFF7C3AED),
+              Color(0xFF8B5CF6),
+            ]
+          : const [
+              Color(0xFFFF2E88),
+              Color(0xFFFF5BA5),
+            ],
+    ),
+    boxShadow: [
+      BoxShadow(
+        color: (badge == "NEW"
+                ? const Color(0xFF7C3AED)
+                : const Color(0xFFFF2E88))
+            .withOpacity(.28),
+        blurRadius: 18,
+        offset: const Offset(0, 8),
+      ),
+    ],
+  ),
+  child: Row(
+    mainAxisAlignment: MainAxisAlignment.center,
+    children:  [
+      Text(
+  badge == "POPULAR"
+      ? "List Now"
+      : "Find Flat",
+        style: TextStyle(
+          color: Colors.white,
+          fontSize: 15,
+          fontWeight: FontWeight.w800,
+        ),
+      ),
+      SizedBox(width: 8),
+      Icon(
+        Icons.arrow_forward_rounded,
+        color: Colors.white,
+      ),
+    ],
+  ),
+),
+
+                      ],
+                    ),
+                  ),
+                  //============================================
+// Bottom White Wave
+//============================================
+
+
+
+//============================================
+// Glass Overlay
+//============================================
+
+Positioned.fill(
+  child: IgnorePointer(
+    child: Container(
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(34),
+        gradient: LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [
+            Colors.white.withOpacity(.18),
+            Colors.transparent,
+            Colors.transparent,
+            Colors.white.withOpacity(.06),
+          ],
+        ),
+      ),
     ),
   ),
 ),
 
+//============================================
+// Decorative Blob
+//============================================
 
-);
+Positioned(
+  top: 70,
+  right: -35,
+  child: Container(
+    width: 85,
+    height: 85,
+    decoration: BoxDecoration(
+      shape: BoxShape.circle,
+      color: Colors.white.withOpacity(.18),
+    ),
+  ),
+),
+
+Positioned(
+  bottom: 80,
+  left: -25,
+  child: Container(
+    width: 65,
+    height: 65,
+    decoration: BoxDecoration(
+      shape: BoxShape.circle,
+      color: Colors.white.withOpacity(.15),
+    ),
+  ),
+),
+                ],
+              ),
+            ),
+          ),
+        ),
+      );
+    },
+  );
 }
 
 }

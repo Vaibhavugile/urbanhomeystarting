@@ -461,43 +461,10 @@ _buildFilterSection(
   title: '📍 Location',
   children: [
 
-    Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: kLightGrey,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: kBorderColor,
-        ),
-      ),
-      child: Row(
-        children: [
-
-          const Icon(
-            Icons.location_on_rounded,
-            color: kPrimaryColor,
-          ),
-
-          const SizedBox(width: 12),
-
-          Expanded(
-            child: Text(
-              _filters.locationName?.isNotEmpty == true
-                  ? _filters.locationName!
-                  : 'Select Location',
-              style: const TextStyle(
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-          ),
-
-          IconButton(
-            icon: const Icon(
-              Icons.edit_location_alt_rounded,
-              color: kPrimaryColor,
-            ),
-
-            onPressed: () async {
+    GestureDetector(
+  onTap: () async {
+    // Copy the code from IconButton's onPressed and paste it here.
+     
 
               final result =
                   await showModalBottomSheet<LocationResult>(
@@ -619,11 +586,46 @@ _buildFilterSection(
                       result.longitude;
                 });
               }
-            },
+            
+  },
+  child: Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: kLightGrey,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: kBorderColor,
+        ),
+      ),
+      child: Row(
+        children: [
+
+          const Icon(
+            Icons.location_on_rounded,
+            color: kPrimaryColor,
           ),
+
+          const SizedBox(width: 12),
+
+          Expanded(
+            child: Text(
+              _filters.locationName?.isNotEmpty == true
+                  ? _filters.locationName!
+                  : 'Select Location',
+              style: const TextStyle(
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+const Icon(
+  Icons.edit_location_alt_rounded,
+  color: kPrimaryColor,
+),
+          
         ],
       ),
     ),
+),
 
     const SizedBox(height: 20),
 
@@ -772,16 +774,16 @@ _buildFilterSection(
       },
     ),
 
-    _buildDropdownFilter(
-      label: 'Room Type',
-      value: _filters.roomType,
-      items: _roomTypes,
-      onChanged: (value) {
-        setState(() {
-          _filters.roomType = value;
-        });
-      },
-    ),
+    // _buildDropdownFilter(
+    //   label: 'Room Type',
+    //   value: _filters.roomType,
+    //   items: _roomTypes,
+    //   onChanged: (value) {
+    //     setState(() {
+    //       _filters.roomType = value;
+    //     });
+    //   },
+    // ),
 
     _buildDropdownFilter(
       label: 'Furnished Status',
@@ -794,127 +796,127 @@ _buildFilterSection(
       },
     ),
 
-    _buildDropdownFilter(
-      label: 'Bathroom Type',
-      value: _filters.bathroomType,
-      items: _bathroomTypes,
-      onChanged: (value) {
-        setState(() {
-          _filters.bathroomType = value;
-        });
-      },
-    ),
+    // _buildDropdownFilter(
+    //   label: 'Bathroom Type',
+    //   value: _filters.bathroomType,
+    //   items: _bathroomTypes,
+    //   onChanged: (value) {
+    //     setState(() {
+    //       _filters.bathroomType = value;
+    //     });
+    //   },
+    // ),
 
-    _buildDropdownFilter(
-      label: 'Lease Duration',
-      value: _filters.leaseDuration,
-      items: _leaseDurations,
-      onChanged: (value) {
-        setState(() {
-          _filters.leaseDuration = value;
-        });
-      },
-    ),
+    // _buildDropdownFilter(
+    //   label: 'Lease Duration',
+    //   value: _filters.leaseDuration,
+    //   items: _leaseDurations,
+    //   onChanged: (value) {
+    //     setState(() {
+    //       _filters.leaseDuration = value;
+    //     });
+    //   },
+    // ),
   ],
 ),
               // Available For Section
-const SizedBox(height: 24),
+// const SizedBox(height: 24),
 
-_buildFilterSection(
-  title: '👥 Available For',
-  children: [
-    _buildDropdownFilter(
-      label: 'Available For',
-      value: _filters.availableFor,
-      items: _availableForOptions,
-      onChanged: (value) {
-        setState(() {
-          _filters.availableFor = value;
-        });
-      },
-    ),
-  ],
-),
-              // Amenities Section
-const SizedBox(height: 24),
+// _buildFilterSection(
+//   title: '👥 Available For',
+//   children: [
+//     _buildDropdownFilter(
+//       label: 'Available For',
+//       value: _filters.availableFor,
+//       items: _availableForOptions,
+//       onChanged: (value) {
+//         setState(() {
+//           _filters.availableFor = value;
+//         });
+//       },
+//     ),
+//   ],
+// ),
+//               // Amenities Section
+// const SizedBox(height: 24),
 
-_buildFilterSection(
-  title: '✨ Amenities',
-  children: [
+// _buildFilterSection(
+//   title: '✨ Amenities',
+//   children: [
 
-    _FilterChipGroup(
-      title: 'Select Amenities',
-      availableItems: _amenitiesOptions,
-      selectedItems:
-          _filters.amenitiesDesired,
-      onSelectionChanged: (
-        selected,
-      ) {
-        setState(() {
-          _filters.amenitiesDesired =
-              selected;
-        });
-      },
-    ),
-  ],
-),
-  const SizedBox(height: 24),
+//     _FilterChipGroup(
+//       title: 'Select Amenities',
+//       availableItems: _amenitiesOptions,
+//       selectedItems:
+//           _filters.amenitiesDesired,
+//       onSelectionChanged: (
+//         selected,
+//       ) {
+//         setState(() {
+//           _filters.amenitiesDesired =
+//               selected;
+//         });
+//       },
+//     ),
+//   ],
+// ),
+  // const SizedBox(height: 24),
             // Profile Quality Section
-_buildFilterSection(
-  title: '✅ Profile Quality',
-  children: [
+// _buildFilterSection(
+//   title: '✅ Profile Quality',
+//   children: [
 
-    SwitchListTile(
-      value: _filters.verifiedOnly,
-      activeColor: kPrimaryColor,
-      title: const Text(
-        'Verified Profiles Only',
-      ),
-      subtitle: const Text(
-        'Show only verified users',
-      ),
-      onChanged: (value) {
-        setState(() {
-          _filters.verifiedOnly = value;
-        });
-      },
-    ),
+//     SwitchListTile(
+//       value: _filters.verifiedOnly,
+//       activeColor: kPrimaryColor,
+//       title: const Text(
+//         'Verified Profiles Only',
+//       ),
+//       subtitle: const Text(
+//         'Show only verified users',
+//       ),
+//       onChanged: (value) {
+//         setState(() {
+//           _filters.verifiedOnly = value;
+//         });
+//       },
+//     ),
 
-    SwitchListTile(
-      value: _filters.profilesWithPhotosOnly,
-      activeColor: kPrimaryColor,
-      title: const Text(
-        'Profiles With Photos',
-      ),
-      subtitle: const Text(
-        'Hide profiles without photos',
-      ),
-      onChanged: (value) {
-        setState(() {
-          _filters.profilesWithPhotosOnly =
-              value;
-        });
-      },
-    ),
+//     SwitchListTile(
+//       value: _filters.profilesWithPhotosOnly,
+//       activeColor: kPrimaryColor,
+//       title: const Text(
+//         'Profiles With Photos',
+//       ),
+//       subtitle: const Text(
+//         'Hide profiles without photos',
+//       ),
+//       onChanged: (value) {
+//         setState(() {
+//           _filters.profilesWithPhotosOnly =
+//               value;
+//         });
+//       },
+//     ),
 
-    SwitchListTile(
-      value: _filters.activeWithin7Days,
-      activeColor: kPrimaryColor,
-      title: const Text(
-        'Recently Active',
-      ),
-      subtitle: const Text(
-        'Active in last 7 days',
-      ),
-      onChanged: (value) {
-        setState(() {
-          _filters.activeWithin7Days =
-              value;
-        });
-      },
-    ),
-  ],
-),
+//     SwitchListTile(
+//       value: _filters.activeWithin7Days,
+//       activeColor: kPrimaryColor,
+//       title: const Text(
+//         'Recently Active',
+//       ),
+//       subtitle: const Text(
+//         'Active in last 7 days',
+//       ),
+//       onChanged: (value) {
+//         setState(() {
+//           _filters.activeWithin7Days =
+//               value;
+//         });
+//       },
+//     ),
+//   ],
+// ),
             ],
           ),
         ),
