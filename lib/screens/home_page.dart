@@ -9,6 +9,7 @@ import 'package:mytennat/widgets/profile_display_widgets.dart';
 import 'package:mytennat/screens/view_profile_screen.dart';
 import 'package:mytennat/screens/more_profile_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:mytennat/screens/coupon_screen.dart';
 import 'package:mytennat/screens/user_activity_screen.dart';
 import 'package:mytennat/screens/flatmate_profile_screen.dart';
 import 'package:mytennat/screens/flat_with_flatmate_profile_screen.dart';
@@ -763,7 +764,7 @@ void _openExploreMode() {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text(
-              'Create a profile to access chats and matches.',
+              'Create a listing to access chats and matches.',
             ),
           ),
         );
@@ -887,7 +888,52 @@ void _openExploreMode() {
         ],
       ),
     ),
-
+   Padding(
+  padding: const EdgeInsets.only(
+    right: 6,
+  ),
+  child: InkWell(
+    borderRadius: BorderRadius.circular(18),
+    onTap: () {
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (_) => const CouponScreen(),
+        ),
+      );
+    },
+    child: AnimatedContainer(
+      duration: const Duration(
+        milliseconds: 250,
+      ),
+      height: 48,
+      width: 48,
+      decoration: BoxDecoration(
+        color: Colors.white.withOpacity(.15),
+        borderRadius:
+            BorderRadius.circular(18),
+        border: Border.all(
+          color: Colors.white24,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(.08),
+            blurRadius: 12,
+            offset: const Offset(0, 6),
+          ),
+        ],
+      ),
+      child: const Center(
+        child: Text(
+          "🎁",
+          style: TextStyle(
+            fontSize: 27,
+          ),
+        ),
+      ),
+    ),
+  ),
+),
   StreamBuilder<QuerySnapshot>(
     stream: FirebaseFirestore.instance
         .collection('users')

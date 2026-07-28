@@ -2,7 +2,13 @@ import axios from "axios";
 import * as admin from "firebase-admin";
 import {onCall, HttpsError} from "firebase-functions/v2/https";
 import {defineSecret} from "firebase-functions/params";
+import {
+  applyCoupon,
+} from "./coupons/applyCoupon";
 
+export {
+  applyCoupon,
+};
 const MSG91_AUTH_KEY = defineSecret("MSG91_AUTH_KEY");
 
 admin.initializeApp();
