@@ -53,63 +53,142 @@ class NotificationService {
 
   final messaging = FirebaseMessaging.instance;
 
-  final settings = await messaging.requestPermission(
-    alert: true,
-    badge: true,
-    sound: true,
-    provisional: false,
-  );
-
-  // Wait for APNs registration
-  await Future.delayed(const Duration(seconds: 5));
-
-  String? apnsToken;
-  String? fcmToken;
-
-  try {
-    apnsToken = await messaging.getAPNSToken();
-  } catch (e) {
-    print("APNS ERROR: $e");
-  }
-
-  try {
-    fcmToken = await messaging.getToken();
-  } catch (e) {
-    print("FCM ERROR: $e");
-  }
-
-  print("================================");
-  print("Permission : ${settings.authorizationStatus}");
-  print("Alert      : ${settings.alert}");
-  print("Badge      : ${settings.badge}");
-  print("Sound      : ${settings.sound}");
-  print("APNS Token : $apnsToken");
-  print("FCM Token  : $fcmToken");
-  print("================================");
-
-  await FirebaseFirestore.instance
-      .collection("debug")
-      .doc("ios")
-      .set({
-    "uid": user.uid,
-    "permission": settings.authorizationStatus.name,
-    "alert": settings.alert.name,
-    "badge": settings.badge.name,
-    "sound": settings.sound.name,
-    "apnsToken": apnsToken,
-    "fcmToken": fcmToken,
-    "platform": Platform.operatingSystem,
-    "time": FieldValue.serverTimestamp(),
-  }, SetOptions(merge: true));
-
-  if (fcmToken != null && fcmToken.isNotEmpty) {
+  Future<void> log(String title, dynamic value) async {
     await FirebaseFirestore.instance
-        .collection("users")
-        .doc(user.uid)
-        .set({
-      "fcmToken": fcmToken,
-      "tokenUpdatedAt": FieldValue.serverTimestamp(),
-    }, SetOptions(merge: true));
+        .collection("ios_debug")
+        .add({
+      "uid": user.uid,
+      "title": title,
+      "value": value?.toString(),
+      "time": FieldValue.serverTimestamp(),
+    });
+  }
+
+  try {
+    await log("STEP_1", "saveFcmToken Started");
+
+    final settings = await messaging.requestPermission(
+      alert: true,
+      badge: true,
+      sound: true,
+      provisional: false,
+    );
+
+    await log(
+      "STEP_2_PERMISSION",
+      settings.authorizationStatus.name,
+    );
+
+    await log(
+      "ALERT",
+      settings.alert.name,
+    );
+
+    await log(
+      "BADGE",
+      settings.badge.name,
+    );
+
+    await log(
+      "SOUND",
+      settings.sound.name,
+    );
+
+    await messaging.setAutoInitEnabled(true);
+
+    await log(
+      "STEP_3",
+      "Auto Init Enabled",
+    );
+
+    for (int i = 1; i <= 20; i++) {
+      final apns = await messaging.getAPNSToken();
+
+      await log(
+        "APNS_ATTEMPT_$i",
+        apns,
+      );
+
+      if (apns != null) {
+        break;
+      }
+
+      await Future.delayed(
+        const Duration(seconds: 1),
+      );
+    }
+
+    final apnsToken =
+        await messaging.getAPNSToken();
+
+    await log(
+      "FINAL_APNS",
+      apnsToken,
+    );
+
+    String? fcmToken;
+
+    try {
+      fcmToken =
+          await messaging.getToken();
+
+      await log(
+        "FCM_TOKEN",
+        fcmToken,
+      );
+    } catch (e) {
+      await log(
+        "FCM_EXCEPTION",
+        e.toString(),
+      );
+    }
+
+    await log(
+      "IOS_VERSION",
+      Platform.operatingSystemVersion,
+    );
+
+    await log(
+      "PLATFORM",
+      Platform.operatingSystem,
+    );
+
+    if (fcmToken != null &&
+        fcmToken.isNotEmpty) {
+      await FirebaseFirestore.instance
+          .collection("users")
+          .doc(user.uid)
+          .set({
+        "fcmToken": fcmToken,
+        "tokenUpdatedAt":
+            FieldValue.serverTimestamp(),
+      }, SetOptions(merge: true));
+
+      await log(
+        "USER_DOC",
+        "FCM Saved",
+      );
+    } else {
+      await log(
+        "USER_DOC",
+        "FCM NULL",
+      );
+    }
+
+    await log(
+      "FINISHED",
+      "Completed",
+    );
+  } catch (e, stack) {
+    await log(
+      "CRASH",
+      e.toString(),
+    );
+
+    await log(
+      "STACKTRACE",
+      stack.toString(),
+    );
   }
 }
 }
