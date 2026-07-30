@@ -23,7 +23,7 @@ children: [
   Expanded(
 child: _actionCard(
   title: "List Your Flat",
-  subtitle: "Find verified flatmates\nquickly and easily.",
+  subtitle: "Find verified flatmates",
   icon: Icons.groups_rounded,
   gradient: const [
     Color(0xFFFFEEF6),
@@ -37,8 +37,8 @@ child: _actionCard(
 
 Expanded(
 child: _actionCard(
-  title: "Looking for a Flat",
-  subtitle: "Browse verified homes\nnear your location.",
+  title: "Find a Flat",
+  subtitle: "Find verified flats",
   icon: Icons.apartment_rounded,
   gradient: const [
     Color(0xFFF3EEFF),
@@ -110,7 +110,7 @@ Widget _actionCard({
         child: GestureDetector(
           onTap: onTap,
           child: AspectRatio(
-            aspectRatio: .55,
+            aspectRatio: .72,
             child: Container(
               clipBehavior: Clip.antiAlias,
               decoration: BoxDecoration(
@@ -273,7 +273,7 @@ Widget _actionCard({
 //----------------------------------------------------
 
 SizedBox(
-  height: 180,
+  height: 130,
   child: Stack(
     alignment: Alignment.center,
     children: [
@@ -303,8 +303,8 @@ SizedBox(
           title == "List Your Flat"
               ? "assets/images/cards/list_your_flat.png"
               : "assets/images/cards/looking_flat.png",
-          width: 185,
-height: 185,
+          width: 135,
+height: 135,
 fit: BoxFit.contain,
         ),
       ),
@@ -344,7 +344,7 @@ const SizedBox(height: 18),
 Text(
   title,
   style: const TextStyle(
-    fontSize: 20,
+    fontSize: 16,
     fontWeight: FontWeight.w900,
     color: Color(0xFF111827),
     letterSpacing: -.6,
@@ -361,8 +361,8 @@ const SizedBox(height: 10),
 Text(
   subtitle,
   style: const TextStyle(
-    fontSize: 14,
-    height: 1.45,
+   fontSize: 12,
+height: 1.3,
     color: Color(0xFF6B7280),
     fontWeight: FontWeight.w500,
   ),
@@ -375,7 +375,7 @@ const SizedBox(height: 16),
 //----------------------------------------------------
 
 Container(
-  height: 40,
+  height: 34,
   decoration: BoxDecoration(
     borderRadius: BorderRadius.circular(18),
     gradient: LinearGradient(
@@ -409,7 +409,7 @@ Container(
       : "Find Flat",
         style: TextStyle(
           color: Colors.white,
-          fontSize: 15,
+          fontSize: 13,
           fontWeight: FontWeight.w800,
         ),
       ),

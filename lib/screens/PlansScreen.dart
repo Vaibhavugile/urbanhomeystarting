@@ -6,7 +6,7 @@ import 'package:mytennat/models/chat_plan.dart';
 import 'package:mytennat/services/chat_plan_service.dart';
 import 'package:mytennat/models/payment_method.dart';
 import '../services/razorpay_service.dart';
-
+import 'package:url_launcher/url_launcher.dart';
 class PlansScreen extends StatefulWidget {
   const PlansScreen({super.key});
 
@@ -699,6 +699,18 @@ if (rawPurchaseId.trim().isEmpty) {
       rethrow;
     }
 }
+Future<void> _openWhatsApp() async {
+  final Uri url = Uri.parse(
+    'https://wa.me/918793744117?text=Hi%20UrbanHomey,%20I%20need%20help%20choosing%20a%20plan.',
+  );
+
+  if (await canLaunchUrl(url)) {
+    await launchUrl(
+      url,
+      mode: LaunchMode.externalApplication,
+    );
+  }
+}
 @override
 void initState() {
   super.initState();
@@ -947,161 +959,49 @@ Widget build(BuildContext context) {
           ),
 
           child: Column(
-            crossAxisAlignment:
-                CrossAxisAlignment
-                    .stretch,
-            children: [
-              const Icon(
-                Icons
-                    .workspace_premium_rounded,
-                size: 70,
-                color: Colors.white,
-              ),
+  crossAxisAlignment: CrossAxisAlignment.stretch,
+  children: [
 
-              const SizedBox(
-                  height: 20),
+    isMobile
+        ? _buildMobilePlanLayout(context)
+        : _buildWebPlanLayout(context),
 
-              const Text(
-                'Unlock Premium Matching 🚀',
-                textAlign:
-                    TextAlign.center,
-                style: TextStyle(
-                  fontSize: 30,
-                  fontWeight:
-                      FontWeight.w900,
-                  color:
-                      Colors.white,
-                  height: 1.2,
-                ),
-              ),
+    const SizedBox(height: 32),
 
-              const SizedBox(
-                  height: 12),
-
-              const Text(
-                'Get more profile views, contact access, priority matching and premium perks.',
-                textAlign:
-                    TextAlign.center,
-                style: TextStyle(
-                  fontSize: 16,
-                  color:
-                      Colors.white70,
-                  height: 1.5,
-                ),
-              ),
-
-              const SizedBox(
-                  height: 30),
-
-              
-
-              
-
-              isMobile
-                  ? _buildMobilePlanLayout(
-                      context)
-                  : _buildWebPlanLayout(
-                      context),
-
-              const SizedBox(
-                  height: 40),
-
-              Container(
-                padding:
-                    const EdgeInsets
-                        .all(20),
-                decoration:
-                    BoxDecoration(
-                  color: Colors
-                      .white
-                      .withOpacity(
-                          .10),
-                  borderRadius:
-                      BorderRadius
-                          .circular(
-                              24),
-                  border:
-                      Border.all(
-                    color: Colors
-                        .white24,
-                  ),
-                ),
-                child:
-                    const Column(
-                  children: [
-                    Icon(
-                      Icons
-                          .verified_user_rounded,
-                      color: Colors
-                          .white,
-                      size: 40,
-                    ),
-
-                    SizedBox(
-                        height: 10),
-
-                    Text(
-                      "Secure Purchase",
-                      style:
-                          TextStyle(
-                        color: Colors
-                            .white,
-                        fontSize:
-                            18,
-                        fontWeight:
-                            FontWeight
-                                .bold,
-                      ),
-                    ),
-
-                    SizedBox(
-                        height: 6),
-
-                    Text(
-                      "Your subscription is securely stored and instantly activated.",
-                      textAlign:
-                          TextAlign
-                              .center,
-                      style:
-                          TextStyle(
-                        color: Colors
-                            .white70,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-
-              const SizedBox(
-                  height: 30),
-
-              const Text(
-                'Need help choosing a plan?',
-                textAlign:
-                    TextAlign.center,
-                style: TextStyle(
-                  color:
-                      Colors.white,
-                  fontSize: 16,
-                  fontWeight:
-                      FontWeight.w600,
-                ),
-              ),
-
-              const SizedBox(
-                  height: 8),
-
-              const Text(
-                'Our support team is always here to help.',
-                textAlign:
-                    TextAlign.center,
-                style: TextStyle(
-                  color:
-                      Colors.white60,
-                ),
-              ),
-            ],
+    InkWell(
+  onTap: _openWhatsApp,
+  borderRadius: BorderRadius.circular(12),
+  child: const Padding(
+    padding: EdgeInsets.symmetric(vertical: 8),
+    child: Column(
+      children: [
+        Text(
+          'Need help choosing a plan?',
+          textAlign: TextAlign.center,
+          style: TextStyle(
+            color: Colors.white,
+            fontSize: 16,
+            fontWeight: FontWeight.w700,
+            decoration: TextDecoration.underline,
           ),
+        ),
+        SizedBox(height: 8),
+        Text(
+          'Chat with us on WhatsApp',
+          textAlign: TextAlign.center,
+          style: TextStyle(
+            color: Colors.white70,
+            fontSize: 14,
+          ),
+        ),
+      ],
+    ),
+  ),
+),
+
+    const SizedBox(height: 20),
+  ],
+),
         ),
       ],
     ),
