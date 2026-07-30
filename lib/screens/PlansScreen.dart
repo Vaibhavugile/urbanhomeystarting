@@ -2843,107 +2843,13 @@ void _showPurchaseConfirmation(
                       // FIRESTORE PLAN FEATURES
                       // =========================================
 
-                      Container(
-                        width:
-                            double.infinity,
-
-                        padding:
-                            const EdgeInsets.all(
-                          18,
-                        ),
-
-                        decoration:
-                            BoxDecoration(
-                          gradient:
-                              LinearGradient(
-                            colors: [
-                              const Color(
-                                0xFF7C3AED,
-                              ).withOpacity(
-                                .06,
-                              ),
-
-                              const Color(
-                                0xFFEC4899,
-                              ).withOpacity(
-                                .06,
-                              ),
-                            ],
-                          ),
-
-                          borderRadius:
-                              BorderRadius.circular(
-                            20,
-                          ),
-
-                          border:
-                              Border.all(
-                            color:
-                                const Color(
-                              0xFF9333EA,
-                            ).withOpacity(
-                              .10,
-                            ),
-                          ),
-                        ),
-
-                        child: Column(
-                          children:
-                              List.generate(
-                            plan.features.length,
-                            (index) {
-                              final String feature =
-                                  plan.features[
-                                      index];
-
-                              return Padding(
-                                padding:
-                                    EdgeInsets.only(
-                                  bottom:
-                                      index ==
-                                              plan.features.length -
-                                                  1
-                                          ? 0
-                                          : 12,
-                                ),
-
-                                child: Row(
-                                  children: [
-                                    const Icon(
-                                      Icons
-                                          .check_circle_rounded,
-
-                                      color:
-                                          Colors.green,
-                                    ),
-
-                                    const SizedBox(
-                                      width: 10,
-                                    ),
-
-                                    Expanded(
-                                      child: Text(
-                                        feature,
-
-                                        style:
-                                            const TextStyle(
-                                          fontWeight:
-                                              FontWeight.w600,
-                                        ),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              );
-                            },
-                          ),
-                        ),
-                      ),
+                      
 
 
-                      const SizedBox(
-                        height: 24,
-                      ),
+                      
+// =========================================
+// PAYMENT METHOD
+// =========================================
 // =========================================
 // PAYMENT METHOD
 // =========================================
@@ -2951,7 +2857,7 @@ void _showPurchaseConfirmation(
 const Align(
   alignment: Alignment.centerLeft,
   child: Text(
-    "Choose Payment Method",
+    "Payment Method",
     style: TextStyle(
       fontSize: 18,
       fontWeight: FontWeight.w800,
@@ -2963,80 +2869,52 @@ const Align(
 const SizedBox(height: 16),
 
 Container(
+  width: double.infinity,
+  padding: const EdgeInsets.all(18),
   decoration: BoxDecoration(
     borderRadius: BorderRadius.circular(18),
     border: Border.all(
-      color: _selectedPaymentMethod ==
-              PaymentMethod.razorpay
-          ? const Color(0xFF7C3AED)
-          : Colors.grey.shade300,
+      color: const Color(0xFF7C3AED),
       width: 2,
     ),
+    color: const Color(0xFFF8F5FF),
   ),
-  child: RadioListTile<PaymentMethod>(
-    value: PaymentMethod.razorpay,
-    groupValue: _selectedPaymentMethod,
-    activeColor: const Color(0xFF7C3AED),
-    onChanged: (value) {
-      if (value == null) return;
-
-      setState(() {
-        _selectedPaymentMethod = value;
-      });
-
-      setSheetState(() {});
-    },
-    title: const Text(
-      "Razorpay",
-      style: TextStyle(
-        fontWeight: FontWeight.w700,
+  child: const Row(
+    children: [
+      Icon(
+        Icons.account_balance_wallet_rounded,
+        color: Color(0xFF7C3AED),
+        size: 34,
       ),
-    ),
-    subtitle: const Text(
-      "UPI • Google Pay • PhonePe • Cards",
-    ),
-  ),
-),
-
-const SizedBox(height: 14),
-
-Container(
-  decoration: BoxDecoration(
-    borderRadius: BorderRadius.circular(18),
-    border: Border.all(
-      color: _selectedPaymentMethod ==
-              PaymentMethod.inApp
-          ? const Color(0xFF7C3AED)
-          : Colors.grey.shade300,
-      width: 2,
-    ),
-  ),
-  child: RadioListTile<PaymentMethod>(
-    value: PaymentMethod.inApp,
-    groupValue: _selectedPaymentMethod,
-    activeColor: const Color(0xFF7C3AED),
-    onChanged: (value) {
-      if (value == null) return;
-
-      setState(() {
-        _selectedPaymentMethod = value;
-      });
-
-      setSheetState(() {});
-    },
-    title: const Text(
-      "Google Play / Apple",
-      style: TextStyle(
-        fontWeight: FontWeight.w700,
+      SizedBox(width: 14),
+      Expanded(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              "Razorpay",
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+            SizedBox(height: 4),
+            Text(
+              "UPI • Google Pay • PhonePe • Cards • Net Banking",
+              style: TextStyle(
+                color: Colors.grey,
+                fontSize: 13,
+              ),
+            ),
+          ],
+        ),
       ),
-    ),
-    subtitle: const Text(
-      "Official In-App Purchase",
-    ),
+    ],
   ),
 ),
 
 const SizedBox(height: 24),
+
 
                       // =========================================
                       // SECURITY / PROCESSING MESSAGE
@@ -3097,39 +2975,37 @@ const SizedBox(height: 24),
 
                             Expanded(
                               child:
-                                  AnimatedSwitcher(
-                                duration:
-                                    const Duration(
-                                  milliseconds:
-                                      200,
-                                ),
+                                 AnimatedSwitcher(
+  duration: const Duration(milliseconds: 250),
+  child: _isPurchasing
+      ? const Column(
+          key: ValueKey('processing'),
+          children: [
 
-                                child: Text(
-                                  _isPurchasing
-                                      ? 'Please wait while your secure purchase is being processed.'
-                                      : 'Secure one-time purchase through the app store.',
+            Text(
+              "Processing your payment...",
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                color: Color(0xFF64748B),
+                fontSize: 13,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
 
-                                  key:
-                                      ValueKey(
-                                    _isPurchasing,
-                                  ),
+            SizedBox(height: 6),
 
-                                  style:
-                                      TextStyle(
-                                    color:
-                                        _isPurchasing
-                                            ? const Color(
-                                                0xFF7C3AED,
-                                              )
-                                            : Colors
-                                                .green
-                                                .shade800,
-
-                                    fontWeight:
-                                        FontWeight.w600,
-                                  ),
-                                ),
-                              ),
+            Text(
+              "Please complete the payment in the Razorpay window.",
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                color: Color(0xFF94A3B8),
+                fontSize: 12,
+              ),
+            ),
+          ],
+        )
+      : const SizedBox.shrink(),
+),
                             ),
                           ],
                         ),
@@ -3184,21 +3060,26 @@ const SizedBox(height: 24),
                                         // USING STORE PRODUCT ID
                                         // =======================
 
-                                       switch (_selectedPaymentMethod) {
-  case PaymentMethod.inApp:
-    await BillingService.instance.buyPlan(
-      plan.productId,
-    );
-    break;
+//                                        switch (_selectedPaymentMethod) {
+//   case PaymentMethod.inApp:
+//     await BillingService.instance.buyPlan(
+//       plan.productId,
+//     );
+//     break;
 
-  case PaymentMethod.razorpay:
-  await RazorpayService.instance.buyPlan(
-    plan.productId,
-    plan.amount,
-    FirebaseAuth.instance.currentUser!.uid,
-  );
-  break;
-}
+//   case PaymentMethod.razorpay:
+//   await RazorpayService.instance.buyPlan(
+//     plan.productId,
+//     plan.amount,
+//     FirebaseAuth.instance.currentUser!.uid,
+//   );
+//   break;
+// }
+await RazorpayService.instance.buyPlan(
+  plan.productId,
+  plan.amount,
+  FirebaseAuth.instance.currentUser!.uid,
+);
                                       } catch (e) {
                                         if (!mounted) {
                                           return;
@@ -3420,71 +3301,50 @@ const SizedBox(height: 24),
                       // =========================================
 
                       AnimatedSwitcher(
-                        duration:
-                            const Duration(
-                          milliseconds: 200,
-                        ),
+  duration: const Duration(milliseconds: 250),
 
-                        child:
-                            _isPurchasing
-                                ? const Padding(
-                                    key:
-                                        ValueKey(
-                                      'waitMessage',
-                                    ),
+  child: _isPurchasing
+      ? Column(
+          key: const ValueKey('processing'),
 
-                                    padding:
-                                        EdgeInsets.symmetric(
-                                      vertical: 12,
-                                    ),
+          children: [
 
-                                    child:
-                                        Text(
-                                      "Please don't close the app while processing",
+            const Text(
+              "Processing your payment...",
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: 13,
+                fontWeight: FontWeight.w600,
+                color: Color(0xFF64748B),
+              ),
+            ),
 
-                                      textAlign:
-                                          TextAlign.center,
+            const SizedBox(height: 12),
 
-                                      style:
-                                          TextStyle(
-                                        color:
-                                            Color(
-                                          0xFF94A3B8,
-                                        ),
+            OutlinedButton.icon(
+              onPressed: () {
+                Navigator.pop(sheetContext);
+              },
+              icon: const Icon(Icons.close),
+              label: const Text("Exit"),
+            ),
+          ],
+        )
+      : TextButton(
+          key: const ValueKey('cancel'),
 
-                                        fontSize:
-                                            12,
+          onPressed: () {
+            Navigator.pop(sheetContext);
+          },
 
-                                        fontWeight:
-                                            FontWeight.w500,
-                                      ),
-                                    ),
-                                  )
-                                : TextButton(
-                                    key:
-                                        const ValueKey(
-                                      'cancelButton',
-                                    ),
-
-                                    onPressed:
-                                        () {
-                                      Navigator.pop(
-                                        sheetContext,
-                                      );
-                                    },
-
-                                    child:
-                                        const Text(
-                                      'Cancel',
-
-                                      style:
-                                          TextStyle(
-                                        color:
-                                            Colors.grey,
-                                      ),
-                                    ),
-                                  ),
-                      ),
+          child: const Text(
+            "Cancel",
+            style: TextStyle(
+              color: Colors.grey,
+            ),
+          ),
+        ),
+),
                     ],
                   ),
                 ),
