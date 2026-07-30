@@ -109,9 +109,9 @@ Widget _actionCard({
         scale: scale,
         child: GestureDetector(
           onTap: onTap,
-          child: AspectRatio(
-            aspectRatio: .72,
-            child: Container(
+          child: SizedBox(
+  height: 310,
+  child: Container(
               clipBehavior: Clip.antiAlias,
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(34),

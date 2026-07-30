@@ -982,7 +982,6 @@ Widget build(BuildContext context) {
             color: Colors.white,
             fontSize: 16,
             fontWeight: FontWeight.w700,
-            decoration: TextDecoration.underline,
           ),
         ),
         SizedBox(height: 8),
