@@ -1,8 +1,7 @@
 import UIKit
 import Flutter
 import GoogleMaps
-import FirebaseCore
-import FirebaseFirestore
+
 
 @main
 @objc class AppDelegate: FlutterAppDelegate {
@@ -12,10 +11,8 @@ import FirebaseFirestore
     didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?
   ) -> Bool {
 
-    // Firebase
-    if FirebaseApp.app() == nil {
-      FirebaseApp.configure()
-    }
+   
+  
 
     // Google Maps
     GMSServices.provideAPIKey(
@@ -25,19 +22,19 @@ import FirebaseFirestore
     // Flutter plugins
     GeneratedPluginRegistrant.register(with: self)
 
-    // Log app launch
-    saveLog(
-      title: "APP_START",
-      value: "didFinishLaunching"
-    )
+let result = super.application(
+    application,
+    didFinishLaunchingWithOptions: launchOptions
+)
 
-    // Register for APNS
-    application.registerForRemoteNotifications()
+saveLog(
+    title: "APP_START",
+    value: "didFinishLaunching"
+)
 
-    return super.application(
-      application,
-      didFinishLaunchingWithOptions: launchOptions
-    )
+application.registerForRemoteNotifications()
+
+return result
   }
 
   // ============================================================
@@ -47,24 +44,10 @@ import FirebaseFirestore
   func saveLog(
     title: String,
     value: String
-  ) {
-
-    Firestore.firestore()
-      .collection("ios_native_logs")
-      .document()
-      .setData([
-        "title": title,
-        "value": value,
-        "time": FieldValue.serverTimestamp()
-      ]) { error in
-
-        if let error = error {
-          print("Firestore Log Error: \(error.localizedDescription)")
-        } else {
-          print("Firestore Log Saved: \(title)")
-        }
-      }
-  }
+) {
+    print("========== \(title) ==========")
+    print(value)
+}
 
   // ============================================================
   // APNS SUCCESS
