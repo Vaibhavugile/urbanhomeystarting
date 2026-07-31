@@ -928,25 +928,7 @@ Widget _buildPremiumHeroSection(
           /// BACK BUTTON
          
           /// PAGE INDICATOR
-          Positioned(
-            bottom: 82,
-            left: 0,
-            right: 0,
-            child: Center(
-              child: SmoothPageIndicator(
-                controller: pageController,
-                count: imageUrls.isEmpty ? 1 : imageUrls.length,
-                effect: const ExpandingDotsEffect(
-                  activeDotColor: Colors.white,
-                  dotColor: Colors.white38,
-                  dotHeight: 8,
-                  dotWidth: 8,
-                  expansionFactor: 3.5,
-                  spacing: 8,
-                ),
-              ),
-            ),
-          ),
+          
 
           /// NAME + VERIFIED
          Positioned(
@@ -1256,24 +1238,7 @@ Widget _buildSeekingHeroSection(
           
 
           /// PAGE INDICATOR
-          Positioned(
-            bottom: 82,
-            left: 0,
-            right: 0,
-            child: Center(
-              child: SmoothPageIndicator(
-                controller: pageController,
-                count: imageUrls.isEmpty ? 1 : imageUrls.length,
-                effect: const ExpandingDotsEffect(
-                  activeDotColor: Colors.white,
-                  dotColor: Colors.white38,
-                  dotHeight: 8,
-                  dotWidth: 8,
-                  expansionFactor: 3.5,
-                ),
-              ),
-            ),
-          ),
+          
 
           /// NAME + VERIFIED
           Positioned(

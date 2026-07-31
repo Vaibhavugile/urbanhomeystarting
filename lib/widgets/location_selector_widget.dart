@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:google_places_flutter/google_places_flutter.dart';
 import 'package:google_places_flutter/model/prediction.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
-
 const Color kPrimaryColor = Color(0xFF7C3AED);
 const Color kSecondaryColor = Color(0xFF9333EA);
 const Color kAccentColor = Color(0xFFEC4899);

@@ -1098,21 +1098,12 @@ Widget _buildPlanCard(
           borderRadius:
               BorderRadius.circular(28),
 
-          child: SingleChildScrollView(
-            physics:
-                const BouncingScrollPhysics(),
-
-            padding:
-                const EdgeInsets.all(24),
-
-            child: Column(
-              mainAxisSize:
-                  MainAxisSize.min,
-
-              crossAxisAlignment:
-                  CrossAxisAlignment.start,
-
-              children: [
+          child: Padding(
+  padding: const EdgeInsets.all(24),
+  child: Column(
+    mainAxisSize: MainAxisSize.min,
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
                 // ==============================================
                 // HIGHLIGHTED BADGE
                 // ==============================================
@@ -1616,7 +1607,7 @@ Widget _buildPlanCard(
 Widget _buildMobilePlanLayout(
   BuildContext context,
 ) {
-  const double cardHeight = 520;
+  const double cardHeight = 650;
 
 
   // ============================================================

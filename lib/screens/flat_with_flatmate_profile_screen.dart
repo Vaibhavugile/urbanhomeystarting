@@ -1852,8 +1852,8 @@ todayForegroundColor:
     height: 1.2,
     fontWeight: FontWeight.w600,
     color: hasSelectedDate
-        ? Colors.white
-        : textSecondary,
+    ? const Color(0xFF111827)
+    : textSecondary,
   ),
 ),
 
@@ -1870,8 +1870,8 @@ Text(
     height: 1.25,
     fontWeight: FontWeight.w700,
     color: hasSelectedDate
-        ? Colors.white
-        : const Color(0xFF94A3B8),
+    ? const Color(0xFF111827)
+    : const Color(0xFF94A3B8),
   ),
 ),
                       ],
