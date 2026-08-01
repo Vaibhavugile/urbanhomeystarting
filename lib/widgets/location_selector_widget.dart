@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:google_places_flutter/google_places_flutter.dart';
 import 'package:google_places_flutter/model/prediction.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import '../screens/location_search_screen.dart';
 const Color kPrimaryColor = Color(0xFF7C3AED);
 const Color kSecondaryColor = Color(0xFF9333EA);
 const Color kAccentColor = Color(0xFFEC4899);
@@ -538,256 +539,80 @@ WidgetsBinding.instance.addPostFrameCallback((_) {
 
     const SizedBox(height: 8),
 
-    GooglePlaceAutoCompleteTextField(
-  textEditingController: _addressController,
-
-  focusNode: _addressFocusNode,
-
-  googleAPIKey:
-          'AIzaSyBK82kg-QdV1TdTrOoC3-jvbSstRhz1wZ0',
-
-  debounceTime: 600,
-
-  isLatLngRequired: true,
-
-  countries: const ["in"],
-  latitude: _selectedCityLatitude,
-longitude: _selectedCityLongitude,
-radius: _searchRadiusMeters,
-
-  // Disable package clear button.
-  // We use our own reliable clear button below.
-  isCrossBtnShown: false,
-
-  inputDecoration: InputDecoration(
-    hintText: _selectedCity == null
-        ? "Select city first"
-        : "Search in $_selectedCity",
-
-    hintStyle: const TextStyle(
-      color: kMediumText,
-    ),
-
-    prefixIcon: Container(
-      margin: const EdgeInsets.all(10),
-      decoration: const BoxDecoration(
-        shape: BoxShape.circle,
-        gradient: kPrimaryGradient,
-      ),
-      child: const Icon(
-        Icons.search_rounded,
-        color: Colors.white,
-        size: 18,
-      ),
-    ),
-
-    // ============================================================
-    // CUSTOM CLEAR BUTTON
-    // ============================================================
-
-    suffixIcon: ValueListenableBuilder<TextEditingValue>(
-      valueListenable: _addressController,
-      builder: (context, value, child) {
-        if (value.text.isEmpty) {
-          return const SizedBox.shrink();
-        }
-
-        return IconButton(
-          tooltip: "Clear location",
-          icon: const Icon(
-            Icons.close_rounded,
-            color: kMediumText,
-          ),
-          onPressed: () {
-            // Close keyboard.
-            _addressFocusNode.unfocus();
-            FocusManager.instance.primaryFocus?.unfocus();
-
-            // Clear the TextField immediately.
-            _addressController.clear();
-
-            setState(() {
-              _latitude = null;
-              _longitude = null;
-              _placeId = null;
-            });
-
-            // Tell parent that selected address was cleared.
-            _notifyParent();
-          },
-        );
-      },
-    ),
-
-    filled: true,
-    fillColor: kCardColor,
-
-    contentPadding: const EdgeInsets.symmetric(
-      horizontal: 16,
-      vertical: 18,
-    ),
-
-    border: OutlineInputBorder(
-      borderRadius: BorderRadius.circular(18),
-    ),
-
-    enabledBorder: OutlineInputBorder(
-      borderRadius: BorderRadius.circular(18),
-      borderSide: const BorderSide(
-        color: kBorderColor,
-      ),
-    ),
-
-    focusedBorder: OutlineInputBorder(
-      borderRadius: BorderRadius.circular(18),
-      borderSide: const BorderSide(
-        color: kPrimaryColor,
-        width: 2,
-      ),
-    ),
-  ),
-
-  // ============================================================
-  // USER CLICKS A GOOGLE SUGGESTION
-  // ============================================================
-
-  itemClick: (Prediction prediction) {
-  final selectedAddress =
-      prediction.description ?? '';
-
-  // The package already manages the text controller.
-  // Do not update controller text inside setState().
-  _addressController.value = TextEditingValue(
-    text: selectedAddress,
-    selection: TextSelection.collapsed(
-      offset: selectedAddress.length,
-    ),
-  );
-
-  _placeId = prediction.placeId;
-
-  // Hide keyboard after the suggestion tap has completed.
-  WidgetsBinding.instance.addPostFrameCallback((_) {
-    if (!mounted) return;
-
-    FocusManager.instance.primaryFocus?.unfocus();
-  });
-},
-
-  // ============================================================
-  // GOOGLE RETURNS LATITUDE / LONGITUDE
-  // ============================================================
-
-  getPlaceDetailWithLatLng:
-    (Prediction prediction) {
-  final double? selectedLatitude =
-      double.tryParse(prediction.lat ?? '');
-
-  final double? selectedLongitude =
-      double.tryParse(prediction.lng ?? '');
-
-  if (selectedLatitude == null ||
-      selectedLongitude == null) {
-    return;
-  }
-
-  // ============================================================
-  // VALIDATE 100 KM SEARCH RADIUS
-  // ============================================================
-
-  if (_selectedCityLatitude != null &&
-      _selectedCityLongitude != null) {
-    final double distanceKm =
-        _calculateDistanceKm(
-      _selectedCityLatitude!,
-      _selectedCityLongitude!,
-      selectedLatitude,
-      selectedLongitude,
-    );
-
-    if (distanceKm > 100) {
-      _addressFocusNode.unfocus();
-FocusManager.instance.primaryFocus?.unfocus();
-      _addressController.clear();
-
-      setState(() {
-        _latitude = null;
-        _longitude = null;
-        _placeId = null;
-      });
-
+   InkWell(
+  borderRadius: BorderRadius.circular(18),
+  onTap: () async {
+    if (_selectedCity == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            "Please select a location within 100 km of $_selectedCity.",
-          ),
+        const SnackBar(
+          content: Text("Please select a city first."),
         ),
       );
-
       return;
     }
-  }
 
-  // ============================================================
-  // VALID LOCATION
-  // ============================================================
+    final LocationSearchResult? result =
+    await Navigator.push<LocationSearchResult>(
+  context,
+  MaterialPageRoute(
+    builder: (_) => LocationSearchScreen(
+      city: _selectedCity!,
+      cityLatitude: _selectedCityLatitude!,
+      cityLongitude: _selectedCityLongitude!,
+      searchRadiusMeters: _searchRadiusMeters,
+    ),
+  ),
+);
 
-  setState(() {
-    _latitude = selectedLatitude;
-    _longitude = selectedLongitude;
-    _placeId = prediction.placeId;
-  });
+if (result == null) return;
 
-  _notifyParent();
+setState(() {
+  _addressController.text = result.address;
+  _latitude = result.latitude;
+  _longitude = result.longitude;
+  _placeId = result.placeId;
+});
 
-  WidgetsBinding.instance.addPostFrameCallback((_) {
-    if (!mounted) return;
-
-    _addressFocusNode.unfocus();
-    FocusManager.instance.primaryFocus?.unfocus();
-  });
-},
-
-  seperatedBuilder: const Divider(),
-
-  itemBuilder: (
-    context,
-    index,
-    Prediction prediction,
-  ) {
-    return Container(
-      padding: const EdgeInsets.all(14),
-      child: Row(
-        children: [
-          Container(
-            width: 40,
-            height: 40,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              color: kPrimaryColor.withOpacity(.10),
-            ),
-            child: const Icon(
-              Icons.location_on,
-              color: kPrimaryColor,
-            ),
-          ),
-
-          const SizedBox(width: 12),
-
-          Expanded(
-            child: Text(
-              prediction.description ?? '',
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
-              style: const TextStyle(
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
+_notifyParent();
   },
+  child: Container(
+    padding: const EdgeInsets.symmetric(
+      horizontal: 18,
+      vertical: 18,
+    ),
+    decoration: BoxDecoration(
+      color: Colors.white,
+      borderRadius: BorderRadius.circular(18),
+      border: Border.all(color: kBorderColor),
+    ),
+    child: Row(
+      children: [
+        const Icon(
+          Icons.search_rounded,
+          color: kPrimaryColor,
+        ),
+        const SizedBox(width: 12),
+        Expanded(
+          child: Text(
+            _addressController.text.isEmpty
+                ? (_selectedCity == null
+                    ? "Select city first"
+                    : "Search in $_selectedCity")
+                : _addressController.text,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: TextStyle(
+              color: _addressController.text.isEmpty
+                  ? kMediumText
+                  : kDarkText,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ),
+        const Icon(Icons.chevron_right),
+      ],
+    ),
+  ),
 ),
   ],
 ),
