@@ -3879,43 +3879,32 @@ Widget _buildCardView() {
 
             const SizedBox(height: 24),
 
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton.icon(
-                onPressed: () {
-                  _fetchUserProfile(
-                    applyFilters: true,
-                  );
-                },
-                icon: const Icon(
-                  Icons.refresh_rounded,
-                ),
-                label: const Text(
-                  'Refresh Profiles',
-                ),
-                style:
-                    ElevatedButton.styleFrom(
-                  elevation: 0,
-                  minimumSize:
-                      const Size.fromHeight(
-                    56,
-                  ),
-                  backgroundColor:
-                      const Color(
-                    0xFF7C3AED,
-                  ),
-                  foregroundColor:
-                      Colors.white,
-                  shape:
-                      RoundedRectangleBorder(
-                    borderRadius:
-                        BorderRadius.circular(
-                      18,
-                    ),
-                  ),
-                ),
-              ),
-            ),
+           if (widget.profileId.trim().isNotEmpty)
+  SizedBox(
+    width: double.infinity,
+    child: ElevatedButton.icon(
+      onPressed: () {
+        _fetchUserProfile(
+          applyFilters: true,
+        );
+      },
+      icon: const Icon(
+        Icons.refresh_rounded,
+      ),
+      label: const Text(
+        'Refresh Profiles',
+      ),
+      style: ElevatedButton.styleFrom(
+        elevation: 0,
+        minimumSize: const Size.fromHeight(56),
+        backgroundColor: const Color(0xFF7C3AED),
+        foregroundColor: Colors.white,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(18),
+        ),
+      ),
+    ),
+  ),
           ],
         ),
       ),

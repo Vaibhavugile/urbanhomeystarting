@@ -8,7 +8,7 @@ import 'firebase_options.dart';
 import 'screens/login_screen.dart';
 import 'screens/home_page.dart';
 import 'services/notification_service.dart';
-
+import 'screens/startup_screen.dart';
 final GlobalKey<ScaffoldMessengerState>
     messengerKey =
         GlobalKey<ScaffoldMessengerState>();
@@ -211,7 +211,7 @@ class MyApp extends StatelessWidget {
       ),
 
       home: currentUser != null
-    ? const HomePage()
+    ? const StartupScreen()
     : const LoginScreen(),
     );
   }
