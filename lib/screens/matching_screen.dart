@@ -4044,32 +4044,32 @@ final double nopeOpacity =
     direction,
   ) {
 
-    if (direction ==
-        CardSwiperDirection.right) {
+   if (direction == CardSwiperDirection.right) {
 
-      if (widget.isExploreMode) {
-        return false;
-      }
+  if (widget.isExploreMode) {
+    _showCreateProfileRequiredDialog();
+    return false;
+  }
 
-      _lastLikedProfile = profile;
+  _lastLikedProfile = profile;
 
-      debugPrint(
-        'LAST LIKED PROFILE = ${profile.documentId}',
-      );
+  debugPrint(
+    'LAST LIKED PROFILE = ${profile.documentId}',
+  );
 
-      _handleProfileDismissed(
-        DismissDirection.startToEnd,
-      );
+  _handleProfileDismissed(
+    DismissDirection.startToEnd,
+  );
 
-    } else {
+} else {
 
-      _handleProfileDismissed(
-        DismissDirection.endToStart,
-      );
+  _handleProfileDismissed(
+    DismissDirection.endToStart,
+  );
 
-    }
+}
 
-    return true;
+return true;
 
   },
 ),
