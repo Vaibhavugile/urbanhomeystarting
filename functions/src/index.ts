@@ -5,9 +5,12 @@ import {defineSecret} from "firebase-functions/params";
 import {
   applyCoupon,
 } from "./coupons/applyCoupon";
-
+import {notifyAdminsNewUser} from "./notifications/newUserNotification";
+import {logDownloadAnalytics} from "./analytics/downloadAnalytics";
 export {
   applyCoupon,
+  logDownloadAnalytics,
+  notifyAdminsNewUser,
 };
 const MSG91_AUTH_KEY = defineSecret("MSG91_AUTH_KEY");
 
