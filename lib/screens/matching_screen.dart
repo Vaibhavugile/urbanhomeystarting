@@ -22,7 +22,6 @@ import 'package:mytennat/screens/matching/widgets/profile_card.dart';
 import 'package:mytennat/screens/matching/widgets/profile_list_item.dart';
 import 'package:mytennat/screens/matching/services/matching_service.dart';
 import 'package:mytennat/screens/matching/widgets/ad_panel.dart';
-import 'dart:math' as math;
 import 'package:flutter_card_swiper/flutter_card_swiper.dart';
 import 'package:mytennat/screens/chat_screen.dart'
     hide kBackgroundColor,
@@ -633,8 +632,8 @@ debugPrint(
 );
 
     if (applyFilters &&
-        _currentUserParsedProfile
-            is SeekingFlatmateProfile) {
+    (widget.isExploreMode ||
+     _currentUserParsedProfile is SeekingFlatmateProfile)) {
 
       if (_defaultCity != null &&
     _defaultCity!.isNotEmpty) {
@@ -976,8 +975,8 @@ Future<void> _loadMoreFlatListings() async {
         );
 
     // APPLY SAME FILTERS
-    if (_currentUserParsedProfile
-        is SeekingFlatmateProfile) {
+    if (widget.isExploreMode ||
+    _currentUserParsedProfile is SeekingFlatmateProfile) {
 
       if (_defaultCity != null &&
     _defaultCity!.isNotEmpty) {
@@ -1257,8 +1256,8 @@ debugPrint(
 );
 
     if (applyFilters &&
-        _currentUserParsedProfile
-            is FlatListingProfile) {
+    (widget.isExploreMode ||
+     _currentUserParsedProfile is FlatListingProfile)) {
 
      if (_defaultCity != null &&
     _defaultCity!.isNotEmpty) {
@@ -1505,8 +1504,8 @@ Future<void> _loadMoreSeekingFlatmates() async {
         );
 
     // APPLY SAME FILTERS
-    if (_currentUserParsedProfile
-        is FlatListingProfile) {
+    if (widget.isExploreMode ||
+    _currentUserParsedProfile is FlatListingProfile) {
 
       if (_defaultCity != null &&
     _defaultCity!.isNotEmpty) {
@@ -1743,8 +1742,7 @@ void _showCreateProfileRequiredDialog() {
           onPressed: () {
             Navigator.pop(context);
 
-            if (widget.profileType ==
-                "flat_listing") {
+            if (_exploreType == "flat_listing") {
 
               Navigator.push(
                 context,
@@ -1879,8 +1877,7 @@ debugPrint(
     "FILTER LNG = ${newFilters.longitude}");
     });
     if (widget.isExploreMode) {
-
-  if (widget.profileType == "flat_listing") {
+  if (_exploreType == "flat_listing") {
     _fetchFlatListingProfiles(
       applyFilters: true,
     );
@@ -1889,7 +1886,6 @@ debugPrint(
       applyFilters: true,
     );
   }
-
 } else {
 
   _fetchUserProfile(
@@ -3026,7 +3022,7 @@ Navigator.push(
   if (widget.isExploreMode) {
 
     _showCreateProfileRequiredDialog();
-
+  return;
   } else {
 
     _processLike(
@@ -4158,32 +4154,19 @@ Widget _buildActionButton({
   );
 }
 Future<void> _handleBrowseTypeTap(String browseType) async {
-  // ============================================================
-  // ALREADY SELECTED
-  // ============================================================
-
+  // Already selected
   if (_selectedBrowseType == browseType) {
     return;
   }
 
-  // ============================================================
-  // EXPLORE MODE
-  // ============================================================
-
-  if (widget.isExploreMode) {
-    setState(() {
-      _exploreType = browseType;
-    });
-
-    await _loadExploreProfiles();
-
-    return;
-  }
-
-  // ============================================================
-  // NORMAL MATCHING MODE
-  // ============================================================
-
+  // Always check whether the required profile exists.
+  //
+  // If it exists:
+  //     → open NORMAL matching mode
+  //
+  // If it does not exist:
+  //     → _switchToProfileForBrowseType()
+  //       automatically opens EXPLORE mode.
   await _switchToProfileForBrowseType(browseType);
 }
 
@@ -4201,28 +4184,30 @@ Future<void> _switchToProfileForBrowseType(
 
   try {
     // ==========================================================
-    // WHICH PROFILE IS REQUIRED?
+    // WHICH PROFILE IS REQUIRED FOR THIS BROWSE TYPE?
     //
     // Browse Rooms
-    // requires SeekingFlatmateProfile
+    //     -> requires SeekingFlatmateProfile
     //
     // Browse Flatmates
-    // requires FlatListingProfile
+    //     -> requires FlatListingProfile
     // ==========================================================
 
     final bool wantsRooms =
         browseType == "flat_listing";
 
-    final String requiredProfileType = wantsRooms
-        ? "seeking_flatmate"
-        : "flat_listing";
+    final String requiredProfileType =
+        wantsRooms
+            ? "seeking_flatmate"
+            : "flat_listing";
 
-    final String requiredCollection = wantsRooms
-        ? "seekingFlatmateProfiles"
-        : "flatListings";
+    final String requiredCollection =
+        wantsRooms
+            ? "seekingFlatmateProfiles"
+            : "flatListings";
 
     // ==========================================================
-    // FIND USER'S PROFILE
+    // CHECK IF USER HAS THE REQUIRED PROFILE
     // ==========================================================
 
     final QuerySnapshot profileSnapshot =
@@ -4239,6 +4224,10 @@ Future<void> _switchToProfileForBrowseType(
 
     // ==========================================================
     // PROFILE DOES NOT EXIST
+    //
+    // IMPORTANT:
+    // Don't force the user to create the profile just to VIEW.
+    // Open the requested browse type in Explore Mode.
     // ==========================================================
 
     if (profileSnapshot.docs.isEmpty) {
@@ -4246,22 +4235,59 @@ Future<void> _switchToProfileForBrowseType(
         _isLoading = false;
       });
 
-      _showCreateProfileDialogForBrowseType(
-        browseType,
+      await Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(
+          builder: (_) => MatchingScreen(
+            // The type we actually want to EXPLORE.
+            profileType: browseType,
+
+            // MatchingScreen requires profileId.
+            // We are not using it for Explore Mode.
+            profileId: widget.profileId,
+
+            // Enable Explore Mode.
+            isExploreMode: true,
+
+            // Preserve currently selected location.
+            exploreCity:
+    _currentFilters.desiredCity ?? _defaultCity,
+
+exploreLocationName:
+    _currentFilters.areaPreference ??
+    _exploreLocationName,
+
+explorePlaceId:
+    _currentFilters.placeId ??
+    _explorePlaceId,
+
+exploreLatitude:
+    _currentFilters.latitude ??
+    _activeLatitude,
+
+exploreLongitude:
+    _currentFilters.longitude ??
+    _activeLongitude,
+          ),
+        ),
       );
 
       return;
     }
 
     // ==========================================================
-    // PROFILE EXISTS
+    // REQUIRED PROFILE EXISTS
+    //
+    // Continue with NORMAL MATCHING exactly as before.
     // ==========================================================
 
     final String profileId =
         profileSnapshot.docs.first.id;
 
-    // Replace current MatchingScreen instead of stacking
-    // multiple MatchingScreens.
+    setState(() {
+      _isLoading = false;
+    });
+
     await Navigator.pushReplacement(
       context,
       MaterialPageRoute(
