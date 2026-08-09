@@ -96,8 +96,37 @@
 
 	<!-- FIREBASE -->
 
-	<key>FirebaseAppDelegateProxyEnabled</key>
-	<true/>
+	<!-- FIREBASE -->
+
+<key>FirebaseAppDelegateProxyEnabled</key>
+<true/>
+
+<!-- META / FACEBOOK APP EVENTS -->
+
+<key>FacebookAppID</key>
+<string>1822771335803418</string>
+
+<key>FacebookClientToken</key>
+<string>17285020f0c882bfc092acda60ef452b</string>
+
+<key>FacebookDisplayName</key>
+<string>UrbanHomey</string>
+
+<key>FacebookAutoLogAppEventsEnabled</key>
+<true/>
+
+<key>FacebookAdvertiserIDCollectionEnabled</key>
+<true/>
+
+<key>CFBundleURLTypes</key>
+<array>
+    <dict>
+        <key>CFBundleURLSchemes</key>
+        <array>
+            <string>fb1822771335803418</string>
+        </array>
+    </dict>
+</array>
 
 </dict>
 </plist>

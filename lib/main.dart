@@ -9,9 +9,12 @@ import 'screens/login_screen.dart';
 import 'screens/home_page.dart';
 import 'services/notification_service.dart';
 import 'screens/startup_screen.dart';
+import 'package:facebook_app_events/facebook_app_events.dart';
 final GlobalKey<ScaffoldMessengerState>
     messengerKey =
         GlobalKey<ScaffoldMessengerState>();
+final FacebookAppEvents facebookAppEvents =
+    FacebookAppEvents();
 
 Future<void> _firebaseMessagingBackgroundHandler(
   RemoteMessage message,
@@ -45,6 +48,11 @@ void main() async {
     );
 
     debugPrint("STEP 2 - Firebase Initialized");
+
+// Initialize Meta/Facebook App Events
+await facebookAppEvents.activateApp();
+
+debugPrint("STEP 2.5 - Meta App Events Initialized");
 
     FirebaseMessaging.onBackgroundMessage(
       _firebaseMessagingBackgroundHandler,
