@@ -926,7 +926,7 @@ void _onBottomNavigationTapped(int index) {
         PremiumSnackbar.info(
   context,
   title: "Profile Required",
-  message: "Create your profile to access chats and matches.",
+  message: "Create your listing to access chats and matches.",
 );
         return;
       }
@@ -1714,70 +1714,455 @@ p.imageUrls!.isEmpty,
     });
   }
 }
+
 void _showCreateProfileRequiredDialog() {
-  showDialog(
+  final bool wantsRooms = _exploreType == "flat_listing";
+
+  showGeneralDialog(
     context: context,
-    builder: (_) => AlertDialog(
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(20),
-      ),
-      title: const Text(
-        "Create Profile First",
-      ),
-      content: const Text(
-        "You can explore profiles freely.\n\nCreate your profile to like, connect and chat with others.",
-      ),
-      actions: [
-
-        TextButton(
-          onPressed: () {
-            Navigator.pop(context);
-          },
-          child: const Text(
-            "Later",
-          ),
-        ),
-
-        ElevatedButton(
-          onPressed: () {
-            Navigator.pop(context);
-
-            if (_exploreType == "flat_listing") {
-
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (_) =>
-                      FlatWithFlatmateProfileScreen(
-                    initialPhoneNumber:
-                        null,
-                  ),
-                ),
-              );
-
-            } else {
-
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (_) =>
-                      FlatmateProfileScreen(
-                    initialPhoneNumber:
-                        null,
-                  ),
-                ),
-              );
-
-            }
-          },
-          child: const Text(
-            "Create Profile",
-          ),
-        ),
-      ],
+    barrierDismissible: true,
+    barrierLabel: "Create Profile",
+    barrierColor: Colors.black.withOpacity(0.58),
+    transitionDuration: const Duration(
+      milliseconds: 420,
     ),
+    pageBuilder: (_, __, ___) => const SizedBox.shrink(),
+    transitionBuilder: (
+      context,
+      animation,
+      secondaryAnimation,
+      child,
+    ) {
+      final curvedAnimation = CurvedAnimation(
+        parent: animation,
+        curve: Curves.easeOutBack,
+        reverseCurve: Curves.easeInCubic,
+      );
+
+      return Transform.scale(
+        scale: Tween<double>(
+          begin: 0.88,
+          end: 1.0,
+        ).animate(curvedAnimation).value,
+        child: FadeTransition(
+          opacity: animation,
+          child: Dialog(
+            backgroundColor: Colors.transparent,
+            elevation: 0,
+            insetPadding: const EdgeInsets.symmetric(
+              horizontal: 20,
+              vertical: 24,
+            ),
+            child: Container(
+              constraints: const BoxConstraints(
+                maxWidth: 430,
+              ),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(30),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.18),
+                    blurRadius: 40,
+                    spreadRadius: 2,
+                    offset: const Offset(0, 18),
+                  ),
+                ],
+              ),
+              clipBehavior: Clip.antiAlias,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+
+                  // =========================================================
+                  // PREMIUM HEADER
+                  // =========================================================
+
+                  Stack(
+                    children: [
+                      Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.fromLTRB(
+                          24,
+                          30,
+                          24,
+                          30,
+                        ),
+                        decoration: const BoxDecoration(
+                          gradient: LinearGradient(
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
+                            colors: [
+                              Color(0xFF6D3FE7),
+                              Color(0xFF8B5CF6),
+                              Color(0xFFE64991),
+                            ],
+                          ),
+                        ),
+                        child: Column(
+                          children: [
+
+                            // Profile icon
+                            Container(
+                              width: 72,
+                              height: 72,
+                              decoration: BoxDecoration(
+                                color: Colors.white.withOpacity(0.16),
+                                shape: BoxShape.circle,
+                                border: Border.all(
+                                  color: Colors.white.withOpacity(0.28),
+                                  width: 1.2,
+                                ),
+                              ),
+                              child: const Icon(
+                                Icons.person_add_alt_1_rounded,
+                                color: Colors.white,
+                                size: 34,
+                              ),
+                            ),
+
+                            const SizedBox(height: 18),
+
+                            const Text(
+                              "Create Your Listing",
+                              textAlign: TextAlign.center,
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 24,
+                                fontWeight: FontWeight.w800,
+                                letterSpacing: -0.5,
+                              ),
+                            ),
+
+                            const SizedBox(height: 8),
+
+                            Text(
+                              wantsRooms
+                                  ? "Unlock rooms, connections & conversations"
+                                  : "Unlock flatmates, connections & conversations",
+                              textAlign: TextAlign.center,
+                              style: TextStyle(
+                                color: Colors.white.withOpacity(0.86),
+                                fontSize: 14,
+                                height: 1.4,
+                                fontWeight: FontWeight.w400,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+
+                      // Close button
+                      Positioned(
+                        top: 14,
+                        right: 14,
+                        child: Material(
+                          color: Colors.transparent,
+                          child: InkWell(
+                            borderRadius: BorderRadius.circular(20),
+                            onTap: () {
+                              Navigator.pop(context);
+                            },
+                            child: Container(
+                              width: 38,
+                              height: 38,
+                              decoration: BoxDecoration(
+                                color: Colors.white.withOpacity(0.14),
+                                shape: BoxShape.circle,
+                                border: Border.all(
+                                  color: Colors.white.withOpacity(0.18),
+                                ),
+                              ),
+                              child: const Icon(
+                                Icons.close_rounded,
+                                color: Colors.white,
+                                size: 20,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+
+                  // =========================================================
+                  // CONTENT
+                  // =========================================================
+
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(
+                      24,
+                      24,
+                      24,
+                      20,
+                    ),
+                    child: Column(
+                      children: [
+
+                        Text(
+                          wantsRooms
+                              ? "You're exploring Rooms"
+                              : "You're exploring Flatmates",
+                          textAlign: TextAlign.center,
+                          style: const TextStyle(
+                            color: Color(0xFF171717),
+                            fontSize: 18,
+                            fontWeight: FontWeight.w700,
+                            letterSpacing: -0.2,
+                          ),
+                        ),
+
+                        const SizedBox(height: 9),
+
+                        Text(
+                          wantsRooms
+                              ? "Create your Flatmate Profile to like rooms, connect with owners and start chatting."
+                              : "Create your Flat Listing Profile to like flatmates, connect with them and start chatting.",
+                          textAlign: TextAlign.center,
+                          style: const TextStyle(
+                            color: Color(0xFF737373),
+                            fontSize: 14,
+                            height: 1.55,
+                            fontWeight: FontWeight.w400,
+                          ),
+                        ),
+
+                        const SizedBox(height: 22),
+
+                        // ===================================================
+                        // BENEFITS
+                        // ===================================================
+
+                        Container(
+                          width: double.infinity,
+                          padding: const EdgeInsets.all(17),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFFAF8FF),
+                            borderRadius: BorderRadius.circular(20),
+                            border: Border.all(
+                              color: const Color(0xFFEDE7FF),
+                              width: 1,
+                            ),
+                          ),
+                          child: Column(
+                            children: [
+
+                              _premiumProfileBenefit(
+                                icon: Icons.favorite_rounded,
+                                iconColor: const Color(0xFFE83E8C),
+                                title: "Like profiles",
+                                subtitle:
+                                    "Show interest in people or places you like",
+                              ),
+
+                              const SizedBox(height: 14),
+
+                              _premiumProfileBenefit(
+                                icon: Icons.chat_bubble_rounded,
+                                iconColor: const Color(0xFF7547E8),
+                                title: "Start conversations",
+                                subtitle:
+                                    "Connect and chat when there's mutual interest",
+                              ),
+
+                              const SizedBox(height: 14),
+
+                              _premiumProfileBenefit(
+                                icon: Icons.handshake_rounded,
+                                iconColor: const Color(0xFF10A879),
+                                title: "Build genuine connections",
+                                subtitle:
+                                    "Find people who match your requirements",
+                              ),
+                            ],
+                          ),
+                        ),
+
+                        const SizedBox(height: 24),
+
+                        // ===================================================
+                        // CREATE PROFILE
+                        // ===================================================
+
+                        SizedBox(
+                          width: double.infinity,
+                          height: 56,
+                          child: DecoratedBox(
+                            decoration: BoxDecoration(
+                              gradient: const LinearGradient(
+                                begin: Alignment.centerLeft,
+                                end: Alignment.centerRight,
+                                colors: [
+                                  Color(0xFF6D3FE7),
+                                  Color(0xFF8B5CF6),
+                                ],
+                              ),
+                              borderRadius: BorderRadius.circular(17),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: const Color(0xFF7C3AED)
+                                      .withOpacity(0.25),
+                                  blurRadius: 16,
+                                  offset: const Offset(0, 7),
+                                ),
+                              ],
+                            ),
+                            child: ElevatedButton(
+                              onPressed: () {
+                                Navigator.pop(context);
+
+                                if (wantsRooms) {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (_) =>
+                                          FlatWithFlatmateProfileScreen(
+                                        initialPhoneNumber: null,
+                                      ),
+                                    ),
+                                  );
+                                } else {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (_) =>
+                                          FlatmateProfileScreen(
+                                        initialPhoneNumber: null,
+                                      ),
+                                    ),
+                                  );
+                                }
+                              },
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.transparent,
+                                foregroundColor: Colors.white,
+                                shadowColor: Colors.transparent,
+                                elevation: 0,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(17),
+                                ),
+                              ),
+                              child: Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.center,
+                                children: const [
+                                  Icon(
+                                    Icons.person_add_alt_1_rounded,
+                                    size: 20,
+                                  ),
+                                  SizedBox(width: 9),
+                                  Text(
+                                    "Create Profile",
+                                    style: TextStyle(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.w700,
+                                      letterSpacing: 0.1,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ),
+
+                        const SizedBox(height: 9),
+
+                        // ===================================================
+                        // CONTINUE EXPLORING
+                        // ===================================================
+
+                        SizedBox(
+                          height: 46,
+                          child: TextButton(
+                            onPressed: () {
+                              Navigator.pop(context);
+                            },
+                            style: TextButton.styleFrom(
+                              foregroundColor: const Color(0xFF777777),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(14),
+                              ),
+                            ),
+                            child: const Text(
+                              "Continue Exploring",
+                              style: TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      );
+    },
   );
 }
+
+
+// ===========================================================================
+// PREMIUM BENEFIT ROW
+// ===========================================================================
+
+Widget _premiumProfileBenefit({
+  required IconData icon,
+  required Color iconColor,
+  required String title,
+  required String subtitle,
+}) {
+  return Row(
+    crossAxisAlignment: CrossAxisAlignment.center,
+    children: [
+      Container(
+        width: 43,
+        height: 43,
+        decoration: BoxDecoration(
+          color: iconColor.withOpacity(0.10),
+          borderRadius: BorderRadius.circular(13),
+        ),
+        child: Icon(
+          icon,
+          color: iconColor,
+          size: 21,
+        ),
+      ),
+
+      const SizedBox(width: 13),
+
+      Expanded(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              title,
+              style: const TextStyle(
+                color: Color(0xFF252525),
+                fontSize: 14,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+            const SizedBox(height: 3),
+            Text(
+              subtitle,
+              style: const TextStyle(
+                color: Color(0xFF858585),
+                fontSize: 12,
+                height: 1.3,
+              ),
+            ),
+          ],
+        ),
+      ),
+    ],
+  );
+}
+
   void _showAlertDialog(String title, String message, VoidCallback onPressed) {
     showDialog(
       context: context,
@@ -4408,7 +4793,7 @@ void _showCreateProfileDialogForBrowseType(
                         SizedBox(height: 18),
 
                         Text(
-                          "Create Your Profile",
+                          "Create Your Listing",
                           style: TextStyle(
                             color: Colors.white,
                             fontSize: 24,
